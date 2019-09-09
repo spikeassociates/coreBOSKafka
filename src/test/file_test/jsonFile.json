@@ -1,0 +1,14 @@
+{
+  "SquareId": "SquareID102554",
+  "TimeInterval": "testTimeInterval",
+  "CountryCode": "testCountryCode",
+  "SmsInActivity": "testSmsInActivity",
+  "SmsOutActivity": "testSmsOutActivity",
+  "CallInActivity": "testCallInActivity",
+  "CallOutActivity": "testCallOutActivity",
+  "InternetTrafficActivity": "testCallOutActivity",
+  "user": {
+    "firstName": "Ardit",
+    "lastName": "Sarja"
+  }
+}
