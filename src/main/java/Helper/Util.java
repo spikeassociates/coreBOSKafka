@@ -18,7 +18,7 @@ public class Util {
         String jsonInString = "";
         try {
             jsonInString = mapper.writeValueAsString(object);
-            mapper.writeValue(new File("C:\\Users\\User\\Desktop\\corebos\\target\\jsonFile.json"), object);
+//            mapper.writeValue(new File("C:\\Users\\User\\Desktop\\corebos\\target\\jsonFile.json"), object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
