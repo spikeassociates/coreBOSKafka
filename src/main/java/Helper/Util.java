@@ -40,7 +40,7 @@ public class Util {
     public static String getProperty(String key) {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(System.getProperty("user.dir") + "\\src\\main\\resources\\application.properties"));
+            properties.load(new FileInputStream(System.getProperty("user.dir") + "\\application.properties"));
             return properties.getProperty(key);
         } catch (IOException e) {
             e.printStackTrace();

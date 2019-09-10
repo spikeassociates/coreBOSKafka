@@ -41,7 +41,7 @@ public class SimpleProducer {
         System.out.println("Starting");
         for (String arg : args)
             System.out.println("arg = " + arg);
-        args = new String[]{"first_topic", "1"};
+//        args = new String[]{"first_topic", "1"};
         int argsCount = args.length;
         if (argsCount == 0 || argsCount == 1)
             throw new IllegalArgumentException("Please provide topic name and Message count as arguments");
