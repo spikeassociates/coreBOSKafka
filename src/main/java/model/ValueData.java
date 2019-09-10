@@ -43,13 +43,13 @@ public class ValueData {
         return null;
     }
 
-public static ValueData getObjectFromJson(File jsonFile) {
+    public static ValueData getObjectFromJson(File jsonFile) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-        return mapper.readValue(jsonFile, ValueData.class);
+            return mapper.readValue(jsonFile, ValueData.class);
         } catch (IOException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
         return null;
-        }
-        }
+    }
+}

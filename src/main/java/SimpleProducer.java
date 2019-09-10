@@ -1,4 +1,4 @@
-import Helper.HelperModelData;
+import Helper.Util;
 import model.KeyData;
 import model.ValueData;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -88,8 +88,8 @@ public class SimpleProducer {
         keyData.SquareId = "SquareID102554";
         ValueData valueData = new ValueData(keyData.SquareId);
         String topic = "first_topic";
-        String key = HelperModelData.getJson(keyData);
-        String value = HelperModelData.getJson(valueData);
+        String key = Util.getJson(keyData);
+        String value = Util.getJson(valueData);
         ProducerRecord<String, String> producerRecord = new ProducerRecord<String, String>(topic, key, value);
 
         producer.send(producerRecord);

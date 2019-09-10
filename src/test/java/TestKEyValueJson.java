@@ -1,4 +1,4 @@
-import Helper.HelperModelData;
+import Helper.Util;
 import model.KeyData;
 import model.ValueData;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ public class TestKEyValueJson {
     public void testKeyJson() {
         KeyData keyData = new KeyData();
         keyData.SquareId = "577";
-        assertEquals("{\"SquareId\":\"577\"}", HelperModelData.getJson(keyData));
+        assertEquals("{\"SquareId\":\"577\"}", Util.getJson(keyData));
     }
 
     @Test

@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
 
-public class HelperModelData {
+public class Util {
 
     public static String getJson(Object object) {
         ObjectMapper mapper = new ObjectMapper();
@@ -16,7 +18,7 @@ public class HelperModelData {
         String jsonInString = "";
         try {
             jsonInString = mapper.writeValueAsString(object);
-            mapper.writeValue(new File("C:\\Users\\User\\Desktop\\corebos\\target\\jsonFile.json"),object);
+            mapper.writeValue(new File("C:\\Users\\User\\Desktop\\corebos\\target\\jsonFile.json"), object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -34,4 +36,16 @@ public class HelperModelData {
         }
         return null;
     }
+
+    public static String getProperty(String key) {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream(System.getProperty("user.dir") + "\\src\\main\\resources\\application.properties"));
+            return properties.getProperty(key);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
