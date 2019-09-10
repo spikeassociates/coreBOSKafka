@@ -1,5 +1,5 @@
 import Helper.Util;
-import com.vtiger.vtwsclib.WSClient;
+import vtwslib.WSClient;
 
 
 public class CorebosConnect {
