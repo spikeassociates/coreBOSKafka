@@ -1,0 +1,27 @@
+#run docker container
+docker run --rm -it -p 2181:2181 -p 3030:3030 -p 8081:8081 -p 8082:8082 -p 8083:8083 -p 9092:9092 -e ADV_HOST=127.0.0.1 landoop/fast-data-dev			
+
+docker run -it -p 2181:2181 -p 3030:3030 -p 8081:8081 -p 8082:8082 -p 8083:8083 -p 9092:9092 -e ADV_HOST=127.0.0.1 landoop/fast-data-dev			
+
+#enter in docker container
+docker run --rm -it --net=host landoop/fast-data-dev bash
+
+docker run -it --net=host landoop/fast-data-dev bash
+
+#create topic command
+kafka-topics --zookeeper 127.0.0.1:2181 --create --topic first_topic --partitions 3 --replication-factor 1
+
+#list topics command
+kafka-topics --zookeeper 127.0.0.1:2181 --list
+
+#produce to topic
+kafka-console-producer --broker-list 127.0.0.1:9092 --topic first_topic
+
+#consume topic from the end
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic
+
+#consume topic from the beginning
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning
+
+#consume topic with commiting offsets
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --consumer-property group.id=mygroup1 --from-beginning
