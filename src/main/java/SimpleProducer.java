@@ -15,13 +15,13 @@ import java.util.Properties;
 public class SimpleProducer {
     private static Producer<String, String> producer;
     private static final Logger logger = LoggerFactory.getLogger(SimpleProducer.class);
+    private static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
 
     public SimpleProducer() {
         Properties props = new Properties();
 // Set the broker list for requesting metadata to find the lead broker
-        props.put("metadata.broker.list",
-                "127.0.0.1:9092");
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        props.put("metadata.broker.list", KAFKA_URL);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
 //This specifies the serializer class for keys
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -36,12 +36,12 @@ public class SimpleProducer {
     }
 
     public static void main(String[] args) {
-        testProducer();
+//        testProducer();
         testProducer2();
-        System.out.println("Starting");
+        /*System.out.println("Starting");
         for (String arg : args)
             System.out.println("arg = " + arg);
-//        args = new String[]{"first_topic", "1"};
+//        args = new String[]{"first_topic", "1", "Ardit"};
         int argsCount = args.length;
         if (argsCount == 0 || argsCount == 1)
             throw new IllegalArgumentException("Please provide topic name and Message count as arguments");
@@ -49,18 +49,20 @@ public class SimpleProducer {
 // command line
         String topic = (String) args[0];
         String count = (String) args[1];
+        String message = (String) args[2];
 //        String topic = "first_topic";
 //        String count = "1";
         int messageCount = Integer.parseInt(count);
         System.out.println("Topic Name - " + topic);
-        System.out.println("Message Count - " + messageCount);
+        System.out.println("Message Count - " + message);
         SimpleProducer simpleProducer = new SimpleProducer();
-        simpleProducer.publishMessage(topic, messageCount);
+        simpleProducer.publishMessage(topic, messageCount, message);*/
     }
+
 
     private static void testProducer() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
@@ -78,7 +80,7 @@ public class SimpleProducer {
 
     private static void testProducer2() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
@@ -97,10 +99,10 @@ public class SimpleProducer {
         producer.close();
     }
 
-    private void publishMessage(String topic, int messageCount) {
+    private void publishMessage(String topic, int messageCount, String message) {
         for (int mCount = 0; mCount < messageCount; mCount++) {
             String runtime = new Date().toString();
-            String msg = "Message Publishing Time - " + runtime + " from Ardit";
+            String msg = "Message Publishing Time - " + runtime + message;
             System.out.println(msg);
 // Creates a KeyedMessage instance
 // Publish the message
