@@ -1,0 +1,59 @@
+package producer;
+
+import Helper.Util;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import vtwslib.WSClient;
+
+import java.util.Date;
+import java.util.Properties;
+
+public class Producer {
+
+    protected static final String COREBOS_URL = Util.getProperty("corebos.url");
+    protected static final String USERNAME = Util.getProperty("corebos.username");
+    protected static final String ACCESS_KEY = Util.getProperty("corebos.access_key");
+
+    protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
+    protected static final Logger logger = LoggerFactory.getLogger(SimpleProducer.class);
+    protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
+
+    protected WSClient wsClient;
+
+    public Producer() {
+        wsClient = new WSClient(COREBOS_URL);
+        wsClient.doLogin(USERNAME, ACCESS_KEY);
+
+        Properties props = new Properties();
+// Set the broker list for requesting metadata to find the lead broker
+        props.put("metadata.broker.list", KAFKA_URL);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
+//This specifies the serializer class for keys
+        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+// 1 means the producer receives an acknowledgment once the lead replica
+// has received the data. This option provides better durability as the
+// client waits until the server acknowledges the request as successful.
+        props.put("request.required.acks", "1");
+//        ProducerConfig config = new ProducerConfig(props);
+//        producer = new Producer<String, String>(config);
+        producer = new KafkaProducer(props);
+    }
+
+    protected void publishMessage(String topic, String key, String message) {
+        String runtime = new Date().toString();
+        String msg = "Message Publishing Time - " + runtime + message;
+        System.out.println(msg);
+// Creates a KeyedMessage instance
+// Publish the message
+        producer.send(new ProducerRecord<String, String>(topic, key, msg));
+// Close producer connection with broker.
+        producer.close();
+    }
+
+}

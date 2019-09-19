@@ -5,12 +5,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
 public class Util {
+
+    public static final String dafaultTime = "5";
 
     public static String getJson(Object object) {
         ObjectMapper mapper = new ObjectMapper();
