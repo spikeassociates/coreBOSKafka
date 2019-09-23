@@ -22,6 +22,9 @@ public class Producer {
     protected static final Logger logger = LoggerFactory.getLogger(SimpleProducer.class);
     protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
 
+    protected static final String DEFAULT_KEY = "DEFAULT KEY";
+    protected static final String DEFAULT_VALUE = "DEFAULT VALUE";
+
     protected WSClient wsClient;
 
     public Producer() {
@@ -53,7 +56,7 @@ public class Producer {
 // Publish the message
         producer.send(new ProducerRecord<String, String>(topic, key, msg));
 // Close producer connection with broker.
-        producer.close();
+//        producer.close();
     }
 
 }
