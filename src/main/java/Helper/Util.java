@@ -13,6 +13,10 @@ public class Util {
 
     public static final String dafaultTime = "5";
 
+
+    public static final String ACCOUNTS = "Accounts";
+    public static final String CREATE = "create";
+
     public static String getJson(Object object) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
