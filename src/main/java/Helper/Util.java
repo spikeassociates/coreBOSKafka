@@ -15,8 +15,12 @@ public class Util {
     public static final String dafaultTime = "5";
 
 
-    public static final String ACCOUNTS = "Accounts";
-    public static final String CREATE = "create";
+    public static final String elementTypeACCOUNTS = "Accounts";
+    public static final String elementTypeCONTACTS = "Contacts";
+
+
+    public static final String methodCREATE = "create";
+    public static final String methodUPDATE = "update";
 
     public static String getJson(Object object) {
         ObjectMapper mapper = new ObjectMapper();

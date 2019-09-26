@@ -6,15 +6,12 @@ package vtwslib;
 //
 
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.*;
 
 public class WSClient {
     String _servicebase = "webservice.php";
@@ -58,10 +55,10 @@ public class WSClient {
             if (result == null) {
                 isError = true;
             } else if (result instanceof Exception) {
-                this._lasterror = ((Exception)result).getMessage();
+                this._lasterror = ((Exception) result).getMessage();
                 isError = true;
             } else if (result instanceof JSONObject) {
-                JSONObject resultObject = (JSONObject)result;
+                JSONObject resultObject = (JSONObject) result;
                 if (resultObject.get("success").toString() == "false") {
                     this._lasterror = resultObject.get("error");
                     isError = true;
@@ -86,7 +83,7 @@ public class WSClient {
         if (this.hasError(response)) {
             return false;
         } else {
-            JSONObject result = (JSONObject)((JSONObject)response).get("result");
+            JSONObject result = (JSONObject) ((JSONObject) response).get("result");
             this._servertime = result.get("serverTime").toString();
             this._expiretime = result.get("expireTime").toString();
             this._servicetoken = result.get("token").toString();
@@ -124,7 +121,7 @@ public class WSClient {
                 if (this.hasError(response)) {
                     return false;
                 } else {
-                    JSONObject result = (JSONObject)((JSONObject)response).get("result");
+                    JSONObject result = (JSONObject) ((JSONObject) response).get("result");
                     this._serviceuser = username;
                     this._servicekey = vtigerUserAccessKey;
                     this._sessionid = result.get("sessionName").toString();
@@ -152,7 +149,7 @@ public class WSClient {
         if (this.hasError(response)) {
             return null;
         } else {
-            JSONArray result = (JSONArray)((JSONObject)response).get("result");
+            JSONArray result = (JSONArray) ((JSONObject) response).get("result");
             return result;
         }
     }
@@ -160,10 +157,10 @@ public class WSClient {
     public List getResultColumns(JSONArray result) {
         List columns = new ArrayList();
         if (!result.isEmpty()) {
-            JSONObject row = (JSONObject)result.get(0);
+            JSONObject row = (JSONObject) result.get(0);
             Iterator iterator = row.keySet().iterator();
 
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 columns.add(iterator.next().toString());
             }
         }
@@ -180,12 +177,12 @@ public class WSClient {
         if (this.hasError(response)) {
             return null;
         } else {
-            JSONObject result = (JSONObject)((JSONObject)response).get("result");
-            JSONArray resultTypes = (JSONArray)result.get("types");
+            JSONObject result = (JSONObject) ((JSONObject) response).get("result");
+            JSONArray resultTypes = (JSONArray) result.get("types");
             Map returnvalue = new HashMap();
             Iterator iterator = resultTypes.iterator();
 
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 Object value = iterator.next();
                 Map returnpart = new HashMap();
                 returnpart.put("name", value.toString());
@@ -206,7 +203,7 @@ public class WSClient {
         if (this.hasError(response)) {
             return null;
         } else {
-            JSONObject result = (JSONObject)((JSONObject)response).get("result");
+            JSONObject result = (JSONObject) ((JSONObject) response).get("result");
             return result;
         }
     }
@@ -221,7 +218,7 @@ public class WSClient {
         if (this.hasError(response)) {
             return null;
         } else {
-            JSONObject result = (JSONObject)((JSONObject)response).get("result");
+            JSONObject result = (JSONObject) ((JSONObject) response).get("result");
             return result;
         }
     }
@@ -241,7 +238,7 @@ public class WSClient {
         if (this.hasError(response)) {
             return null;
         } else {
-            JSONObject result = (JSONObject)((JSONObject)response).get("result");
+            JSONObject result = (JSONObject) ((JSONObject) response).get("result");
             return result;
         }
     }
@@ -257,11 +254,11 @@ public class WSClient {
         senddata.put("sessionName", this._sessionid);
         Map valueMap;
         if (params != null) {
-            valueMap = (Map)params;
+            valueMap = (Map) params;
             if (!valueMap.isEmpty()) {
                 Iterator iterator = valueMap.keySet().iterator();
 
-                while(iterator.hasNext()) {
+                while (iterator.hasNext()) {
                     Object key = iterator.next();
                     if (!senddata.containsKey(key)) {
                         senddata.put(key, valueMap.get(key));
@@ -281,9 +278,17 @@ public class WSClient {
         if (this.hasError(response)) {
             return null;
         } else {
-            Object result = ((JSONObject)response).get("result");
+            Object result = ((JSONObject) response).get("result");
             return result;
         }
+    }
+
+    public Object getUserID() {
+        return _userid;
+    }
+
+    public Object getLastError() {
+        return _lasterror;
     }
 }
 
