@@ -18,13 +18,13 @@ public class TestKEyValueJson {
     @Test
     public void testJsonKey() {
 
-        KeyData keyData = KeyData.getObjectFromJson("{\"SquareId\":\"577\"}");
+        KeyData keyData = Util.getObjectFromJson("{\"SquareId\":\"577\"}", KeyData.class);
         assertEquals(keyData.SquareId, "577");
     }
 
     @Test
     public void testJsonValue() {
-        ValueData valueData = ValueData.getObjectFromJson(new File("C:\\Users\\User\\Desktop\\corebos\\src\\test\\file_test\\jsonFile.json"));
+        ValueData valueData = Util.getObjectFromJson(new File("C:\\Users\\User\\Desktop\\corebos\\src\\test\\file_test\\jsonFile.json"), ValueData.class);
         assertEquals(valueData.user.firstName.equals("Ardit"), true);
     }
 
