@@ -11,7 +11,12 @@ public class SyncProducerExe {
             @Override
             public void run() { // Function runs every SimpleProducer.timeIntervalMin minutes.
                 // Run the code you want here
-                new SyncProducer().init();
+                try {
+                    new SyncProducer().init();
+                } catch (Exception e) {
+                    System.out.println(e);
+                    e.printStackTrace();
+                }
             }
         }, 0, 1000 * 60 * SyncProducer.timeIntervalMin);
 

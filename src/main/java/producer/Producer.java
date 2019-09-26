@@ -27,9 +27,11 @@ public class Producer {
 
     protected WSClient wsClient;
 
-    public Producer() {
+    public Producer() throws Exception {
         wsClient = new WSClient(COREBOS_URL);
-        wsClient.doLogin(USERNAME, ACCESS_KEY);
+        if (!wsClient.doLogin(USERNAME, ACCESS_KEY)) {
+            throw new Exception("Login error");
+        }
 
         Properties props = new Properties();
 // Set the broker list for requesting metadata to find the lead broker
@@ -45,6 +47,8 @@ public class Producer {
         props.put("request.required.acks", "1");
 //        ProducerConfig config = new ProducerConfig(props);
 //        producer = new Producer<String, String>(config);
+//        producer = new KafkaProducer(props, new StringSerializer(),
+//                new KafkaJsonSerializer());
         producer = new KafkaProducer(props);
     }
 
@@ -54,7 +58,7 @@ public class Producer {
         System.out.println(msg);
 // Creates a KeyedMessage instance
 // Publish the message
-        producer.send(new ProducerRecord<String, String>(topic, key, msg));
+        producer.send(new ProducerRecord<String, String>(topic, key, message));
 // Close producer connection with broker.
 //        producer.close();
     }

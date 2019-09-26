@@ -11,7 +11,11 @@ public class SimpleProducerExe {
             @Override
             public void run() { // Function runs every SimpleProducer.timeIntervalMin minutes.
                 // Run the code you want here
-                new SimpleProducer().init();
+                try {
+                    new SimpleProducer().init();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }, 0, 1000 * 60 * SimpleProducer.timeIntervalMin);
 

@@ -12,10 +12,15 @@ public class SyncProducer extends Producer {
 
     private final String topic = "first_topic";
 
+    public SyncProducer() throws Exception {
+    }
+
 
     public void init() {
 
         Object response = doSync();
+        if (response == null)
+            return;
         List updatedList = getUpdated(response);
         List deletedList = getDeleted(response);
 
@@ -26,16 +31,16 @@ public class SyncProducer extends Producer {
             publishMessage(topic, DELETED_KEY, Util.getJson(deleted));
         }
 
-        System.out.println(" Util.getJson(response) = " + Util.getJson(response));
-        publishMessage(topic, DELETED_KEY, DEFAULT_VALUE + new Date().toString() + "   " + Util.getJson(response));
     }
 
     private Object doSync() {
 
-        long modifiedTime = new Date().getTime() - (long) timeIntervalMin * 60 * 1000;
+        long modifiedTime = (new Date().getTime() - (long) timeIntervalMin * 60 * 1000) / 1000;
         Map<String, Object> mapToSend = new HashMap<>();
         mapToSend.put("modifiedTime", "" + modifiedTime);
 //        mapToSend.put("modifiedTime", "1568194862");
+//        mapToSend.put("modifiedTime", "1569379878933");
+//        mapToSend.put("modifiedTime", "1569379878");
         return wsClient.doInvoke("sync", mapToSend);
     }
 
