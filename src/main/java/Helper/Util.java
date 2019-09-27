@@ -12,6 +12,7 @@ import java.util.Properties;
 
 public class Util {
 
+    public static final String coreBossDir = System.getProperty("user.dir") + "\\corebos";
     public static final String dafaultTime = "5";
 
 
@@ -28,6 +29,23 @@ public class Util {
         try {
             return mapper.writeValueAsString(object);
 //            mapper.writeValue(new File("C:\\Users\\User\\Desktop\\corebos\\target\\jsonFile.json"), object);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String createJSonFile(Object object, String... name) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        String path = coreBossDir + "\\files\\";
+        if (name[0] != null) {
+            path += name[0] + ".json";
+        } else {
+            path += "jsonFile.json";
+        }
+        try {
+            mapper.writeValue(new File(path), object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -59,7 +77,7 @@ public class Util {
     public static String getProperty(String key) {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(System.getProperty("user.dir") + "\\application.properties"));
+            properties.load(new FileInputStream(coreBossDir + "\\application.properties"));
             return properties.getProperty(key);
         } catch (IOException e) {
             e.printStackTrace();
