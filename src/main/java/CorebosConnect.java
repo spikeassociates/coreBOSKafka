@@ -21,13 +21,12 @@ public class CorebosConnect {
 
         System.out.println("wsClient = " + wsClient.doLogin(USERNAME, ACCESS_KEY));
 
-       updateContact();
 
     }
 
     public static void selectQuery() {
 
-        Object d = wsClient.doQuery("select * from Contacts where lastname='Sarja';");
+        Object d = wsClient.doQuery("select * from Contacts where lastname like 'Sarja';");
         System.out.println(Util.getJson(d));
 
 
@@ -37,7 +36,7 @@ public class CorebosConnect {
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> element = new HashMap<>();
 
-        element.put("lastname", "sarja");
+        element.put("lastname", "Sarja");
         element.put("firstname", "Ardit");
         element.put("otherzip", "1001");
         element.put("assigned_user_id", wsClient.getUserID());
@@ -59,17 +58,21 @@ public class CorebosConnect {
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> element = new HashMap<>();
 
-        element.put("lastname", "sarja");
         element.put("id", "11x44874");
         element.put("assigned_user_id", wsClient.getUserID());
-        element.put("homephone", "0693700874");
-
+        element.put("phone", "0693700884");
+        element.put("email1", "arditsarja@gmail.com");
+        element.put("fax", "0693700884");
+        element.put("accountname", "arditsarjaTEstdfd");
+        element.put("test", "test");
 
         mapToSend.put("elementType", Util.elementTypeACCOUNTS);
         mapToSend.put("element", Util.getJson(element));
 
 
         Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST");
+        if (d == null)
+            System.out.println("wsClient.lastError() = " + wsClient.lastError());
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
 
     }
@@ -98,6 +101,14 @@ public class CorebosConnect {
 //        mapToSend.put("modifiedTime", "1569379878");
 
         Object d1 = wsClient.doInvoke("sync", mapToSend);
+        System.out.println(Util.getJson(d1));
+
+    }
+    public static void dorRetrive() {
+
+
+
+        Object d1 = wsClient.doRetrieve( "11x44874");
         System.out.println(Util.getJson(d1));
 
     }
