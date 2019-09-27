@@ -1,6 +1,6 @@
 import Helper.Util;
 
-public class Test {
+public class Main {
 
     public static void main(String[] args) {
 
