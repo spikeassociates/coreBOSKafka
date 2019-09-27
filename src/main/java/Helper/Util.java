@@ -8,11 +8,14 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class Util {
 
-    public static final String coreBossDir = System.getProperty("user.dir") + "\\corebos";
+    public static final String coreBossDir = System.getProperty("user.dir") + "\\corebos\\";
+    public static final String coreBossJsonDir = coreBossDir + "\\json\\";
     public static final String dafaultTime = "5";
 
 
@@ -38,14 +41,16 @@ public class Util {
     public static String createJSonFile(Object object, String... name) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        String path = coreBossDir + "\\files\\";
+        String path = coreBossJsonDir;
         if (name[0] != null) {
             path += name[0] + ".json";
         } else {
             path += "jsonFile.json";
         }
         try {
-            mapper.writeValue(new File(path), object);
+            File file = new File(path);
+            Files.createDirectories(Paths.get(file.getParent()));
+            mapper.writeValue(file, object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -77,7 +82,7 @@ public class Util {
     public static String getProperty(String key) {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(coreBossDir + "\\application.properties"));
+            properties.load(new FileInputStream(coreBossDir + "application.properties"));
             return properties.getProperty(key);
         } catch (IOException e) {
             e.printStackTrace();
