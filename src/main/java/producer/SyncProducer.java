@@ -7,6 +7,7 @@ import java.util.*;
 
 public class SyncProducer extends Producer {
     public static final int timeIntervalMin = Integer.parseInt(Util.getProperty("corebos.syncproducer.timeIntervalMin") != null ? Util.getProperty("corebos.syncproducer.timeIntervalMin") : Util.dafaultTime);
+    public static final String syncInitTimestamp = Util.getProperty("corebos.syncproducer.initialTimestamp") != null ? Util.getProperty("corebos.syncproducer.initialTimestamp") : "1568194862";
 
     public static final String UPDATED_KEY = "update_account";
     public static final String DELETED_KEY = "delete_account";
@@ -38,7 +39,7 @@ public class SyncProducer extends Producer {
         long currentTime = new Date().getTime() / 1000;
         String modifiedTime = Config.getInstance().getLastTimeStampSync();
         if (modifiedTime.equals(""))
-            modifiedTime = "" + (currentTime - (long) timeIntervalMin * 60);
+            modifiedTime = syncInitTimestamp;
         Map<String, Object> mapToSend = new HashMap<>();
         mapToSend.put("modifiedTime", modifiedTime);
 //        mapToSend.put("modifiedTime", "1568194862");
