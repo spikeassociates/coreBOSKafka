@@ -38,8 +38,4 @@ public class Config {
         this.lastTimeStampToSync = lastTimeStampSync;
     }
 
-    public void setCurrentTimeAsLastTimeStampToSync(String lastTimeStampSync) {
-        this.lastTimeStampToSync = lastTimeStampSync;
-        save();
-    }
 }
