@@ -18,7 +18,8 @@ public class Config {
 
         if (configFile.exists())
             config = Util.getObjectFromJson(configFile, Config.class);
-        else
+
+        if (config == null)
             config = new Config();
 
         return config;
@@ -34,6 +35,10 @@ public class Config {
     }
 
     public void setLastTimeStampToSync(String lastTimeStampSync) {
+        this.lastTimeStampToSync = lastTimeStampSync;
+    }
+
+    public void setCurrentTimeAsLastTimeStampToSync(String lastTimeStampSync) {
         this.lastTimeStampToSync = lastTimeStampSync;
         save();
     }

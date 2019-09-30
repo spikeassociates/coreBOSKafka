@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import vtwslib.WSClient;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class Producer {
@@ -17,6 +19,7 @@ public class Producer {
     protected static final String COREBOS_URL = Util.getProperty("corebos.url");
     protected static final String USERNAME = Util.getProperty("corebos.username");
     protected static final String ACCESS_KEY = Util.getProperty("corebos.access_key");
+    protected static final String MODULES = Util.getProperty("corebos.modules");
 
     protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
     protected static final Logger logger = LoggerFactory.getLogger(SimpleProducer.class);
@@ -24,6 +27,7 @@ public class Producer {
 
     protected static final String DEFAULT_KEY = "DEFAULT KEY";
     protected static final String DEFAULT_VALUE = "DEFAULT VALUE";
+    protected Map moduleMap = new HashMap();
 
     protected WSClient wsClient;
 
@@ -31,6 +35,12 @@ public class Producer {
         wsClient = new WSClient(COREBOS_URL);
         if (!wsClient.doLogin(USERNAME, ACCESS_KEY)) {
             throw new Exception("Login error");
+        }
+
+        Object[] modules = wsClient.doDescribe(MODULES).values().toArray();
+        for (Object module : modules) {
+            Map theMap = (Map) module;
+            moduleMap.put(theMap.get("idPrefix"), theMap);
         }
 
         Properties props = new Properties();

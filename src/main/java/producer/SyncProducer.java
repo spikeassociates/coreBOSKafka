@@ -27,7 +27,11 @@ public class SyncProducer extends Producer {
         List deletedList = getDeleted(response);
 
         for (Object updated : updatedList) {
-            publishMessage(topic, UPDATED_KEY, Util.getJson(updated));
+            String moduleId = (String) wsClient.getModuleId("" + ((Map) updated).get("id"));
+            String key = (String) ((Map) moduleMap.get(moduleId)).get("name");
+            if (key == null || key.equals(""))
+                continue;
+            publishMessage(topic, key, Util.getJson(updated));
         }
         for (Object deleted : deletedList) {
             publishMessage(topic, DELETED_KEY, Util.getJson(deleted));
@@ -46,7 +50,7 @@ public class SyncProducer extends Producer {
 //        mapToSend.put("modifiedTime", "1569379878");
         Object response = wsClient.doInvoke("sync", mapToSend);
         long currentTime = new Date().getTime() / 1000;
-        Config.getInstance().setLastTimeStampToSync("" + currentTime);
+        Config.getInstance().setCurrentTimeAsLastTimeStampToSync("" + currentTime);
         return response;
     }
 
