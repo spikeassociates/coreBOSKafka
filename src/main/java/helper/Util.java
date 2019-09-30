@@ -15,7 +15,7 @@ import java.util.Properties;
 public class Util {
 
     public static final String coreBossDir = System.getProperty("user.dir") + "\\corebos\\";
-    public static final String coreBossJsonDir = coreBossDir + "\\json\\";
+    public static final String coreBossJsonDir = coreBossDir + "json\\";
 
     public static final String coreBossConfigJsonFile = "config";
 
