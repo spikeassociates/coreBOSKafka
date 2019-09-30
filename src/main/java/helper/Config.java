@@ -13,14 +13,13 @@ public class Config {
         if (config != null)
             return config;
 
-
         File configFile = new File(Util.coreBossConfigJsonFile + Util.coreBossConfigJsonFile);
 
         if (configFile.exists())
             config = Util.getObjectFromJson(configFile, Config.class);
-
         else
             config = new Config();
+
         return config;
     }
 
