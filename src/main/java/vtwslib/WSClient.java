@@ -48,6 +48,11 @@ public class WSClient {
         return splits[1];
     }
 
+    public Object getModuleId(String id) {
+        String[] splits = id.split("x");
+        return splits[0];
+    }
+
     public boolean hasError(Object result) {
         boolean isError = false;
 
