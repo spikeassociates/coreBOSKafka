@@ -1,15 +1,21 @@
-package Helper;
+package helper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.common.serialization.Serializer;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import java.util.Map;
 
-public class KafkaJsonSerializer implements Serializer {
+public class KafkaJsonDeserializer<T> implements Deserializer {
 
     private Logger logger = LogManager.getLogger(this.getClass());
+
+    private Class <T> type;
+
+    public KafkaJsonDeserializer(Class type) {
+        this.type = type;
+    }
 
     @Override
     public void configure(Map map, boolean b) {
@@ -17,15 +23,16 @@ public class KafkaJsonSerializer implements Serializer {
     }
 
     @Override
-    public byte[] serialize(String s, Object o) {
-        byte[] retVal = null;
-        ObjectMapper objectMapper = new ObjectMapper();
+    public Object deserialize(String s, byte[] bytes) {
+        ObjectMapper mapper = new ObjectMapper();
+        T obj = null;
         try {
-            retVal = objectMapper.writeValueAsBytes(o);
+            obj = mapper.readValue(bytes, type);
         } catch (Exception e) {
+
             logger.error(e.getMessage());
         }
-        return retVal;
+        return obj;
     }
 
     @Override
