@@ -17,7 +17,7 @@ public class Util {
     public static final String coreBossDir = System.getProperty("user.dir") + "\\corebos\\";
     public static final String coreBossJsonDir = coreBossDir + "\\json\\";
 
-    public static final String coreBossConfigJsonFile =  "config.json";
+    public static final String coreBossConfigJsonFile = "config";
 
     public static final String dafaultTime = "5";
 
