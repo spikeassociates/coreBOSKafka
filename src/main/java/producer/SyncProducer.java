@@ -36,8 +36,7 @@ public class SyncProducer extends Producer {
     }
 
     private Object doSync() {
-        long currentTime = new Date().getTime() / 1000;
-        String modifiedTime = Config.getInstance().getLastTimeStampSync();
+        String modifiedTime = Config.getInstance().getLastTimeStampToSync();
         if (modifiedTime.equals(""))
             modifiedTime = syncInitTimestamp;
         Map<String, Object> mapToSend = new HashMap<>();
@@ -46,7 +45,8 @@ public class SyncProducer extends Producer {
 //        mapToSend.put("modifiedTime", "1569379878933");
 //        mapToSend.put("modifiedTime", "1569379878");
         Object response = wsClient.doInvoke("sync", mapToSend);
-        Config.getInstance().setLastTimeStampSync("" + currentTime);
+        long currentTime = new Date().getTime() / 1000;
+        Config.getInstance().setLastTimeStampToSync("" + currentTime);
         return response;
     }
 

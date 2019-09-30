@@ -4,7 +4,7 @@ import java.io.File;
 
 public class Config {
 
-    private String lastTimeStampSync = "";
+    private String lastTimeStampToSync = "";
 
 
     private static Config config;
@@ -29,12 +29,12 @@ public class Config {
         Util.createJSonFile(config, Util.coreBossConfigJsonFile);
     }
 
-    public String getLastTimeStampSync() {
-        return lastTimeStampSync;
+    public String getLastTimeStampToSync() {
+        return lastTimeStampToSync;
     }
 
-    public void setLastTimeStampSync(String lastTimeStampSync) {
-        this.lastTimeStampSync = lastTimeStampSync;
+    public void setLastTimeStampToSync(String lastTimeStampSync) {
+        this.lastTimeStampToSync = lastTimeStampSync;
         save();
     }
 }
