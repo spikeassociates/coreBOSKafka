@@ -1,5 +1,6 @@
 package producer;
 
+import helper.Config;
 import helper.Util;
 
 import java.util.*;
@@ -34,14 +35,18 @@ public class SyncProducer extends Producer {
     }
 
     private Object doSync() {
-
-        long modifiedTime = (new Date().getTime() - (long) timeIntervalMin * 60 * 1000) / 1000;
+        long currentTime = new Date().getTime() / 1000;
+        String modifiedTime = Config.getInstance().getLastTimeStampSync();
+        if (modifiedTime.equals(""))
+            modifiedTime = "" + (currentTime - (long) timeIntervalMin * 60);
         Map<String, Object> mapToSend = new HashMap<>();
-        mapToSend.put("modifiedTime", "" + modifiedTime);
+        mapToSend.put("modifiedTime", modifiedTime);
 //        mapToSend.put("modifiedTime", "1568194862");
 //        mapToSend.put("modifiedTime", "1569379878933");
 //        mapToSend.put("modifiedTime", "1569379878");
-        return wsClient.doInvoke("sync", mapToSend);
+        Object response = wsClient.doInvoke("sync", mapToSend);
+        Config.getInstance().setLastTimeStampSync("" + currentTime);
+        return response;
     }
 
     private List getUpdated(Object o) {
