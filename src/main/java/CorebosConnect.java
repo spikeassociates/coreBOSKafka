@@ -20,12 +20,11 @@ public class CorebosConnect {
 
 
     public static void main(String[] args) {
-
-        System.out.println("wsClient = " + wsClient.doLogin(USERNAME, ACCESS_KEY));
-
-        updateAccount();
-
-
+        boolean isLogin = wsClient.doLogin(USERNAME, ACCESS_KEY);
+        System.out.println("isLogin = " + isLogin);
+        if (!isLogin)
+            return;
+        
     }
 
 
@@ -55,9 +54,9 @@ public class CorebosConnect {
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> element = new HashMap<>();
 
-        element.put("lastname", "Sarja");
-        element.put("firstname", "Ardit");
-        element.put("otherzip", "1001");
+        element.put("lastname", "SarjaTest");
+        element.put("firstname", "ArditTest");
+        element.put("otherzip", "123456");
         element.put("assigned_user_id", wsClient.getUserID());
         element.put("homephone", "0693700874");
         element.put("mobile", "0693700854");
@@ -82,7 +81,7 @@ public class CorebosConnect {
         element.put("id", "12x44873");
         element.put("testColumt", "create by ardit");
         element.put("homephone", "0693700874");
-        element.put("mobile", "0693733854");
+        element.put("mobile", "123456789");
 
         mapToSend.put("elementType", Util.elementTypeCONTACTS);
         mapToSend.put("element", Util.getJson(element));
@@ -90,6 +89,22 @@ public class CorebosConnect {
 
         Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
+
+    }
+
+    public static void createAccount() {
+        Map<String, Object> mapToSend = new HashMap<>();
+        Map<String, Object> element = new HashMap<>();
+
+        element.put("accountname", "arditsarjaTestAccount3");
+        element.put("assigned_user_id", wsClient.getUserID());
+
+        mapToSend.put("elementType", Util.elementTypeACCOUNTS);
+        mapToSend.put("element", Util.getJson(element));
+
+
+        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST");
+        System.out.println(Util.getJson(d));
 
     }
 
@@ -116,43 +131,65 @@ public class CorebosConnect {
 
     }
 
-    public static void createAccount() {
-        Map<String, Object> mapToSend = new HashMap<>();
-        Map<String, Object> element = new HashMap<>();
-
-        element.put("accountname", "arditsarjaTestAccount");
-        element.put("assigned_user_id", wsClient.getUserID());
-
-        mapToSend.put("elementType", Util.elementTypeACCOUNTS);
-        mapToSend.put("element", Util.getJson(element));
-
-
-        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST");
-        System.out.println(Util.getJson(d));
-
-    }
-
     public static void sync() {
 
         long modifiedTime = (new Date().getTime() - (long) SyncProducer.timeIntervalMin * 60 * 1000) / 1000;
         Map<String, Object> mapToSend = new HashMap<>();
-        mapToSend.put("modifiedTime", "" + modifiedTime);
-//        mapToSend.put("modifiedTime", "1569379878");
-//        mapToSend.put("modifiedTime", "");
+//        mapToSend.put("modifiedTime", "" + modifiedTime);
+//        mapToSend.put("modifiedTime", "1568194862");
+        mapToSend.put("modifiedTime", "1569925502");
 
         Object d1 = wsClient.doInvoke("sync", mapToSend);
-        Util.createJSonFile(d1, "result");
+        Util.createJSonFile(d1, "updated");
+        System.out.println(Util.getJson(d1));
+
+    }
+
+    public static void syncUpdated() {
+
+        long modifiedTime = (new Date().getTime() - (long) SyncProducer.timeIntervalMin * 60 * 1000) / 1000;
+        Map<String, Object> mapToSend = new HashMap<>();
+//        mapToSend.put("modifiedTime", "" + modifiedTime);
+        mapToSend.put("modifiedTime", "1568194862");
+//        mapToSend.put("modifiedTime", "1569925502");
+
+        Object d1 = wsClient.doInvoke("sync", mapToSend);
         List updated = (List) ((Map) d1).get("updated");
-//        for (int i = 0; i < updated.size(); i++)
-//            Util.createJSonFile(updated.get(i), "updated" + i);
-//        System.out.println(Util.getJson(d1));
+        for (int i = 0; i < updated.size(); i++) {
+            Object update = updated.get(i);
+            Object id = ((Map) update).get("id");
+            Object o = wsClient.doRetrieve(id);
+            Util.createJSonFile(o, "updated" + (i + 1));
+        }
+        Util.createJSonFile(updated, "updated");
+        System.out.println(Util.getJson(d1));
+
+    }
+
+    public static void syncDeleted() {
+
+        long modifiedTime = (new Date().getTime() - (long) SyncProducer.timeIntervalMin * 60 * 1000) / 1000;
+        Map<String, Object> mapToSend = new HashMap<>();
+//        mapToSend.put("modifiedTime", "" + modifiedTime);
+        mapToSend.put("modifiedTime", "1568194862");
+//        mapToSend.put("modifiedTime", "1569925502");
+
+        Object d1 = wsClient.doInvoke("sync", mapToSend);
+        List updated = (List) ((Map) d1).get("deleted");
+        for (int i = 0; i < updated.size(); i++) {
+            Object id = updated.get(i);
+            Object o = wsClient.doRetrieve(id);
+            Util.createJSonFile(o, "deleted" + (i + 1));
+        }
+        Util.createJSonFile(updated, "deleted");
+        System.out.println(Util.getJson(d1));
 
     }
 
     public static void doRetrive() {
 
 
-        Object d1 = wsClient.doRetrieve("11x44874");
+        Object d1 = wsClient.doRetrieve("12x44885");
         Util.createJSonFile(d1, "Retrieved");
         System.out.println(Util.getJson(d1));
 
