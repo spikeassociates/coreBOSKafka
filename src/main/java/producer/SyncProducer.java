@@ -2,6 +2,7 @@ package producer;
 
 import helper.Config;
 import helper.Util;
+import model.KeyData;
 
 import java.util.*;
 
@@ -31,11 +32,16 @@ public class SyncProducer extends Producer {
             if (!moduleMap.containsKey(moduleId))
                 continue;
 
-            String key = (String) ((Map) moduleMap.get(moduleId)).get("name");
-            publishMessage(topic, key, Util.getJson(updated));
+            String module = (String) ((Map) moduleMap.get(moduleId)).get("name");
+            KeyData keyData = new KeyData();
+            keyData.module = module;
+            keyData.operation = Util.methodUPDATE;
+            publishMessage(topic, Util.getJson(keyData), Util.getJson(updated));
         }
         for (Object deleted : deletedList) {
-            publishMessage(topic, DELETED_KEY, Util.getJson(deleted));
+            KeyData keyData = new KeyData();
+            keyData.operation = "delete";
+            publishMessage(topic, Util.getJson(keyData), Util.getJson(deleted));
         }
         Config.getInstance().save();
         System.out.println("Producer Finished");
@@ -49,7 +55,7 @@ public class SyncProducer extends Producer {
         mapToSend.put("modifiedTime", modifiedTime);
 //        mapToSend.put("modifiedTime", "1568194862");
 //        mapToSend.put("modifiedTime", "1569379878933");
-//        mapToSend.put("modifiedTime", "1569379878");
+//        mapToSend.put("modifiedTime", "1570105020");
         Object response = wsClient.doInvoke("sync", mapToSend);
         long currentTime = new Date().getTime() / 1000;
         Config.getInstance().setLastTimeStampToSync("" + currentTime);
