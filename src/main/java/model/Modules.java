@@ -18,14 +18,14 @@ public class Modules {
         return modules.containsKey(param);
     }
 
-    public List getFieldsConsiderate(String param) {
+    public ArrayList<String> getFieldsConsiderate(String param) {
         if (!exist(param)) {
             return null;
         }
         return modules.get(param).get("fieldsConsiderate");
     }
 
-    public List getFieldsDoQuery(String param) {
+    public ArrayList<String> getFieldsDoQuery(String param) {
         if (!exist(param)) {
             return null;
         }
