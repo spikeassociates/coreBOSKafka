@@ -25,14 +25,15 @@ public class UpdateConsumer extends Consumer {
 
         try {
             while (true) {
-                try {
-                    //todo comment in demo Config.getInstance().save();
-                    //todo put in demo mapToSend.put("modifiedTime", "1570105020");
-                    new SyncProducer().init();
-                } catch (Exception e) {
-                    System.out.println(e);
-                    e.printStackTrace();
-                }
+//                try {
+//                    //todo comment in demo Config.getInstance().save();
+//                    //todo put in demo mapToSend.put("modifiedTime", "1570105020");
+//                    //todo put considerate corebos.modulesidfield=cb1idfield better put in corebos.test.modulesidfield as modulesidfield
+//                    new SyncProducer().init();
+//                } catch (Exception e) {
+//                    System.out.println(e);
+//                    e.printStackTrace();
+//                }
                 ConsumerRecords records = kafkaConsumer.poll(10);
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
