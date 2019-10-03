@@ -11,15 +11,16 @@ public class TestKEyValueJson {
     @Test
     public void testKeyJson() {
         KeyData keyData = new KeyData();
-        keyData.SquareId = "577";
-        assertEquals("{\"SquareId\":\"577\"}", Util.getJson(keyData));
+        keyData.operation = "577";
+        keyData.module = "577";
+        assertEquals("{\"operation\":\"577\",\"module\":\"577\"}", Util.getJson(keyData));
     }
 
     @Test
     public void testJsonKey() {
 
-        KeyData keyData = Util.getObjectFromJson("{\"SquareId\":\"577\"}", KeyData.class);
-        assertEquals(keyData.SquareId, "577");
+        KeyData keyData = Util.getObjectFromJson("{\"operation\":\"577\",\"module\":\"577\"}", KeyData.class);
+        assertEquals(keyData.operation, "577");
     }
 
     @Test

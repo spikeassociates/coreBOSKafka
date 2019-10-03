@@ -2,6 +2,7 @@ package model;
 
 
 public class KeyData {
-    public String SquareId;
+    public String operation;
+    public String module;
 
 }
