@@ -1,4 +1,5 @@
-import helper.Util;
+package consumer;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -9,17 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-public class SimpleConsumer {
-    private static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
+public class SimpleConsumer extends Consumer {
 
-    public static void main(String[] args) {
-        Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
-        properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        properties.put("group.id", "test-group");
+    public SimpleConsumer() throws Exception {
+    }
 
-        KafkaConsumer kafkaConsumer = new KafkaConsumer(properties);
+    public void init() {
+
         List topics = new ArrayList();
         topics.add("first_topic");
         kafkaConsumer.subscribe(topics);
