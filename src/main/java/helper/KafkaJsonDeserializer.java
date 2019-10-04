@@ -11,7 +11,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer {
 
     private Logger logger = LogManager.getLogger(this.getClass());
 
-    private Class <T> type;
+    private Class<T> type;
 
     public KafkaJsonDeserializer(Class type) {
         this.type = type;

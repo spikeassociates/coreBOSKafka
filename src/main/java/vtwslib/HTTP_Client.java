@@ -49,12 +49,12 @@ public class HTTP_Client extends DefaultHttpClient {
                     uri = uri + data;
                 } else if (data instanceof Map) {
                     List params = new ArrayList();
-                    Map dataMap = (Map)data;
+                    Map dataMap = (Map) data;
                     Iterator iterator = dataMap.keySet().iterator();
 
-                    while(iterator.hasNext()) {
+                    while (iterator.hasNext()) {
                         Object key = iterator.next();
-                        params.add(new BasicNameValuePair(key.toString(), (String)dataMap.get(key)));
+                        params.add(new BasicNameValuePair(key.toString(), (String) dataMap.get(key)));
                     }
 
                     uri = uri + URLEncodedUtils.format(params, "UTF-8");
@@ -81,12 +81,12 @@ public class HTTP_Client extends DefaultHttpClient {
             HttpPost httpPost = new HttpPost(uri);
             List params = new ArrayList();
             if (data instanceof Map) {
-                Map dataMap = (Map)data;
+                Map dataMap = (Map) data;
                 Iterator iterator = dataMap.keySet().iterator();
 
-                while(iterator.hasNext()) {
+                while (iterator.hasNext()) {
                     Object key = iterator.next();
-                    params.add(new BasicNameValuePair(key.toString(), (String)dataMap.get(key)));
+                    params.add(new BasicNameValuePair(key.toString(), (String) dataMap.get(key)));
                 }
             }
 

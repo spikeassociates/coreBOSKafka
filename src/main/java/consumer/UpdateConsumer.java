@@ -5,7 +5,6 @@ import model.KeyData;
 import model.Modules;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import producer.SyncProducer;
 
 import java.util.*;
 
