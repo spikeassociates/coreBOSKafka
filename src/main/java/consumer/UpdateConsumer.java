@@ -13,6 +13,7 @@ public class UpdateConsumer extends Consumer {
 
     Object[] modules;
     final Modules modulesDeclarate = Util.getObjectFromJson(Util.getProperty("corebos.test.modules"), Modules.class);
+    final String modulesIdField = Util.getProperty("corebos.modulesidfield");
 
     public UpdateConsumer() throws Exception {
         modules = wsClient.doDescribe(MODULES).values().toArray();
@@ -25,15 +26,6 @@ public class UpdateConsumer extends Consumer {
 
         try {
             while (true) {
-//                try {
-//                    //todo comment in demo Config.getInstance().save();
-//                    //todo put in demo mapToSend.put("modifiedTime", "1570105020");
-//                    //todo put considerate corebos.modulesidfield=cb1idfield better put in corebos.test.modulesidfield as modulesidfield
-//                    new SyncProducer().init();
-//                } catch (Exception e) {
-//                    System.out.println(e);
-//                    e.printStackTrace();
-//                }
                 ConsumerRecords records = kafkaConsumer.poll(10);
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
@@ -54,7 +46,12 @@ public class UpdateConsumer extends Consumer {
         if (!keyData.operation.equals(Util.methodUPDATE))
             return;
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
-        Object response = getRecord(keyData.module, value);
+        Object response = getRecordFrommField(keyData.module, value);
+        if (response != null || ((List) response).size() > 0) {
+            doUpdate(keyData.module, (Map) value, (Map) ((List) response).get(0));
+            return;
+        }
+        response = getRecord(keyData.module, value);
         if (response == null || ((List) response).size() == 0) {
             createRecord(keyData.module, (Map) value);
         } else {
@@ -88,8 +85,15 @@ public class UpdateConsumer extends Consumer {
         return response;
     }
 
-    private void doUpdate(String module, Map originObject, Map destinationObject) {
+    private Object getRecordFrommField(String module, Object object) {
+        String con = " " + modulesIdField + "=\'" + ((Map) object).get("id") + "\' ";
+//        no condition found record does not exist by requirements
+        String qur = "Select * from " + module + " where " + con;
+        Object response = wsClient.doQuery(qur);
+        return response;
+    }
 
+    private void doUpdate(String module, Map originObject, Map destinationObject) {
         Map<String, Object> mapToSend = new HashMap<>();
         if (!modulesDeclarate.exist(module))
             return;
@@ -97,6 +101,7 @@ public class UpdateConsumer extends Consumer {
         for (String field : modulesDeclarate.getFieldsConsiderate(module)) {
             destinationObject.put(field, originObject.get(field));
         }
+        destinationObject.put(modulesIdField, originObject.get("id"));
         mapToSend.put("elementType", module);
         mapToSend.put("element", Util.getJson(destinationObject));
 
@@ -108,6 +113,7 @@ public class UpdateConsumer extends Consumer {
     private void createRecord(String module, Map originObject) {
         Map<String, Object> mapToSend = new HashMap<>();
 
+        originObject.put(modulesIdField, originObject.get("id"));
         originObject.remove("id");
         mapToSend.put("elementType", module);
         mapToSend.put("element", Util.getJson(originObject));
