@@ -46,7 +46,7 @@ public class UpdateConsumer extends Consumer {
             return;
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
         Object response = getRecordFrommField(keyData.module, value);
-        if (response != null || ((List) response).size() > 0) {
+        if (response != null && ((List) response).size() > 0) {
             doUpdate(keyData.module, (Map) value, (Map) ((List) response).get(0));
             return;
         }
@@ -94,15 +94,22 @@ public class UpdateConsumer extends Consumer {
 
     private void doUpdate(String module, Map originObject, Map destinationObject) {
         Map<String, Object> mapToSend = new HashMap<>();
-        if (!modulesDeclarate.exist(module))
-            return;
+//            alternativeUpdate
+//        if (!modulesDeclarate.exist(module))
+//            return;
+//
+//        for (String field : modulesDeclarate.getFieldsConsiderate(module)) {
+//            destinationObject.put(field, originObject.get(field));
+//        }
+//        destinationObject.put(modulesIdField, originObject.get("id"));
+//        mapToSend.put("elementType", module);
+//        mapToSend.put("element", Util.getJson(destinationObject));
 
-        for (String field : modulesDeclarate.getFieldsConsiderate(module)) {
-            destinationObject.put(field, originObject.get(field));
-        }
-        destinationObject.put(modulesIdField, originObject.get("id"));
+
+        originObject.put(modulesIdField, originObject.get("id"));
+        originObject.put("id", destinationObject.get("id"));
         mapToSend.put("elementType", module);
-        mapToSend.put("element", Util.getJson(destinationObject));
+        mapToSend.put("element", Util.getJson(originObject));
 
         Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
