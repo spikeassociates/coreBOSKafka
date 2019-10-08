@@ -4,6 +4,7 @@ import helper.Util;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 public class Producer {
 
@@ -68,7 +70,16 @@ public class Producer {
         System.out.println(msg);
 // Creates a KeyedMessage instance
 // Publish the message
-        producer.send(new ProducerRecord<String, String>(topic, key, message));
+        try {
+            RecordMetadata metadata = producer.send(new ProducerRecord<String, String>(topic, key, message)).get();
+            System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
+                    , key, metadata.partition(), message, runtime);
+            System.out.println(msg);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 // Close producer connection with broker.
 //        producer.close();
     }
