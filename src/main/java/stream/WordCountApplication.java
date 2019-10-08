@@ -1,5 +1,7 @@
 package stream;
 
+import helper.Util;
+import model.ValueData;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -29,13 +31,19 @@ public class WordCountApplication {
                 .flatMapValues(new ValueMapper<String, Iterable<String>>() {
                     @Override
                     public Iterable<String> apply(String textLine) {
-                        return Arrays.asList(textLine.toLowerCase().split("\\W+"));
+                        System.out.println("textLine = " + textLine);
+                        ValueData value = Util.getObjectFromJson(textLine, ValueData.class);
+                        value.user.firstName = "John";
+                        value.user.lastName = "Doe";
+                        return Arrays.asList(Util.getJson(value));
+//                        return Arrays.asList(textLine.split("\\W+"));
                     }
                 })
                 .groupBy(new KeyValueMapper<String, String, String>() {
                     @Override
                     public String apply(String key, String word) {
-                        so
+                        System.out.println("key = " + key);
+                        System.out.println("word = " + word);
                         return word;
                     }
                 })

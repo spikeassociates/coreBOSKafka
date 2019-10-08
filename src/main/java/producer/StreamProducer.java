@@ -9,8 +9,8 @@ import java.io.File;
 public class StreamProducer extends Producer {
     public static final int timeIntervalMin = Integer.parseInt(Util.getProperty("corebos.simpleproducer.timeIntervalMin") != null ? Util.getProperty("corebos.simpleproducer.timeIntervalMin") : Util.dafaultTime);
 
-    private String key = "mykey";
-    private String value = "ArditSArka";
+    private String key = "theKey";
+    private String value = "ArditShpetimSarja";
     private String topic = Stream.firstStreamTopic;
 
     public StreamProducer() throws Exception {
@@ -20,8 +20,8 @@ public class StreamProducer extends Producer {
     public void init() {
         ValueData valueData = Util.getObjectFromJson(new File("C:\\Users\\User\\Desktop\\corebos\\src\\test\\file_test\\jsonFile.json"), ValueData.class);
 
-//        publishMessage(topic, key, Util.getJson(valueData));
-        publishMessage(topic, key, value);
+        publishMessage(topic, key, Util.getJson(valueData));
+//        publishMessage(topic, key, value);
 
     }
 
