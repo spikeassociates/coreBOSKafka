@@ -57,6 +57,8 @@ public class SyncProducer extends Producer {
 //        mapToSend.put("modifiedTime", "1569379878933");
 //        mapToSend.put("modifiedTime", "1570105020");
         Object response = wsClient.doInvoke("sync", mapToSend);
+        if (response == null)
+            return response;
         long currentTime = new Date().getTime() / 1000;
         Config.getInstance().setLastTimeStampToSync("" + currentTime);
         return response;
