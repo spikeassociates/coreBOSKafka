@@ -9,11 +9,10 @@ import java.util.Map;
 
 
 public class CorebosConnect {
-    public static final String COREBOS_URL = Util.getProperty("corebos.url");
-    //    public static final String COREBOS_URL = Util.getProperty("corebos.test.url");
-    public static final String USERNAME = Util.getProperty("corebos.username");
-    public static final String ACCESS_KEY = Util.getProperty("corebos.access_key");
-    public static final String Modules = Util.getProperty("corebos.modules");
+    public static final String COREBOS_URL = Util.getProperty("corebos.producer.url");
+    public static final String USERNAME = Util.getProperty("corebos.producer.username");
+    public static final String ACCESS_KEY = Util.getProperty("corebos.producer.access_key");
+    public static final String Modules = Util.getProperty("corebos.producer.modules");
 
 
     public static WSClient wsClient = new WSClient(COREBOS_URL);
@@ -29,7 +28,7 @@ public class CorebosConnect {
 
 
     public static Map getModules() {
-        String modules = Util.getProperty("corebos.modules");
+        String modules = Util.getProperty("corebos.producer.modules");
 
         Map o = wsClient.doDescribe(modules);
         Object[] collections = o.values().toArray();
