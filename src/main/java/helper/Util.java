@@ -28,6 +28,7 @@ public class Util {
 
     public static final String methodCREATE = "create";
     public static final String methodUPDATE = "update";
+    public static final String methodUPSERT = "upsert";
 
     public static String getJson(Object object) {
         ObjectMapper mapper = new ObjectMapper();

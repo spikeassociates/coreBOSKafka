@@ -24,7 +24,7 @@ public class CorebosConnect {
         System.out.println("isLogin = " + isLogin);
         if (!isLogin)
             return;
-
+        upsertContact();
     }
 
 
@@ -66,6 +66,27 @@ public class CorebosConnect {
 
 
         Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST");
+        System.out.println("Util.getJson(d) = " + Util.getJson(d));
+
+    }
+
+    public static void upsertContact() {
+        Map<String, Object> mapToSend = new HashMap<>();
+        Map<String, Object> element = new HashMap<>();
+
+        element.put("lastname", "Sarja");
+        element.put("firstname", "Ardit");
+        element.put("otherzip", "123456");
+        element.put("assigned_user_id", wsClient.getUserID());
+        element.put("homephone", "0693700874");
+        element.put("mobile", "141");
+
+        mapToSend.put("elementType", Util.elementTypeCONTACTS);
+        mapToSend.put("element", Util.getJson(element));
+        mapToSend.put("searchOn", "mobile");
+
+
+        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
 
     }
