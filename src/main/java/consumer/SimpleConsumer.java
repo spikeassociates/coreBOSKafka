@@ -15,7 +15,7 @@ public class SimpleConsumer extends Consumer {
     public void init() {
 
         List topics = new ArrayList();
-        topics.add("first_topic");
+        topics.add("simple_topic");
         kafkaConsumer.subscribe(topics);
         try {
             while (true) {

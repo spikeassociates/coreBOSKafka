@@ -10,10 +10,8 @@ public class SyncProducer extends Producer {
     public static final int timeIntervalMin = Integer.parseInt(Util.getProperty("corebos.syncproducer.timeIntervalMin") != null ? Util.getProperty("corebos.syncproducer.timeIntervalMin") : Util.dafaultTime);
     public static final String syncInitTimestamp = Util.getProperty("corebos.syncproducer.initialTimestamp") != null ? Util.getProperty("corebos.syncproducer.initialTimestamp") : "1568194862";
 
-    public static final String UPDATED_KEY = "update_account";
-    public static final String DELETED_KEY = "delete_account";
 
-    private final String topic = "first_topic";
+    private final String topic =  Util.getProperty("corebos.producer.topic");
 
     public SyncProducer() throws Exception {
     }
@@ -24,7 +22,7 @@ public class SyncProducer extends Producer {
         Object response = doSync();
         if (response == null)
             return;
-        List updatedList = getUpdated(response);
+      List updatedList = getUpdated(response);
         List deletedList = getDeleted(response);
 
         for (Object updated : updatedList) {
@@ -39,8 +37,13 @@ public class SyncProducer extends Producer {
             publishMessage(topic, Util.getJson(keyData), Util.getJson(updated));
         }
         for (Object deleted : deletedList) {
+            String moduleId = (String) wsClient.getModuleId("" + deleted);
+            if (!moduleMap.containsKey(moduleId))
+                continue;
+            String module = (String) ((Map) moduleMap.get(moduleId)).get("name");
             KeyData keyData = new KeyData();
-            keyData.operation = "delete";
+            keyData.module = module;
+            keyData.operation = Util.methodDELETE;
             publishMessage(topic, Util.getJson(keyData), Util.getJson(deleted));
         }
         Config.getInstance().save();

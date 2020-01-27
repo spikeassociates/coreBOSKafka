@@ -18,10 +18,10 @@ import java.util.concurrent.ExecutionException;
 
 public class Producer {
 
-    protected static final String COREBOS_URL = Util.getProperty("corebos.url");
-    protected static final String USERNAME = Util.getProperty("corebos.username");
-    protected static final String ACCESS_KEY = Util.getProperty("corebos.access_key");
-    protected static final String MODULES = Util.getProperty("corebos.modules");
+    protected static final String COREBOS_URL = Util.getProperty("corebos.producer.url");
+    protected static final String USERNAME = Util.getProperty("corebos.producer.username");
+    protected static final String ACCESS_KEY = Util.getProperty("corebos.producer.access_key");
+    protected static final String MODULES = Util.getProperty("corebos.producer.modules");
 
     protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
     protected static final Logger logger = LoggerFactory.getLogger(SimpleProducer.class);

@@ -1,6 +1,7 @@
 package consumer;
 
 import helper.Util;
+import model.Modules;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import vtwslib.WSClient;
@@ -9,11 +10,11 @@ import java.util.Properties;
 
 public class Consumer {
 
-    protected static final String COREBOS_URL = Util.getProperty("corebos.test.url");
-    protected static final String USERNAME = Util.getProperty("corebos.username");
-    protected static final String ACCESS_KEY = Util.getProperty("corebos.access_key");
+    protected static final String COREBOS_URL = Util.getProperty("corebos.consumer.url");
+    protected static final String USERNAME = Util.getProperty("corebos.consumer.username");
+    protected static final String ACCESS_KEY = Util.getProperty("corebos.consumer.access_key");
     protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
-    protected static final String MODULES = Util.getProperty("corebos.modules");
+    protected static final Modules modulesDeclared = Util.getObjectFromJson(Util.getProperty("corebos.consumer.modules"), Modules.class);
 
     protected Properties properties = new Properties();
     protected KafkaConsumer kafkaConsumer;
@@ -29,6 +30,7 @@ public class Consumer {
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("group.id", "test-group");
+//        properties.put("request.timeout.ms", "test-group");
         kafkaConsumer = new KafkaConsumer(properties);
     }
 }

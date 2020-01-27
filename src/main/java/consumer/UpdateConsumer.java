@@ -2,7 +2,6 @@ package consumer;
 
 import helper.Util;
 import model.KeyData;
-import model.Modules;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
@@ -10,14 +9,11 @@ import java.util.*;
 
 public class UpdateConsumer extends Consumer {
 
-    Object[] modules;
-    final Modules modulesDeclarate = Util.getObjectFromJson(Util.getProperty("corebos.test.modules"), Modules.class);
-    final String modulesIdField = Util.getProperty("corebos.modulesidfield");
+    private final String topic = Util.getProperty("corebos.consumer.topic");
 
     public UpdateConsumer() throws Exception {
-        modules = wsClient.doDescribe(MODULES).values().toArray();
         List topics = new ArrayList();
-        topics.add("first_topic");
+        topics.add(topic);
         kafkaConsumer.subscribe(topics);
     }
 
@@ -29,7 +25,7 @@ public class UpdateConsumer extends Consumer {
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
                     ConsumerRecord record = (ConsumerRecord) it.next();
-                    updateRecord(record);
+                    readRecord(record);
                 }
             }
         } catch (Exception e) {
@@ -39,95 +35,61 @@ public class UpdateConsumer extends Consumer {
         }
     }
 
-    private void updateRecord(ConsumerRecord record) {
+
+    private void readRecord(ConsumerRecord record) {
         System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(), record.partition(), record.value()));
         KeyData keyData = Util.getObjectFromJson((String) record.key(), KeyData.class);
-        if (!keyData.operation.equals(Util.methodUPDATE))
-            return;
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
-        Object response = getRecordFrommField(keyData.module, value);
-        if (response != null && ((List) response).size() > 0) {
-            doUpdate(keyData.module, (Map) value, (Map) ((List) response).get(0));
-            return;
+
+        if (keyData.operation.equals(Util.methodUPDATE)) {
+            upsertRecord(keyData.module, (Map) value);
+        } else if (keyData.operation.equals(Util.methodDELETE)) {
+            deleteRecord(keyData.module, (String) value);
         }
-        response = getRecord(keyData.module, value);
-        if (response == null || ((List) response).size() == 0) {
-            createRecord(keyData.module, (Map) value);
-        } else {
-            doUpdate(keyData.module, (Map) value, (Map) ((List) response).get(0));
-        }
+
         System.out.println(record.toString());
     }
 
-    private Object getRecord(String module, Object object) {
-        ArrayList<String> fields = modulesDeclarate.getFieldsDoQuery(module);
-        String con = "";
-        boolean firstCondition = true;
-        for (String field : fields) {
-            String val = (String) ((Map) object).get(field);
-            if (val == null || val.equals(""))
-                continue;
-            if (firstCondition) {
-                con += " " + field + "=\'" + ((Map) object).get(field) + "\' ";
-            } else {
-                con += " or " + field + "=\'" + ((Map) object).get(field) + "\' ";
-            }
-            firstCondition = false;
+    private void upsertRecord(String module, Map element) {
+        String modulesIdField = modulesDeclared.getFieldsDoQuery(module).get(0);
+        Map<String, Object> mapToSend = new HashMap<>();
+        Map<String, Object> fieldUpdate = new HashMap<>();
+
+        for (String filedl : modulesDeclared.getFieldsConsiderate(module))
+            fieldUpdate.put(filedl, element.get(filedl));
+        fieldUpdate.put("assigned_user_id", wsClient.getUserID());
+        fieldUpdate.put(modulesIdField, element.get("id"));
+
+        mapToSend.put("elementType", module);
+        mapToSend.put("element", Util.getJson(fieldUpdate));
+        mapToSend.put("searchOn", modulesIdField);
+
+        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
+        System.out.println("Util.getJson(d) = " + Util.getJson(d));
+
+    }
+
+    private void deleteRecord(String module, String value) {
+        Object response = getRecord(module, value);
+        if (response == null || ((List) response).size() == 0) {
+            return;
         }
-//        no condition found record does not exist by requirements
-        if (firstCondition)
-            return null;
-        String condition = "lastname='" + ((Map) object).get("lastname") + "'";
+        Map element = ((Map) ((List) response).get(0));
+        Map<String, Object> mapToSend = new HashMap<>();
+
+        mapToSend.put("elementType", module);
+        mapToSend.put("id", element.get("id"));
+
+        Object d = wsClient.doInvoke(Util.methodDELETE, mapToSend, "POST");
+        System.out.println("Util.getJson(d) = " + Util.getJson(d));
+    }
+
+    private Object getRecord(String module, String object) {
+        String modulesIdField = modulesDeclared.getFieldsDoQuery(module).get(0);
+        String condition = modulesIdField + "='" + object + "'";
         String query = "Select * from " + module + " where " + condition;
-        String qur = "Select * from " + module + " where " + con;
-        Object response = wsClient.doQuery(qur);
+        Object response = wsClient.doQuery(query);
         return response;
-    }
-
-    private Object getRecordFrommField(String module, Object object) {
-        String con = " " + modulesIdField + "=\'" + ((Map) object).get("id") + "\' ";
-//        no condition found record does not exist by requirements
-        String qur = "Select * from " + module + " where " + con;
-        Object response = wsClient.doQuery(qur);
-        return response;
-    }
-
-    private void doUpdate(String module, Map originObject, Map destinationObject) {
-        Map<String, Object> mapToSend = new HashMap<>();
-//            alternativeUpdate
-//        if (!modulesDeclarate.exist(module))
-//            return;
-//
-//        for (String field : modulesDeclarate.getFieldsConsiderate(module)) {
-//            destinationObject.put(field, originObject.get(field));
-//        }
-//        destinationObject.put(modulesIdField, originObject.get("id"));
-//        mapToSend.put("elementType", module);
-//        mapToSend.put("element", Util.getJson(destinationObject));
-
-
-        originObject.put(modulesIdField, originObject.get("id"));
-        originObject.put("id", destinationObject.get("id"));
-        mapToSend.put("elementType", module);
-        mapToSend.put("element", Util.getJson(originObject));
-
-        Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST");
-        System.out.println("Util.getJson(d) = " + Util.getJson(d));
-
-    }
-
-    private void createRecord(String module, Map originObject) {
-        Map<String, Object> mapToSend = new HashMap<>();
-
-        originObject.put(modulesIdField, originObject.get("id"));
-        originObject.remove("id");
-        mapToSend.put("elementType", module);
-        mapToSend.put("element", Util.getJson(originObject));
-
-
-        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST");
-        System.out.println("Util.getJson(d) = " + Util.getJson(d));
-
     }
 
 }
