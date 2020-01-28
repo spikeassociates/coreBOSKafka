@@ -11,7 +11,7 @@ public class SyncProducer extends Producer {
     public static final String syncInitTimestamp = Util.getProperty("corebos.syncproducer.initialTimestamp") != null ? Util.getProperty("corebos.syncproducer.initialTimestamp") : "1568194862";
 
 
-    private final String topic =  Util.getProperty("corebos.producer.topic");
+    private final String topic = Util.getProperty("corebos.producer.topic");
 
     public SyncProducer() throws Exception {
     }
@@ -22,7 +22,7 @@ public class SyncProducer extends Producer {
         Object response = doSync();
         if (response == null)
             return;
-      List updatedList = getUpdated(response);
+        List updatedList = getUpdated(response);
         List deletedList = getDeleted(response);
 
         for (Object updated : updatedList) {
