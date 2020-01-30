@@ -114,7 +114,12 @@ public class WSClient {
     }
 
     public boolean doLogin(String username, String vtigerUserAccessKey) {
+        System.out.println("Logging in");
+        System.out.println("_serviceurl = " + _serviceurl);
+        System.out.println("username = " + username);
+        System.out.println("vtigerUserAccessKey = " + vtigerUserAccessKey);
         if (!this.__doChallenge(username)) {
+            System.out.println("Challenge Failed!");
             return false;
         } else {
             try {
