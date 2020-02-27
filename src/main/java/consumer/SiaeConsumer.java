@@ -10,7 +10,7 @@ import java.util.*;
 
 public class SiaeConsumer extends Consumer {
 
-    final String fromApi = Util.getProperty("corebos.siae.from_API");
+    final String save_topic = Util.getProperty("corebos.siae.save_topic");
     final String signed_topic = Util.getProperty("corebos.siae.signed_topic");
     final String get_topic = Util.getProperty("corebos.siae.get_topic");
     final String notify_topic = Util.getProperty("corebos.siae.notify_topic");
@@ -19,7 +19,7 @@ public class SiaeConsumer extends Consumer {
     public SiaeConsumer() throws Exception {
         producer = new SiaeProducer();
         List topics = new ArrayList();
-        topics.add(fromApi);
+        topics.add(save_topic);
         topics.add(signed_topic);
         topics.add(get_topic);
 
@@ -49,10 +49,12 @@ public class SiaeConsumer extends Consumer {
         SiaeKeyData keyData = Util.getObjectFromJson((String) record.key(), SiaeKeyData.class);
         if (record.topic().equals(get_topic)) {
             getCBModule(keyData);
-            return;
         }
-        Object value = Util.getObjectFromJson((String) record.value(), Object.class);
-        upsertRecord(keyData.module, (Map) value);
+        else  if (record.topic().equals(save_topic)) {
+            Object value = Util.getObjectFromJson((String) record.value(), Object.class);
+            upsertRecord(keyData.module, (Map) value,keyData);
+        }
+
 
     }
 
@@ -63,19 +65,25 @@ public class SiaeConsumer extends Consumer {
     }
 
 
-    private void upsertRecord(String module, Map element) {
-        String modulesIdField = "id";
+    private void upsertRecord(String module, Map element,SiaeKeyData keyData) {
+        String method = Util.methodCREATE;
+        if(module.equals("cbManifestazioni"))
+            method = "createManifestation";
+        else if (module.equals("cbAbbonamenti"))
+            method = "createAbbonamento";
+
         Map<String, Object> mapToSend = new HashMap<>();
 
         element.put("assigned_user_id", wsClient.getUserID());
 
         mapToSend.put("elementType", module);
         mapToSend.put("element", Util.getJson(element));
-        mapToSend.put("searchOn", modulesIdField);
 
-        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-        System.out.println("Util.getJson(d) = " + Util.getJson(d));
-
+        Object moduleData = wsClient.doInvoke(method, mapToSend, "POST");
+        System.out.println("Util.getJson(d) = " + Util.getJson(moduleData));
+        if (moduleData!=null){
+            producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
+        }
     }
 
 
