@@ -287,6 +287,7 @@ public class WSClient {
         }
 
         if (this.hasError(response)) {
+            System.out.println("Error = " + response);
             return null;
         } else {
             Object result = ((JSONObject) response).get("result");

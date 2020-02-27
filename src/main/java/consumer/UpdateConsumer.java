@@ -42,12 +42,12 @@ public class UpdateConsumer extends Consumer {
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
 
         if (keyData.operation.equals(Util.methodUPDATE)) {
+            System.out.println("Upserting the Record");
             upsertRecord(keyData.module, (Map) value);
         } else if (keyData.operation.equals(Util.methodDELETE)) {
+            System.out.println("Deleting the Record");
             deleteRecord(keyData.module, (String) value);
         }
-
-        System.out.println(record.toString());
     }
 
     private void upsertRecord(String module, Map element) {

@@ -26,8 +26,11 @@ public class Modules {
 
     public ArrayList<String> getFieldsDoQuery(String param) {
         if (!exist(param)) {
+            System.out.println("getFieldsDoQuery No Exist");
             return null;
         }
+        System.out.println("Util.coreBossDir = " + Util.coreBossDir);
+        System.out.println("The field name  = " +  modules.get(param).get("fieldsDoQuery"));
         return modules.get(param).get("fieldsDoQuery");
     }
 

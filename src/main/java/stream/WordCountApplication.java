@@ -33,8 +33,8 @@ public class WordCountApplication {
                     public Iterable<String> apply(String textLine) {
                         System.out.println("textLine = " + textLine);
                         ValueData value = Util.getObjectFromJson(textLine, ValueData.class);
-                        value.user.firstName = "John";
-                        value.user.lastName = "Doe";
+//                        value.user.firstName = "John";
+//                        value.user.lastName = "Doe";
                         return Arrays.asList(Util.getJson(value));
 //                        return Arrays.asList(textLine.split("\\W+"));
                     }

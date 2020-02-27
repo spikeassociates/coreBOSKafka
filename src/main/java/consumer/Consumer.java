@@ -13,6 +13,7 @@ public class Consumer {
     protected static final String COREBOS_URL = Util.getProperty("corebos.consumer.url");
     protected static final String USERNAME = Util.getProperty("corebos.consumer.username");
     protected static final String ACCESS_KEY = Util.getProperty("corebos.consumer.access_key");
+    protected static final String GROUP_ID = Util.getProperty("corebos.consumer.group_id");
     protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
     protected static final Modules modulesDeclared = Util.getObjectFromJson(Util.getProperty("corebos.consumer.modules"), Modules.class);
 
@@ -29,7 +30,7 @@ public class Consumer {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        properties.put("group.id", "test-group");
+        properties.put("group.id", GROUP_ID);
 //        properties.put("request.timeout.ms", "test-group");
         kafkaConsumer = new KafkaConsumer(properties);
     }
