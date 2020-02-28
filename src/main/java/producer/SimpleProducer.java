@@ -17,7 +17,7 @@ public class SimpleProducer extends Producer {
 
 
     public void init() {
-        ValueData valueData = Util.getObjectFromJson(new File("C:\\Users\\User\\Desktop\\corebos\\src\\test\\file_test\\jsonFile.json"), ValueData.class);
+        ValueData valueData = Util.getObjectFromJson(new File("C:/Users/User/Desktop/corebos/src/test/file_test/jsonFile.json"), ValueData.class);
 
         publishMessage(topic, key, Util.getJson(valueData));
     }

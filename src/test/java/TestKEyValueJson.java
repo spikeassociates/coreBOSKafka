@@ -25,7 +25,7 @@ public class TestKEyValueJson {
 
     @Test
     public void testJsonValue() {
-        ValueData valueData = Util.getObjectFromJson(new File("C:\\Users\\User\\Desktop\\corebos\\src\\test\\file_test\\jsonFile.json"), ValueData.class);
+        ValueData valueData = Util.getObjectFromJson(new File("C:/Users/User/Desktop/corebos/src/test/file_test/jsonFile.json"), ValueData.class);
         assertEquals(valueData.user.firstName.equals("Ardit"), true);
     }
 

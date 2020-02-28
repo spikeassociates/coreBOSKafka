@@ -14,8 +14,8 @@ import java.util.Properties;
 
 public class Util {
 
-    public static final String coreBossDir = System.getProperty("user.dir") + "\\corebos\\";
-    public static final String coreBossJsonDir = coreBossDir + "json\\";
+    public static final String coreBossDir = System.getProperty("user.dir") + "/corebos/";
+    public static final String coreBossJsonDir = coreBossDir + "json/";
 
     public static final String coreBossConfigJsonFile = "config";
 
@@ -36,7 +36,7 @@ public class Util {
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         try {
             return mapper.writeValueAsString(object);
-//            mapper.writeValue(new File("C:\\Users\\User\\Desktop\\corebos\\target\\jsonFile.json"), object);
+//            mapper.writeValue(new File("C:/Users/User/Desktop/corebos/target/jsonFile.json"), object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
