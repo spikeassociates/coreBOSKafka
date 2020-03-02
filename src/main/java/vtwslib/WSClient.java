@@ -97,6 +97,19 @@ public class WSClient {
     }
 
     protected void checkLogin() {
+        boolean loggedIn = true;
+        long _expiretime = Long.parseLong(this._expiretime);
+        long _timenow = new Date().getTime() / 1000;
+        if (_timenow >= _expiretime) {
+            loggedIn = doLogin(_serviceuser, _servicekey);
+        }
+        if (!loggedIn) {
+            try {
+                throw new Exception("Login error");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     protected String md5Hex(String input) throws Exception {
