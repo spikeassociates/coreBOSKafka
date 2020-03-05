@@ -26,6 +26,15 @@ public class WSClient {
     Object _userid;
     Object _lasterror;
 
+
+    public void set_sessionid(String _sessionid) {
+        this._sessionid = _sessionid;
+    }
+
+    public void set_userid(Object _userid) {
+        this._userid = _userid;
+    }
+
     public WSClient(String url) {
         this._serviceurl = this.getWebServiceURL(url);
         this._client = new HTTP_Client(this._serviceurl);
@@ -97,19 +106,19 @@ public class WSClient {
     }
 
     protected void checkLogin() {
-        boolean loggedIn = true;
-        long _expiretime = Long.parseLong(this._expiretime);
-        long _timenow = new Date().getTime() / 1000;
-        if (_timenow >= _expiretime) {
-            loggedIn = doLogin(_serviceuser, _servicekey);
-        }
-        if (!loggedIn) {
-            try {
-                throw new Exception("Login error");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        boolean loggedIn = true;
+//        long _expiretime = Long.parseLong(this._expiretime);
+//        long _timenow = new Date().getTime() / 1000;
+//        if (_timenow >= _expiretime) {
+//            loggedIn = doLogin(_serviceuser, _servicekey);
+//        }
+//        if (!loggedIn) {
+//            try {
+//                throw new Exception("Login error");
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     protected String md5Hex(String input) throws Exception {
