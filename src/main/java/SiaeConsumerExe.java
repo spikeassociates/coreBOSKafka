@@ -1,4 +1,4 @@
-import consumer.SiaeConsumer;
+import kafka.SiaeConsumer;
 
 public class SiaeConsumerExe {
     public static void main(String[] args) {
