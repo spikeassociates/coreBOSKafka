@@ -69,7 +69,10 @@ public class SiaeConsumer extends KafkaConfig {
             getCBModule(keyData);
         } else if (record.topic().equals(save_topic)) {
             Object value = Util.getObjectFromJson((String) record.value(), Object.class);
-            upsertRecord(keyData.module, (Map) value, keyData);
+            createRecord((Map) value, keyData);
+        } else if (record.topic().equals(update_topic)) {
+            Object value = Util.getObjectFromJson((String) record.value(), Object.class);
+            updateRecord((Map) value, keyData);
         }
 
 
@@ -81,19 +84,29 @@ public class SiaeConsumer extends KafkaConfig {
         producer.publishMessage(notify_topic, Util.getJson(keyData), "the message GEt");
     }
 
+    private void updateRecord(Map element, SiaeKeyData keyData) {
+        String method = Util.methodUPDATE;
 
-    private void upsertRecord(String module, Map element, SiaeKeyData keyData) {
+        generateMapToSend(element, keyData, method);
+    }
+
+
+    private void createRecord(Map element, SiaeKeyData keyData) {
         String method = Util.methodCREATE;
-        if (module.equals("cbManifestazioni"))
+        if (keyData.module.equals("cbManifestazioni"))
             method = "createManifestation";
-        else if (module.equals("cbAbbonamenti"))
+        else if (keyData.module.equals("cbAbbonamenti"))
             method = "createAbbonamento";
 
+        generateMapToSend(element, keyData, method);
+    }
+
+    private void generateMapToSend(Map element, SiaeKeyData keyData, String method) {
         Map<String, Object> mapToSend = new HashMap<>();
 
         element.put("assigned_user_id", wsClient.getUserID());
 
-        mapToSend.put("elementType", module);
+        mapToSend.put("elementType", keyData.module);
         mapToSend.put("element", Util.getJson(element));
 
         Object moduleData = wsClient.doInvoke(method, mapToSend, "POST");
@@ -102,6 +115,5 @@ public class SiaeConsumer extends KafkaConfig {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
         }
     }
-
 
 }
