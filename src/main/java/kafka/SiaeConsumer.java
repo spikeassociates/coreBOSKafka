@@ -29,6 +29,7 @@ public class SiaeConsumer extends KafkaConfig {
         producer = new SiaeProducer();
         List topics = new ArrayList();
         topics.add(save_topic);
+        topics.add(update_topic);
         topics.add(signed_topic);
         topics.add(get_topic);
 
