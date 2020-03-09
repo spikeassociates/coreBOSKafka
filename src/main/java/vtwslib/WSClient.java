@@ -152,6 +152,7 @@ public class WSClient {
                 postdata.put("accessKey", this.md5Hex(this._servicetoken + vtigerUserAccessKey));
                 Object response = this._client.doPost(postdata, true);
                 if (this.hasError(response)) {
+                    System.out.println("response = " + response);
                     return false;
                 } else {
                     JSONObject result = (JSONObject) ((JSONObject) response).get("result");

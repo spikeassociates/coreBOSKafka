@@ -31,7 +31,6 @@ public class Producer {
     protected static final String DEFAULT_VALUE = "DEFAULT VALUE";
     protected Map moduleMap = new HashMap();
 
-    private static final int TOTAL_PARTITION = Integer.parseInt(Util.getProperty("corebos.producer.partition") != null ? Util.getProperty("corebos.producer.partition") : "3");
 
 
     protected WSClient wsClient;
@@ -73,22 +72,19 @@ public class Producer {
         System.out.println(msg);
 // Creates a KeyedMessage instance
 // Publish the message
-        for (int partition = 0; partition < TOTAL_PARTITION; partition++) {
-            try {
-                RecordMetadata metadata = producer.send(new ProducerRecord<String, String>(topic, partition, key, message)).get();
-                System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
-                        , key, metadata.partition(), message, runtime);
-                System.out.println("topic = " + topic);
-                System.out.println("partition = " + partition);
-                System.out.println("key = " + key);
-                System.out.println("message = " + message);
-                System.out.println("metadata.partition() = " + metadata.partition());
-                System.out.println(msg);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+        try {
+            RecordMetadata metadata = producer.send(new ProducerRecord<String, String>(topic, key, message)).get();
+            System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
+                    , key, metadata.partition(), message, runtime);
+            System.out.println("topic = " + topic);
+            System.out.println("key = " + key);
+            System.out.println("message = " + message);
+            System.out.println("metadata.partition() = " + metadata.partition());
+            System.out.println(msg);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
 // Close producer connection with broker.
 //        producer.close();
