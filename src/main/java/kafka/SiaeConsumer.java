@@ -115,7 +115,7 @@ public class SiaeConsumer extends KafkaConfig {
         if (moduleData != null) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
         } else {
-            producer.publishMessage(error_topic, Util.getJson(keyData), Util.getJson(moduleData));
+            producer.publishMessage(error_topic, Util.getJson(keyData), Util.getJson(mapToSend));
         }
     }
 
