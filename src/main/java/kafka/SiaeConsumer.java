@@ -98,6 +98,8 @@ public class SiaeConsumer extends KafkaConfig {
             method = "createManifestation";
         else if (keyData.module.equals("cbAbbonamenti"))
             method = "createAbbonamento";
+        else if (keyData.module.equals("cbElencoTitoli"))
+            method = "createTitoli";
 
         generateMapToSend(element, keyData, method);
     }
