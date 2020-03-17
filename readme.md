@@ -1,10 +1,10 @@
 # coreBosKafka
-coreBosKafka is the Java library which help for Data sync in more efficient way between coreBos Applications using [Apache Kafaka](https://kafka.apache.org/). so it acts as Apache Kafka Connector for [coreBos Appications](https://github.com/tsolucio/corebos)
+coreBosKafka is the Java library that helps for Data sync in a more efficient way between coreBos Applications using [Apache Kafaka](https://kafka.apache.org/). so it acts as Apache Kafka Connector for [coreBos Appications](https://github.com/tsolucio/corebos)
 
 ### Requirements to use the Library
 * Make sure you have Java Runtime Environment(JRE) Installed in your System 
 * Installed, Configured and Running Apache Kafka [Apache Kafka Quick Start](https://kafka.apache.org/quickstart)
-* Installed, Configured and Running CoreBos Applications that needs to share Data.
+* Installed, Configured and Running CoreBos Applications that need to share Data.
 
 ### Download
 
@@ -19,11 +19,14 @@ Clone the project using or download the zipped file and then unzip it to the dir
     ├── corebos.iml
     ├── deploy
     │   ├── consumer.bat
+    │   ├── consumer.sh
     │   ├── corebos
     │   ├── corebos-1.0-SNAPSHOT-jar-with-dependencies.jar
     │   ├── corebosConnectTest.bat
+    │   ├── corebosConnectTest.sh
     │   ├── info.bat
     │   ├── producer.bat
+    │   ├── producer.sh
     │   └── siaeconsumer.bat
     ├── out
     │   ├── production
@@ -43,48 +46,51 @@ Clone the project using or download the zipped file and then unzip it to the dir
 ### How do I use coreBosKafka Connector Library?
 1. Open the directory where the project cloned or downloaded located
 2. Then Copy the [deploy](https://github.com/spikeassociates/coreBOSKafka/tree/master/deploy) folder then move to any directory you want or You can leave it there e.g home directory
-    > *This is the folder in Project is very important since is the one which contain the jar file which we need and configuration files we need for our connector*
+    > *This is the folder in Project is very important since is the one which contains the jar file which we need and configuration files we need for our connector*
 3. Run the Apache Kafka if is not Running by following those steps [Apache Kafka Quick Start](https://kafka.apache.org/quickstart) and if is running you have to create a Topic e.g modules-sync 
     > Remember the Name of the Topic you created since we are going to need it when Configuring propertied for Kafka Producer and Consumer.
-4. In [deploy folder](https://github.com/spikeassociates/coreBOSKafka/tree/master/deploy) navigate to [coreBos folder](https://github.com/spikeassociates/coreBOSKafka/tree/master/deploy/corebos) directory and then open the [application.properties](deploy/corebos/application.properties) file, this is very very important file is one which provide the configuration properties for our connector. in this file we have to update values for both Kafka Server, Producer and Consumer in the following category
-	
+4. In [deploy folder](https://github.com/spikeassociates/coreBOSKafka/tree/master/deploy) navigate to [coreBos folder](https://github.com/spikeassociates/coreBOSKafka/tree/master/deploy/corebos) directory and then open the [application.properties](deploy/corebos/application.properties) file, this is very very important file is one which provide the configuration properties for our connector. in this file, we have to update values for both Kafka Server, Producer and Consumer in the following category
+   
       ##### Properties for Kafka Server
-      *In this part we update or add the url for our kafka Server*
+      *In this part we update or add the URL for our Kafka Server*
       >
           .
           #General properties
-          corebos.kafka.url=localhost:9092  [Make sure you replace with your address or url of the Kafka Server Running]
+          corebos.kafka.url=localhost:9092  [Make sure you replace with your address or URL of the Kafka Server Running]
           corebos.test.name=Ardit [Replace with your user] 
          
       ##### Properties for coreBos Application Connection Test
-      *In this part we are adding Configuration properties for CoreBos Application connection Testing, by adding coreBos Application url, username, access_key and modules which we want to sync.*  
+      *In this part we are adding Configuration properties for CoreBos Application connection Testing, by adding coreBos Application URL, username, access_key, and modules which we want to sync.*  
       *Note:: it is very Important to Test Connection for Both Producer and Consumer CoreBos Applications*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
       >
           .
           #CorebosTestConnection
           corebos.cbtest.url=http://localhost/sourcecorebos     [Replace your coreBos Application url]
-          corebos.cbtest.username=admin 				    [Replace with your username it should be an admin user]
-          corebos.cbtest.access_key=cdYTBpiMR9RfGgO		    [Replace with your user Access key]
-          corebos.cbtest.modules=Contacts,Accounts		    [List of Modules you want to sync separated with comma]
+          corebos.cbtest.username=admin                 [Replace with your username it should be an admin user]
+          corebos.cbtest.access_key=cdYTBpiMR9RfGgO           [Replace with your user Access key]
+          corebos.cbtest.modules=Contacts,Accounts        [List of Modules you want to sync separated with comma]
          
      ##### Propertied for Producer (Source Application)
      *In this part we are adding the configuration properties for coreBos Application which act as Source*
- 	 >
+    >
        .#Producer
         corebos.producer.url=http://localhost/sourcecorebos [Replace your coreBos Application url for Source coreBos Application]
-        corebos.producer.username=admin					[Replace with your username it should be an admin user]
-        corebos.producer.access_key=cdYTBpiMR9RfGgO		[Replace with your user Access key]
-        corebos.producer.modules=Contacts,Accounts		[List of Modules you want to sync separated with comma]
+        corebos.producer.username=admin                [Replace with your username it should be an admin user]
+        corebos.producer.access_key=cdYTBpiMR9RfGgO       [Replace with your user Access key]
+        corebos.producer.modules=Contacts,Accounts    [List of Modules you want to sync separated with comma]
         corebos.syncproducer.timeIntervalMin=1
         corebos.syncproducer.initialTimestamp=1568194862
         corebos.syncproducer.initialTimestamp=1580083200
         corebos.simpleproducer.timeIntervalMin=1
         corebos.producer.topic=first_topic              [Name of the Topic you created on stage 3]
-	
+   
     ##### Properties for Consumer (Sink Application)
-    *In this part we are adding the configuration properties for coreBos Application which act as Sink*  
-    *Note::* coreBos.consumer.modules define which modules we need to syn its data  
-             Also the fieldsDoQuery key should contain only single value in array
+    *In this part we are adding the configuration properties for coreBos Application which act as Sink*   
+         
+     ```coreBos.consumer.modules::```  
+         Define which modules we need to syn its data.    
+      ```fieldsDoQuery key::```  
+         The value of this key is the field that holds the crmid from the Source coreBos application so that the destination(Sink coreBos Application) knows which record to update, or simply we can say this is the field that links both systems it holds the crmid of the original system(Source coreBosApplication) so that Kafka knows which record to update in the destination system(Sink coreBos Application).
     ```
     {
       "modules": {
@@ -96,8 +102,8 @@ Clone the project using or download the zipped file and then unzip it to the dir
     }
     ```
     > 
-   	    .
-   	    #Consumer
+           .
+           #Consumer
         corebos.consumer.url=http://localhost/sinkcorebos   [Replace your coreBos Application url for Sink coreBos Application]
         corebos.consumer.username=admin                     [Replace with your username it should be an admin user]
         corebos.consumer.access_key=wucXsjBK4OxdfnA         [Replace with your user Access key]
@@ -303,4 +309,4 @@ Clone the project using or download the zipped file and then unzip it to the dir
        [2020-03-17 09:06:19,269] INFO [Consumer clientId=consumer-1, groupId=group_id] Setting newly assigned partitions [firsttopic-0] (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
        [2020-03-17 09:06:19,304] INFO [Consumer clientId=consumer-1, groupId=group_id] Resetting offset for partition firsttopic-0 to offset 1. (org.apache.kafka.clients.consumer.internals.Fetcher)```
    
-8. Create or update or delete a module record you want to sync in Source coreBos Application, You will see both logs on Consumer and Producer Command line(Terminal) with log of Record changed and If you login in to coreBos Application in web browser which act as Sink will see those changes like new record added on the certain module 
+8. Create or update or delete a module record you want to sync in Source coreBos Application, You will see both logs on Consumer and Producer Command line(Terminal) with a log of Record changed and If you login into coreBos Application in the web browser which acts as Sink will see those changes like new record added on the certain module 
