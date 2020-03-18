@@ -80,9 +80,33 @@ public class SiaeConsumer extends KafkaConfig {
     }
 
     private void getCBModule(SiaeKeyData keyData) {
-//        Object response = wsClient.doRetrieve();
+        if (keyData.module != null && !keyData.module.equals("")) {
+            producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
+            return;
+        }
+        String query;
+        if (keyData.nameOrId != null && !keyData.nameOrId.equals("") && keyData.date != null && !keyData.date.equals("")) {
+            query = "select * from " + keyData.module +
+                    " where (id = '" + keyData.nameOrId + "' or lastname = '" + keyData.nameOrId + "') " +
+                    "and createdtime = '" + keyData.date + "';";
+        } else if (keyData.nameOrId != null && !keyData.nameOrId.equals("")) {
+            query = "select * from " + keyData.module +
+                    " where (id = '" + keyData.nameOrId + "' or lastname = '" + keyData.nameOrId + "');";
+        } else {
+            producer.publishMessage(error_topic, Util.getJson(keyData), "Miss nameOrId field");
+            return;
+        }
+        System.out.println("query = " + query);
+        Object res = wsClient.doQuery(query);
+        if (res == null) {
+            producer.publishMessage(error_topic, Util.getJson(keyData), "Error on: " + query);
+            return;
+        }
+        System.out.println("Response size = " + ((List) res).size());
+        for (Object m : (List) res) {
+            producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(m));
+        }
 
-        producer.publishMessage(notify_topic, Util.getJson(keyData), "the message GEt");
     }
 
     private void updateRecord(Map element, SiaeKeyData keyData) {
