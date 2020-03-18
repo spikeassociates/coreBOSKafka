@@ -80,18 +80,19 @@ public class SiaeConsumer extends KafkaConfig {
     }
 
     private void getCBModule(SiaeKeyData keyData) {
-        if (keyData.module != null && !keyData.module.equals("")) {
+        if (keyData.module != null && !keyData.module.equals("") &&
+                keyData.nameOrIdFieldName != null && !keyData.nameOrIdFieldName.equals("")) {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
             return;
         }
         String query;
         if (keyData.nameOrId != null && !keyData.nameOrId.equals("") && keyData.date != null && !keyData.date.equals("")) {
             query = "select * from " + keyData.module +
-                    " where (id = '" + keyData.nameOrId + "' or lastname = '" + keyData.nameOrId + "') " +
+                    " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "') " +
                     "and createdtime = '" + keyData.date + "';";
         } else if (keyData.nameOrId != null && !keyData.nameOrId.equals("")) {
             query = "select * from " + keyData.module +
-                    " where (id = '" + keyData.nameOrId + "' or lastname = '" + keyData.nameOrId + "');";
+                    " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "');";
         } else {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss nameOrId field");
             return;

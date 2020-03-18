@@ -7,6 +7,7 @@ public class SiaeKeyData {
     public String userID;
     public String sessionID;
     public String nameOrId ;
+    public String nameOrIdFieldName ;
     public String date;
 
 }
