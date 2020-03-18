@@ -1,0 +1,13 @@
+## IntelliJ
+##############################
+out/
+target/
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+
+## Auto Generated Files
+#############################
+deploy/corebos/json/
