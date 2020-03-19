@@ -85,13 +85,17 @@ public class SiaeConsumer extends KafkaConfig {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
             return;
         }
+        String module = keyData.module;
+        if (module.equals("orderTickets") || module.equals("orderAbbonamenti"))
+            module = "cbElencoTitoli";
+
         String query;
         if (keyData.nameOrId != null && !keyData.nameOrId.equals("") && keyData.date != null && !keyData.date.equals("")) {
-            query = "select * from " + keyData.module +
+            query = "select * from " + module +
                     " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "') " +
                     "and createdtime = '" + keyData.date + "';";
         } else if (keyData.nameOrId != null && !keyData.nameOrId.equals("")) {
-            query = "select * from " + keyData.module +
+            query = "select * from " + module +
                     " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "');";
         } else {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss nameOrId field");
