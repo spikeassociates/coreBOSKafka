@@ -68,7 +68,7 @@ public class SiaeConsumer extends KafkaConfig {
         SiaeKeyData keyData = Util.getObjectFromJson((String) record.key(), SiaeKeyData.class);
         if (record.topic().equals(get_topic)) {
             getCBModule(keyData);
-        } else if (record.topic().equals(save_topic)) {
+        } else if (record.topic().equals(save_topic) || record.topic().equals(signed_topic)) {
             Object value = Util.getObjectFromJson((String) record.value(), Object.class);
             createRecord((Map) value, keyData);
         } else if (record.topic().equals(update_topic)) {
