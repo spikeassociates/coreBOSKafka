@@ -1,5 +1,6 @@
 package siae;
 
+import helper.Log;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -39,10 +40,17 @@ public class SiaeProducer extends KafkaConfig {
             System.out.println("message = " + message);
             System.out.println("metadata.partition() = " + metadata.partition());
             System.out.println(msg);
+            Log.getLogger().info("topic = " + topic);
+            Log.getLogger().info("key = " + key);
+            Log.getLogger().info("message = " + message);
+            Log.getLogger().info("metadata.partition() = " + metadata.partition());
+            Log.getLogger().info(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Log.getLogger().error(e.getMessage());
         } catch (ExecutionException e) {
             e.printStackTrace();
+            Log.getLogger().error(e.getMessage());
         }
     }
 

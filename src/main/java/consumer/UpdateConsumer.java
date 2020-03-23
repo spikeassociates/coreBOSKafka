@@ -1,5 +1,6 @@
 package consumer;
 
+import helper.Log;
 import helper.Util;
 import model.KeyData;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -30,6 +31,7 @@ public class UpdateConsumer extends Consumer {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            Log.getLogger().error(e.getMessage());
         } finally {
             kafkaConsumer.close();
         }
@@ -38,14 +40,17 @@ public class UpdateConsumer extends Consumer {
 
     private void readRecord(ConsumerRecord record) {
         System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(), record.partition(), record.value()));
+        Log.getLogger().info(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(), record.partition(), record.value()));
         KeyData keyData = Util.getObjectFromJson((String) record.key(), KeyData.class);
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
 
         if (keyData.operation.equals(Util.methodUPDATE)) {
             System.out.println("Upserting the Record");
+            Log.getLogger().info("Upserting the Record");
             upsertRecord(keyData.module, (Map) value);
         } else if (keyData.operation.equals(Util.methodDELETE)) {
             System.out.println("Deleting the Record");
+            Log.getLogger().info("Deleting the Record");
             deleteRecord(keyData.module, (String) value);
         }
     }
@@ -66,6 +71,7 @@ public class UpdateConsumer extends Consumer {
 
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        Log.getLogger().info("Util.getJson(d) = " + Util.getJson(d));
 
     }
 
@@ -82,6 +88,7 @@ public class UpdateConsumer extends Consumer {
 
         Object d = wsClient.doInvoke(Util.methodDELETE, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        Log.getLogger().info("Util.getJson(d) = " + Util.getJson(d));
     }
 
     private Object getRecord(String module, String object) {

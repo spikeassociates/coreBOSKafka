@@ -1,5 +1,6 @@
 package siae;
 
+import helper.Log;
 import helper.Util;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -45,14 +46,17 @@ public class SiaeConsumer extends KafkaConfig {
                 while (it.hasNext()) {
                     ConsumerRecord record = (ConsumerRecord) it.next();
                     System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(), record.partition(), record.value()));
+                    Log.getLogger().info(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(), record.partition(), record.value()));
                     updateWsClient(record);
                     updateRecord(record);
                 }
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            Log.getLogger().error(e.getMessage());
         } finally {
             System.out.println("Closing Siae Producer And Consumer");
+            Log.getLogger().info("Closing Siae Producer And Consumer");
             producer.close();
             kafkaConsumer.close();
         }
@@ -102,12 +106,14 @@ public class SiaeConsumer extends KafkaConfig {
             return;
         }
         System.out.println("query = " + query);
+        Log.getLogger().info("query = " + query);
         Object res = wsClient.doQuery(query);
         if (res == null) {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Error on: " + query);
             return;
         }
         System.out.println("Response size = " + ((List) res).size());
+        Log.getLogger().info("Response size = " + ((List) res).size());
         for (Object m : (List) res) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(m));
         }
@@ -143,6 +149,7 @@ public class SiaeConsumer extends KafkaConfig {
 
         Object moduleData = wsClient.doInvoke(method, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(moduleData));
+        Log.getLogger().info("Util.getJson(d) = " + Util.getJson(moduleData));
         if (moduleData != null) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
         } else {

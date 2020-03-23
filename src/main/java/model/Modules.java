@@ -1,5 +1,6 @@
 package model;
 
+import helper.Log;
 import helper.Util;
 
 import java.util.ArrayList;
@@ -30,7 +31,9 @@ public class Modules {
             return null;
         }
         System.out.println("Util.coreBossDir = " + Util.coreBossDir);
+        Log.getLogger().info("Util.coreBossDir = " + Util.coreBossDir);
         System.out.println("The field name  = " +  modules.get(param).get("fieldsDoQuery"));
+        Log.getLogger().info("The field name  = " +  modules.get(param).get("fieldsDoQuery"));
         return modules.get(param).get("fieldsDoQuery");
     }
 

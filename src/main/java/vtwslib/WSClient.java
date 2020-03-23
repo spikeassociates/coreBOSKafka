@@ -6,6 +6,7 @@ package vtwslib;
 //
 
 
+import helper.Log;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -141,8 +142,14 @@ public class WSClient {
         System.out.println("_client = " + _client);
         System.out.println("username = " + username);
         System.out.println("vtigerUserAccessKey = " + vtigerUserAccessKey);
+        Log.getLogger().info("Logging in");
+        Log.getLogger().info("_serviceurl = " + _serviceurl);
+        Log.getLogger().info("_client = " + _client);
+        Log.getLogger().info("username = " + username);
+        Log.getLogger().info("vtigerUserAccessKey = " + vtigerUserAccessKey);
         if (!this.__doChallenge(username)) {
             System.out.println("Challenge Failed!");
+            Log.getLogger().error("Challenge Failed!");
             return false;
         } else {
             try {
@@ -153,6 +160,7 @@ public class WSClient {
                 Object response = this._client.doPost(postdata, true);
                 if (this.hasError(response)) {
                     System.out.println("response = " + response);
+                    Log.getLogger().error("Corebos Login Response: " + response);
                     return false;
                 } else {
                     JSONObject result = (JSONObject) ((JSONObject) response).get("result");
@@ -311,6 +319,7 @@ public class WSClient {
 
         if (this.hasError(response)) {
             System.out.println("Error = " + response);
+            Log.getLogger().error("Corebos Error Response: " + response);
             return null;
         } else {
             Object result = ((JSONObject) response).get("result");

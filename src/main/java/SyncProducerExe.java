@@ -1,3 +1,4 @@
+import helper.Log;
 import producer.SyncProducer;
 
 import java.util.Timer;
@@ -15,6 +16,7 @@ public class SyncProducerExe {
                     new SyncProducer().init();
                 } catch (Exception e) {
                     System.out.println(e);
+                    Log.getLogger().error(e.getMessage());
                     e.printStackTrace();
                 }
             }

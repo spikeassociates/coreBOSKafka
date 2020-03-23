@@ -1,5 +1,6 @@
 package producer;
 
+import helper.Log;
 import helper.Util;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -30,7 +31,6 @@ public class Producer {
     protected static final String DEFAULT_KEY = "DEFAULT KEY";
     protected static final String DEFAULT_VALUE = "DEFAULT VALUE";
     protected Map moduleMap = new HashMap();
-
 
 
     protected WSClient wsClient;
@@ -81,10 +81,17 @@ public class Producer {
             System.out.println("message = " + message);
             System.out.println("metadata.partition() = " + metadata.partition());
             System.out.println(msg);
+            Log.getLogger().info("topic = " + topic);
+            Log.getLogger().info("key = " + key);
+            Log.getLogger().info("message = " + message);
+            Log.getLogger().info("metadata.partition() = " + metadata.partition());
+            Log.getLogger().info(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Log.getLogger().error(e.getMessage());
         } catch (ExecutionException e) {
             e.printStackTrace();
+            Log.getLogger().error(e.getMessage());
         }
 // Close producer connection with broker.
 //        producer.close();
