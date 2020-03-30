@@ -148,7 +148,7 @@ public class SiaeConsumer extends KafkaConfig {
             module = "Abbonamento";
 
         element.put("assigned_user_id", wsClient.getUserID());
-        element.put("elementType", module);
+        element.put("element_type", module);
 
         mapToSend.put("elementType", module);
         mapToSend.put("element", Util.getJson(element));
