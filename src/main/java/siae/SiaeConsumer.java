@@ -141,10 +141,15 @@ public class SiaeConsumer extends KafkaConfig {
 
     private void generateMapToSend(Map element, SiaeKeyData keyData, String method) {
         Map<String, Object> mapToSend = new HashMap<>();
+        String module = keyData.module;
+        if (keyData.module.equals("orderTickets"))
+            module = "Ticket";
+        else if (keyData.module.equals("orderAbbonamenti"))
+            module = "Abbonamento";
 
         element.put("assigned_user_id", wsClient.getUserID());
 
-        mapToSend.put("elementType", keyData.module);
+        mapToSend.put("elementType", module);
         mapToSend.put("element", Util.getJson(element));
 
         Object moduleData = wsClient.doInvoke(method, mapToSend, "POST");
