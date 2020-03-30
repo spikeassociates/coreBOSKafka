@@ -1,6 +1,7 @@
 package siae.elastic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import helper.Log;
 import helper.Util;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchException;
@@ -59,6 +60,8 @@ public class Elastic {
         try {
             response = restHighLevelClient.index(indexRequest);
             data.put("id", response.getId());
+            Log.getLogger().info("Data is registered in Elasticsearch you can see directly in: "
+                    + SCHEME + "://" + HOST + ":" + PORT_ONE + "/" + index + "/" + type + "/" + response.getId());
         } catch (ElasticsearchException e) {
             e.getDetailedMessage();
         } catch (java.io.IOException ex) {
