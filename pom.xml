@@ -16,6 +16,7 @@
         <jodatime.version>2.5</jodatime.version>
         <junit.version>4.11</junit.version>
         <kafka.version>2.1.0</kafka.version>
+        <elasticsearch.version>6.1.2</elasticsearch.version>
     </properties>
 
 
@@ -30,6 +31,16 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elasticsearch.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
