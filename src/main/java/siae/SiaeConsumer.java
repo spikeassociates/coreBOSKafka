@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import siae.elastic.Elastic;
 import vtwslib.WSClient;
 
 import java.util.*;
@@ -84,6 +85,7 @@ public class SiaeConsumer extends KafkaConfig {
     }
 
     private void getCBModule(SiaeKeyData keyData) {
+        Map error = Util.getObjectFromJson(Util.getJson(keyData), Map.class);
         if (keyData.module != null && !keyData.module.equals("") &&
                 keyData.nameOrIdFieldName != null && !keyData.nameOrIdFieldName.equals("")) {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
@@ -103,6 +105,8 @@ public class SiaeConsumer extends KafkaConfig {
                     " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "');";
         } else {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss nameOrId field");
+            error.put("message", "Miss nameOrId field");
+            Elastic.insertData("error_get", "message", error);
             return;
         }
         System.out.println("query = " + query);
@@ -110,6 +114,8 @@ public class SiaeConsumer extends KafkaConfig {
         Object res = wsClient.doQuery(query);
         if (res == null) {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Error on: " + query);
+            error.put("message", "Error on: " + query);
+            Elastic.insertData("error_get", "message", error);
             return;
         }
         System.out.println("Response size = " + ((List) res).size());
@@ -158,8 +164,12 @@ public class SiaeConsumer extends KafkaConfig {
         Log.getLogger().info("Util.getJson(d) = " + Util.getJson(moduleData));
         if (moduleData != null) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
+            if (keyData.module.equals("orderTickets") || (keyData.module.equals("orderAbbonamenti")))
+                Elastic.insertData((Map) moduleData);
         } else {
             producer.publishMessage(error_topic, Util.getJson(keyData), Util.getJson(mapToSend));
+            mapToSend.put("key", Util.getJson(keyData));
+            Elastic.insertData("error_data", module, mapToSend);
         }
     }
 
