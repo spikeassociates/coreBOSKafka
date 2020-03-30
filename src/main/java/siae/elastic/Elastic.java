@@ -31,7 +31,7 @@ public class Elastic {
     private static final String TYPE = "_doc";
 
 
-    private synchronized RestHighLevelClient makeConnection() {
+    private static synchronized void makeConnection() {
 
         if (restHighLevelClient == null) {
             restHighLevelClient = new RestHighLevelClient(
@@ -40,19 +40,18 @@ public class Elastic {
                             new HttpHost(HOST, PORT_TWO, SCHEME)));
         }
 
-        return restHighLevelClient;
     }
 
-    private synchronized void closeConnection() throws IOException {
+    private static synchronized void closeConnection() throws IOException {
         restHighLevelClient.close();
         restHighLevelClient = null;
     }
 
-    public Map insertData(Map data) {
+    public static Map insertData(Map data) {
         return insertData(INDEX, TYPE, data);
     }
 
-    public Map insertData(String index, String type, Map data) {
+    public static Map insertData(String index, String type, Map data) {
         makeConnection();
         IndexRequest indexRequest = new IndexRequest(index, type, (String) data.get("id"))
                 .source(data);
@@ -76,11 +75,11 @@ public class Elastic {
     }
 
 
-    public Map updateData(String id, Map data) {
+    public static Map updateData(String id, Map data) {
         return updateData(INDEX, TYPE, id, data);
     }
 
-    public Map updateData(String index, String type, String id, Map data) {
+    public static Map updateData(String index, String type, String id, Map data) {
         makeConnection();
         UpdateRequest updateRequest = new UpdateRequest(index, type, id)
                 .fetchSource(true);    // Fetch Object after its update
@@ -102,11 +101,11 @@ public class Elastic {
         return updateResponse != null ? updateResponse.getGetResult().sourceAsMap() : null;
     }
 
-    public void deleteData(String id) {
+    public static void deleteData(String id) {
         deleteData(INDEX, TYPE, id);
     }
 
-    public void deleteData(String index, String type, String id) {
+    public static void deleteData(String index, String type, String id) {
         makeConnection();
         DeleteRequest deleteRequest = new DeleteRequest(index, type, id);
         try {
