@@ -89,6 +89,8 @@ public class SiaeConsumer extends KafkaConfig {
         if (keyData.module != null && !keyData.module.equals("") &&
                 keyData.nameOrIdFieldName != null && !keyData.nameOrIdFieldName.equals("")) {
             producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
+            error.put("message", "Miss module field");
+            Elastic.insertData("error_get", "message", error);
             return;
         }
         String module = keyData.module;
@@ -165,7 +167,7 @@ public class SiaeConsumer extends KafkaConfig {
         if (moduleData != null) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
             if (keyData.module.equals("orderTickets") || (keyData.module.equals("orderAbbonamenti")))
-                Elastic.insertData((Map) moduleData);
+                producer.publishMessage("ticket_access_information", (String) ((Map) moduleData).get("barcode"), Util.getJson(moduleData));
         } else {
             producer.publishMessage(error_topic, Util.getJson(keyData), Util.getJson(mapToSend));
             mapToSend.put("key", Util.getJson(keyData));
