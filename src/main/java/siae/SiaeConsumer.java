@@ -6,7 +6,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import siae.elastic.Elastic;
 import vtwslib.WSClient;
 
 import java.util.*;
@@ -85,12 +84,12 @@ public class SiaeConsumer extends KafkaConfig {
     }
 
     private void getCBModule(SiaeKeyData keyData) {
-        Map error = Util.getObjectFromJson(Util.getJson(keyData), Map.class);
+        Map error = new HashMap();
+        error.put("key", keyData);
         if (keyData.module != null && !keyData.module.equals("") &&
                 keyData.nameOrIdFieldName != null && !keyData.nameOrIdFieldName.equals("")) {
-            producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
-            error.put("message", "Miss module field");
-            Elastic.insertData("error_get", "message", error);
+            error.put("value", "Miss module field");
+            producer.publishMessage(error_topic, null, Util.getJson(error));
             return;
         }
         String module = keyData.module;
@@ -106,18 +105,16 @@ public class SiaeConsumer extends KafkaConfig {
             query = "select * from " + module +
                     " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "');";
         } else {
-            producer.publishMessage(error_topic, Util.getJson(keyData), "Miss nameOrId field");
-            error.put("message", "Miss nameOrId field");
-            Elastic.insertData("error_get", "message", error);
+            error.put("value", "Miss nameOrId field");
+            producer.publishMessage(error_topic, null, Util.getJson(error));
             return;
         }
         System.out.println("query = " + query);
         Log.getLogger().info("query = " + query);
         Object res = wsClient.doQuery(query);
         if (res == null) {
-            producer.publishMessage(error_topic, Util.getJson(keyData), "Error on: " + query);
-            error.put("message", "Error on: " + query);
-            Elastic.insertData("error_get", "message", error);
+            error.put("value", "Error on: " + query);
+            producer.publishMessage(error_topic, null, Util.getJson(error));
             return;
         }
         System.out.println("Response size = " + ((List) res).size());
@@ -169,9 +166,10 @@ public class SiaeConsumer extends KafkaConfig {
             if (keyData.module.equals("orderTickets") || (keyData.module.equals("orderAbbonamenti")))
                 producer.publishMessage("ticket_access_information", (String) ((Map) moduleData).get("barcode"), Util.getJson(moduleData));
         } else {
-            producer.publishMessage(error_topic, Util.getJson(keyData), Util.getJson(mapToSend));
-            mapToSend.put("key", Util.getJson(keyData));
-            Elastic.insertData("error_data", module, mapToSend);
+            Map error = new HashMap();
+            error.put("key", keyData);
+            error.put("value", element);
+            producer.publishMessage(error_topic, null, Util.getJson(error));
         }
     }
 
