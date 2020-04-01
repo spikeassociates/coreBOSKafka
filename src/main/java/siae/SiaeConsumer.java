@@ -137,10 +137,11 @@ public class SiaeConsumer extends KafkaConfig {
         if (keyData.module.equals("cbManifestazioni")) {
             method = "createManifestation";
             if (element.get("logomanifest") != null) {
-                element.put("logomanifest", element.get("logomanifest").toString().replace("/", "\\/"));
+                Log.getLogger().info("Reformat logomanifest value");
+                String formated = ((String) element.get("logomanifest")).replace("/", "\\/");
+                element.put("logomanifest", formated);
             }
-        }
-        else if (keyData.module.equals("cbAbbonamenti"))
+        } else if (keyData.module.equals("cbAbbonamenti"))
             method = "createAbbonamento";
         else if (keyData.module.equals("orderTickets") || keyData.module.equals("orderAbbonamenti"))
             method = "createTitoli";
