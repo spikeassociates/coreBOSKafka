@@ -134,16 +134,9 @@ public class SiaeConsumer extends KafkaConfig {
 
     private void createRecord(Map element, SiaeKeyData keyData) {
         String method = Util.methodCREATE;
-        if (keyData.module.equals("cbManifestazioni")) {
+        if (keyData.module.equals("cbManifestazioni"))
             method = "createManifestation";
-            if (element.get("logomanifest") != null) {
-                Log.getLogger().info("Reformat logomanifest value");
-                String formated = ((String) element.get("logomanifest")).replace("/", "\\/");
-                Log.getLogger().info("Formated: "+formated);
-                element.put("logomanifest", formated);
-                Log.getLogger().info("Formated: "+element.get("logomanifest"));
-            }
-        } else if (keyData.module.equals("cbAbbonamenti"))
+        else if (keyData.module.equals("cbAbbonamenti"))
             method = "createAbbonamento";
         else if (keyData.module.equals("orderTickets") || keyData.module.equals("orderAbbonamenti"))
             method = "createTitoli";
