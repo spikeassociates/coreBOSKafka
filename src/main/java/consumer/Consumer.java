@@ -17,6 +17,9 @@ public class Consumer {
     protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
     protected static final Modules modulesDeclared = Util.getObjectFromJson(Util.getProperty("corebos.consumer.modules"), Modules.class);
 
+    protected static final String useFieldMapping = Util.getProperty("corebos.consumer.useFieldMapping");
+    protected static final String fieldsDoQuery = Util.getProperty("corebos.consumer.fieldsDoQuery");
+
     protected Properties properties = new Properties();
     protected KafkaConsumer kafkaConsumer;
     protected WSClient wsClient;

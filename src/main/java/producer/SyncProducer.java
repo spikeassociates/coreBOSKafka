@@ -7,13 +7,14 @@ import model.KeyData;
 import java.util.*;
 
 public class SyncProducer extends Producer {
-    public static final int timeIntervalMin = Integer.parseInt(Util.getProperty("corebos.syncproducer.timeIntervalMin") != null ? Util.getProperty("corebos.syncproducer.timeIntervalMin") : Util.dafaultTime);
+    public static final int timeIntervalMin = Integer.parseInt(Util.getProperty("corebos.syncproducer.timeIntervalMin") != null ? Objects.requireNonNull(Util.getProperty("corebos.syncproducer.timeIntervalMin")) : Util.dafaultTime);
     public static final String syncInitTimestamp = Util.getProperty("corebos.syncproducer.initialTimestamp") != null ? Util.getProperty("corebos.syncproducer.initialTimestamp") : "1568194862";
 
 
     private final String topic = Util.getProperty("corebos.producer.topic");
 
     public SyncProducer() throws Exception {
+
     }
 
 
