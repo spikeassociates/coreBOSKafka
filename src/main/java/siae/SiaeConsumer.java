@@ -139,7 +139,9 @@ public class SiaeConsumer extends KafkaConfig {
             if (element.get("logomanifest") != null) {
                 Log.getLogger().info("Reformat logomanifest value");
                 String formated = ((String) element.get("logomanifest")).replace("/", "\\/");
+                Log.getLogger().info("Formated: "+formated);
                 element.put("logomanifest", formated);
+                Log.getLogger().info("Formated: "+element.get("logomanifest"));
             }
         } else if (keyData.module.equals("cbAbbonamenti"))
             method = "createAbbonamento";
