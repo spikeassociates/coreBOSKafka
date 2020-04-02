@@ -128,23 +128,25 @@ public class SiaeConsumer extends KafkaConfig {
     private void updateRecord(Map element, SiaeKeyData keyData) {
         String method = Util.methodUPDATE;
 
-        generateMapToSend(element, keyData, method);
+        generateMapToSend(element, keyData, method, false);
     }
 
 
     private void createRecord(Map element, SiaeKeyData keyData) {
         String method = Util.methodCREATE;
+        boolean saveElastic = false;
         if (keyData.module.equals("cbManifestazioni"))
             method = "createManifestation";
         else if (keyData.module.equals("cbAbbonamenti"))
             method = "createAbbonamento";
-        else if (keyData.module.equals("orderTickets") || keyData.module.equals("orderAbbonamenti"))
+        else if (keyData.module.equals("orderTickets") || keyData.module.equals("orderAbbonamenti")) {
             method = "createTitoli";
-
-        generateMapToSend(element, keyData, method);
+            saveElastic = true;
+        }
+        generateMapToSend(element, keyData, method, saveElastic);
     }
 
-    private void generateMapToSend(Map element, SiaeKeyData keyData, String method) {
+    private void generateMapToSend(Map element, SiaeKeyData keyData, String method, boolean saveElastic) {
         Map<String, Object> mapToSend = new HashMap<>();
         String module = keyData.module;
         if (keyData.module.equals("orderTickets"))
@@ -163,7 +165,7 @@ public class SiaeConsumer extends KafkaConfig {
         Log.getLogger().info("Util.getJson(d) = " + Util.getJson(moduleData));
         if (moduleData != null) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));
-            if (keyData.module.equals("orderTickets") || (keyData.module.equals("orderAbbonamenti")))
+            if (saveElastic)
                 producer.publishMessage("ticket_access_information", (String) ((Map) moduleData).get("barcode"), Util.getJson(moduleData));
         } else {
             Map error = new HashMap();
