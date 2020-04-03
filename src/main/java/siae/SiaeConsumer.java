@@ -126,7 +126,7 @@ public class SiaeConsumer extends KafkaConfig {
     }
 
     private void updateRecord(Map element, SiaeKeyData keyData) {
-        String method = Util.methodUPDATE;
+        String method = Util.methodREVISE;
 
         generateMapToSend(element, keyData, method, false);
     }
