@@ -23,8 +23,8 @@ public class RESTClient {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
 //        queryParameters.put("codiceClienteOrdinante", "EPRICE");
-//        queryParameters.put("pageSize", "1");
-//        queryParameters.put("pageNr", "1");
+        //queryParameters.put("pageSize", "10");
+       // queryParameters.put("ldv", "624");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
         if (this.hasError(response)) {
             return null;

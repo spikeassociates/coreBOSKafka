@@ -34,7 +34,11 @@ public class Consumer {
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("group.id", GROUP_ID);
-//        properties.put("request.timeout.ms", "test-group");
+//        properties.put("request.timeout.ms", 305000);
+//        properties.put("max_poll_interval_ms", 300000);
+//        properties.put("session_timeout_ms", 180000);
+//        properties.put("heartbeat_interval_ms", 60000);
+//        properties.put("metadata_max_age_ms", 50000);
         kafkaConsumer = new KafkaConsumer(properties);
     }
 }
