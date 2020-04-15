@@ -40,7 +40,7 @@ public class UpdateConsumer extends Consumer {
 
         try {
             while (true) {
-                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(1000));
+                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(2000));
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
                     ConsumerRecord record = (ConsumerRecord) it.next();
@@ -56,7 +56,7 @@ public class UpdateConsumer extends Consumer {
 
 
     private void readRecord(ConsumerRecord record) throws Exception {
-        System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
+        //System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         KeyData keyData = Util.getObjectFromJson((String) record.key(), KeyData.class);
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
         if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
@@ -128,7 +128,7 @@ public class UpdateConsumer extends Consumer {
             mapToSend.put("searchOn", modulesIdField);
         }
 
-        System.out.println("Map to Send" +  mapToSend);
+        //System.out.println("Map to Send" +  mapToSend);
 
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
         //System.out.println("Util.getJson(d) = " + Util.getJson(d));
@@ -148,35 +148,35 @@ public class UpdateConsumer extends Consumer {
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
-        System.out.println(orgfieldName);
+        //System.out.println(orgfieldName);
         System.out.println(fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
-            System.out.println("MAMA JIKOLA");
+            //System.out.println("MAMA JIKOLA");
             /*
             1. Check if the field value can be converted to JSONArray or JSONObject
             2. If is Object or JSON Array check if it exit in Module field search and is one of the module field
-            3. if the above statement if false means the JSONArray or JSONObject record depend on the Main Module Record whihc is about to be created
+            3. if the above statement if false means the JSONArray or JSONObject record depend on the Main Module Record which is about to be created
             */
             String jsonValue = Util.getJson(record.get(orgfieldName));
-            System.out.println("MAMA ubwabwa");
+            //System.out.println("MAMA ubwabwa");
             JSONParser parser = new JSONParser();
-            System.out.println((parser.parse(jsonValue) instanceof JSONObject));
+            //System.out.println((parser.parse(jsonValue) instanceof JSONObject));
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
                     orgfieldName.equals("raeeFornitoreId")) {
-                System.out.println("IMEPENYA");
+                //System.out.println("IMEPENYA");
                 //Get the Search fields
                  Map<String, Object> fieldToSearch = getSearchField(parentModule);
-                System.out.println(fieldToSearch);
-                System.out.println(moduleFieldInfo);
+                //System.out.println(fieldToSearch);
+                //System.out.println(moduleFieldInfo);
                  if (!fieldToSearch.isEmpty() && moduleFieldInfo.containsKey(fieldname)) {
                      //System.out.println("UNYANWEZUUUU");
                      String searchID;
                      if (orgfieldName.equals("distribuzioneFornitoreId") || orgfieldName.equals("raeeFornitoreId")) {
-                         System.out.println("UKUKU DANGER");
+                         //System.out.println("UKUKU DANGER");
                          JSONObject importoSpedizione = (JSONObject) parser.parse(Util.getJson(record.get("importoSpedizione")));
                          //System.out.println(importoSpedizione.isEmpty());
-                         System.out.println(importoSpedizione);
+                         //System.out.println(importoSpedizione);
                          if (importoSpedizione == null) {
                              rs.put("status", "notfound");
                              rs.put("value",  "");
@@ -301,21 +301,28 @@ public class UpdateConsumer extends Consumer {
                                  }
                              }
 
+
                              // Handle Special Case for indirizzoMittente, indirizzoRitiro, indirizzoConsegna, indirizzoDestinatario
                              if (orgfieldName.equals("indirizzoMittente") || orgfieldName.equals("indirizzoRitiro") ||
                                      orgfieldName.equals("indirizzoConsegna") || orgfieldName.equals("indirizzoDestinatario")) {
                                  /*
                                   * Query Geoboundary Module  where geoname == comune
                                   */
+                                 System.out.println("Current Value::" + ((JSONObject) parser.parse(jsonValue)).get("comune").toString());
                                  Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                          ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
                                          "geoname");
+                                 System.out.println("searchResultGeoboundary:::" + searchResultGeoboundary);
                                  if (((boolean) searchResultGeoboundary.get("status"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
+                                     System.out.println("Reference Field::" + referenceFields);
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
-                                         if (referenceFields.get(keyStr).equals("Geoboundary")) {
+                                         System.out.println("Key String::" + keyStr);
+                                         if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                             System.out.println("value::" + searchResultGeoboundary.get("crmid"));
                                              recordField.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                             System.out.println("Record Field::" + recordField);
                                          }
                                      }
 
@@ -328,7 +335,7 @@ public class UpdateConsumer extends Consumer {
                              recordMap.put("searchOn", fieldToSearch.get(orgfieldName));
                              Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
                              JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
-                             System.out.println(obj.get("id").toString());
+                             //System.out.println(obj.get("id").toString());
                              if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                  rs.put("status", "found");
                                  rs.put("value",  obj.get("id").toString());
@@ -360,32 +367,32 @@ public class UpdateConsumer extends Consumer {
                 // TODO: 4/8/20 Handle Object and Array if value contain those data
                 // Note: Here we assumed that the object inside the array its key value pair and its value is never Object or an Array
                 // If we Need to Handle for Object and Array we Need to just add very very simple code which is already implemented
-                System.out.println(parser.parse(jsonValue));
+                //System.out.println(parser.parse(jsonValue));
                 JSONArray recordsArray = (JSONArray) parser.parse(jsonValue);
                 Map<String, Object> fieldToSearch = getSearchField(parentModule);
-                System.out.println(fieldToSearch);
+                //System.out.println(fieldToSearch);
                 for (Object objRecord : recordsArray) {
                     if (objRecord instanceof JSONObject) {
                         uitype10fields = getUIType10Field(fieldname);
-                        System.out.println(uitype10fields);
-                        System.out.println(objRecord);
+                        //System.out.println(uitype10fields);
+                        //System.out.println(objRecord);
                         if (!uitype10fields.isEmpty()) {
                             Map<String, Object> objValue = (Map<String, Object>) objRecord;
-                            System.out.println(objValue);
-                            System.out.println("TESSSSS");
-                            System.out.println(uitype10fields);
-                            System.out.println(fieldname);
-                            System.out.println(parentModule);
-                            System.out.println(objValue);
+                            //System.out.println(objValue);
+                            //System.out.println("TESSSSS");
+                            //System.out.println(uitype10fields);
+                            //System.out.println(fieldname);
+                            //System.out.println(parentModule);
+                            //System.out.println(objValue);
                             //System.out.println(fieldToSearch.get(orgfieldName).toString());
-                            System.out.println(orgfieldName);
+                            //System.out.println(orgfieldName);
                             String fldsearch = "";
                             if (fieldToSearch.containsKey(orgfieldName)) {
                                 fldsearch = fieldToSearch.get(orgfieldName).toString();
                             }
                             Map<String, Object> recordToCreate =  getMapOfRecordToBeCreated(uitype10fields, fieldname,
                                     parentModule, objValue, fldsearch, orgfieldName);
-                            System.out.println("GIS::" + recordToCreate);
+                            //System.out.println("GIS::" + recordToCreate);
                             lastRecordToCreate.add(recordToCreate);
                         } else {
                             // TODO: 4/8/20 Handle for Module which do not contain any reference field
@@ -498,6 +505,13 @@ public class UpdateConsumer extends Consumer {
 
     private Map<String, Object> searchRecord(String module, String value, String fieldname) throws ParseException {
         Map<String, Object> result = new HashMap<>();
+        // Check if value contain any Special character especially '
+
+        if (value.contains("'")) {
+            int specialCharPosition = value.indexOf("'") + 1;
+            StringBuffer stringBuffer= new StringBuffer(value);
+            value = stringBuffer.insert(specialCharPosition, "'").toString();
+        }
         String condition;
         if (module.equals("Vendors")) {
             condition = fieldname + "='" + value + "'"  + "AND type ='Fornitore'";
@@ -505,9 +519,9 @@ public class UpdateConsumer extends Consumer {
             condition = fieldname + "='" + value + "'";
         }
         String queryMap = "select * from " + module + " where " + condition;
-        //System.out.println(queryMap);
+        System.out.println(queryMap);
         JSONArray mapdata = wsClient.doQuery(queryMap);
-        //System.out.println(mapdata);
+        System.out.println(mapdata);
         if (mapdata.size() == 0) {
             result.put("status", false);
             result.put("crmid", "");
@@ -567,23 +581,23 @@ public class UpdateConsumer extends Consumer {
                                                           String orgfieldName) throws Exception {
         // We Have to Create the New Record and get Its CRMID
         // String modulesIdField = Objects.requireNonNull(modulesDeclared).getFieldsDoQuery(moduleFieldInfo.get(fieldname)).get(0);
-        System.out.println(moduleFieldInfo);
-        System.out.println(fieldname);
-        System.out.println(parentModule);
-        System.out.println(element);
-        System.out.println(fieldToSearch);
-        System.out.println(orgfieldName);
+        //System.out.println(moduleFieldInfo);
+        //System.out.println(fieldname);
+        //System.out.println(parentModule);
+        //System.out.println(element);
+        //System.out.println(fieldToSearch);
+        //System.out.println(orgfieldName);
 
         Map<String, Object> recordMap = new HashMap<>();
         Map<String, Object> recordField = new HashMap<>();
         JSONParser parser = new JSONParser();
         // Get Map for Adding that Module from Rest API
         String mapName = orgfieldName + "2" + fieldname;
-        System.out.println(mapName);
+        //System.out.println(mapName);
         String mapModule = "cbMap";
         String condition = "mapname" + "='" + mapName + "'";
         String queryMap = "select * from " + mapModule + " where " + condition;
-        System.out.println(queryMap);
+        //System.out.println(queryMap);
         JSONArray mapdata = wsClient.doQuery(queryMap);
         JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
         JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
@@ -603,12 +617,12 @@ public class UpdateConsumer extends Consumer {
             }
         }
 
-        System.out.println(queryMap);
+        //System.out.println(queryMap);
         recordField.put("assigned_user_id", wsClient.getUserID());
         recordMap.put("elementType", fieldname);
         recordMap.put("element", Util.getJson(recordField));
         recordMap.put("searchOn", fieldToSearch);
-        System.out.println(recordMap);
+        //System.out.println(recordMap);
         return recordMap;
     }
 
@@ -619,35 +633,35 @@ public class UpdateConsumer extends Consumer {
             Map<String, String> uitype10fields = getUIType10Field(module);
             JSONParser parser = new JSONParser();
             JSONObject recordFields = (JSONObject) parser.parse(record.get("element").toString());
-            System.out.println("Element:: " + recordFields);
-            System.out.println("Uitype10fields:: " + uitype10fields);
-            System.out.println("Module CRMID:: " + moduleCRMID);
+            //System.out.println("Element:: " + recordFields);
+            //System.out.println("Uitype10fields:: " + uitype10fields);
+            //System.out.println("Module CRMID:: " + moduleCRMID);
             for (Object key : uitype10fields.keySet()) {
                 String keyStr = (String)key;
                 if (moduleCRMID.containsKey(uitype10fields.get(keyStr))) {
                     // set the field value
                     recordFields.put(keyStr, moduleCRMID.get(uitype10fields.get(keyStr)));
                 } else {
-                    System.out.println("SEMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                    System.out.println("Module:: " + module);
-                    System.out.println("record:: " + record);
-                    System.out.println("key:: " + keyStr);
+                    //System.out.println("SEMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                    //System.out.println("Module:: " + module);
+                    //System.out.println("record:: " + record);
+                    //System.out.println("key:: " + keyStr);
 //                    System.out.println(recordFields.containsKey(keyStr));
 //                    System.out.println(recordFields.get(keyStr).toString().equals(""));
 //                    System.out.println( recordFields.get(keyStr).toString());
                     if (recordFields.containsKey(keyStr) && recordFields.get(keyStr) != null &&
                             recordFields.get(keyStr) != "") {
 
-                        System.out.println(recordFields.containsKey(keyStr));
-                        System.out.println(recordFields.get(keyStr));
-                        System.out.println( recordFields.get(keyStr).toString());
+                        //System.out.println(recordFields.containsKey(keyStr));
+                        //System.out.println(recordFields.get(keyStr));
+                        //System.out.println( recordFields.get(keyStr).toString());
                         // TODO: 4/10/20 Scenario for Prodotti
-                        System.out.println("SUKARIIIIIIIIIIII YA WALEBOOOOOOOOOOOOOOOOOOOOO");
+                        //System.out.println("SUKARIIIIIIIIIIII YA WALEBOOOOOOOOOOOOOOOOOOOOO");
                         //Get field to search when we want to create module record
                         Map<String, Object> fieldToSearch = getSearchField(module);
-                        System.out.println("search:: " + uitype10fields.get(keyStr));
-                        System.out.println("search:: " + recordFields.get(keyStr));
-                        System.out.println("search:: " + fieldToSearch.get(keyStr));
+                        //System.out.println("search:: " + uitype10fields.get(keyStr));
+                        //System.out.println("search:: " + recordFields.get(keyStr));
+                        //System.out.println("search:: " + fieldToSearch.get(keyStr));
 
                         Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
                                 String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString());
@@ -658,9 +672,9 @@ public class UpdateConsumer extends Consumer {
                 }
             }
             record.put("element", Util.getJson(recordFields));
-            System.out.println("Util.getJson(d) for Child Record = " + record);
+            //System.out.println("Util.getJson(d) for Child Record = " + record);
             Object d = wsClient.doInvoke(Util.methodUPSERT, record, "POST");
-            System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
+            //System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
         }
 
     }
@@ -692,7 +706,7 @@ public class UpdateConsumer extends Consumer {
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
         headersArray[1] = new BasicHeader("Authorization", token);
-        System.out.println(Arrays.toString(headersArray));
+        //System.out.println(Arrays.toString(headersArray));
         Object response = restClient.doGet(_endpoint, mapToSend, headersArray,key);
         if (response == null)
             return null;
@@ -711,7 +725,7 @@ public class UpdateConsumer extends Consumer {
         mapToSend.put("id", element.get("id"));
 
         Object d = wsClient.doInvoke(Util.methodDELETE, mapToSend, "POST");
-        System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        //System.out.println("Util.getJson(d) = " + Util.getJson(d));
     }
 
     private Object getRecord(String module, String object) {
