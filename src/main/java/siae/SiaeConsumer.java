@@ -89,7 +89,7 @@ public class SiaeConsumer extends KafkaConfig {
         if (keyData.module != null && !keyData.module.equals("") &&
                 keyData.nameOrIdFieldName != null && !keyData.nameOrIdFieldName.equals("")) {
             error.put("value", "Miss module field");
-            producer.publishMessage(error_topic, null, Util.getJson(error));
+            producer.publishMessage(error_topic, Util.getJson(keyData), "Miss module field");
             return;
         }
         String module = keyData.module;
@@ -106,7 +106,7 @@ public class SiaeConsumer extends KafkaConfig {
                     " where (id = '" + keyData.nameOrId + "' or " + keyData.nameOrIdFieldName + " = '" + keyData.nameOrId + "');";
         } else {
             error.put("value", "Miss nameOrId field");
-            producer.publishMessage(error_topic, null, Util.getJson(error));
+            producer.publishMessage(error_topic, Util.getJson(keyData),  "Miss nameOrId field");
             return;
         }
         System.out.println("query = " + query);
@@ -114,7 +114,7 @@ public class SiaeConsumer extends KafkaConfig {
         Object res = wsClient.doQuery(query);
         if (res == null) {
             error.put("value", "Error on: " + query);
-            producer.publishMessage(error_topic, null, Util.getJson(error));
+            producer.publishMessage(error_topic, Util.getJson(keyData), "Error on: " + query);
             return;
         }
         System.out.println("Response size = " + ((List) res).size());
@@ -171,7 +171,7 @@ public class SiaeConsumer extends KafkaConfig {
             Map error = new HashMap();
             error.put("key", keyData);
             error.put("value", element);
-            producer.publishMessage(error_topic, null, Util.getJson(error));
+            producer.publishMessage(error_topic, Util.getJson(keyData), Util.getJson(mapToSend));
         }
     }
 
