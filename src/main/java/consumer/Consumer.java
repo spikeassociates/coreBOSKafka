@@ -34,6 +34,10 @@ public class Consumer {
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("group.id", GROUP_ID);
+        properties.put("max.partition.fetch.bytes", 2097152);
+        properties.put("max.poll.records", 2147483647);
+        properties.put("auto.commit.interval.ms", 8000);
+        properties.put("enable.auto.commit", true);
 //        properties.put("request.timeout.ms", 305000);
 //        properties.put("max_poll_interval_ms", 300000);
 //        properties.put("session_timeout_ms", 180000);
