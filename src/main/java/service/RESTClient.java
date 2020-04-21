@@ -26,13 +26,15 @@ public class RESTClient {
         //queryParameters.put("pageSize", "10");
        // queryParameters.put("ldv", "624");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
-        if (this.hasError(response)) {
-            return null;
-        } else {
+        //System.out.println(response);
+//        if (this.hasError(response)) {
+//            return null;
+//        } else {
             //JSONArray result = (JSONArray) ((JSONObject) response).get(key);
+            //System.out.println(response);
             JSONObject result = (JSONObject) (response);
             return (JSONArray) result.get(key);
-        }
+       // }
     }
 
     public boolean hasError(Object result) {

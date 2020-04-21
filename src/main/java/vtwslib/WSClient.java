@@ -308,7 +308,7 @@ public class WSClient {
         } else {
             response = this._client.doGet(senddata, true);
         }
-        System.out.println(response);
+        //System.out.println(response);
         if (this.hasError(response)) {
             System.out.println("Error = " + response);
             return null;

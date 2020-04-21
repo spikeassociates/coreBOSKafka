@@ -116,6 +116,12 @@ public class UpdateConsumer extends Consumer {
             mapToSend.put("elementType", module);
             mapToSend.put("element", Util.getJson(fieldUpdate));
             mapToSend.put("searchOn", fieldsDoQuery);
+            StringBuilder builderRemoveIndexZero = new StringBuilder(fieldUpdate.keySet().toString());
+            builderRemoveIndexZero.deleteCharAt(0);
+            StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+            builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+            String updatedfields = builderRemoveIndexLast.toString();
+            mapToSend.put("updatedfields", updatedfields);
         } else {
             String modulesIdField = Objects.requireNonNull(modulesDeclared).getFieldsDoQuery(module).get(0);
             for (String filedl : modulesDeclared.getFieldsConsiderate(module))
@@ -128,10 +134,10 @@ public class UpdateConsumer extends Consumer {
             mapToSend.put("searchOn", modulesIdField);
         }
 
-        //System.out.println("Map to Send" +  mapToSend);
+        System.out.println("Map to Send" +  mapToSend);
 
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-        //System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        System.out.println("Util.getJson(d) = " + Util.getJson(d));
         // We Nee to Create Other Module Record which depend on this Created Record
         Map<String, String> moduleCRMID = new HashMap<>();
         JSONParser parser = new JSONParser();
@@ -149,7 +155,7 @@ public class UpdateConsumer extends Consumer {
         JSONObject record = new JSONObject();
         record.putAll(element);
         //System.out.println(orgfieldName);
-        System.out.println(fieldname);
+        //System.out.println(fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
             //System.out.println("MAMA JIKOLA");
@@ -159,7 +165,8 @@ public class UpdateConsumer extends Consumer {
             3. if the above statement if false means the JSONArray or JSONObject record depend on the Main Module Record which is about to be created
             */
             String jsonValue = Util.getJson(record.get(orgfieldName));
-            //System.out.println("MAMA ubwabwa");
+            //System.out.println(jsonValue);
+            //System.out.println(orgfieldName);
             JSONParser parser = new JSONParser();
             //System.out.println((parser.parse(jsonValue) instanceof JSONObject));
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
@@ -190,9 +197,9 @@ public class UpdateConsumer extends Consumer {
                      } else {
                          searchID = ((JSONObject) parser.parse(jsonValue)).get("ID").toString();
                      }
-                     System.out.println(searchID);
+                     //System.out.println(searchID);
                      Map<String, Object> searchResult = searchRecord(moduleFieldInfo.get(fieldname), searchID,
-                             fieldToSearch.get(orgfieldName).toString());
+                             fieldToSearch.get(orgfieldName).toString(), "");
                      if (((boolean) searchResult.get("status"))) {
                          rs.put("status", "found");
                          rs.put("value",  searchResult.get("crmid"));
@@ -246,15 +253,21 @@ public class UpdateConsumer extends Consumer {
 //                                         }
                                      }
 
-                                     recordField.put("assigned_user_id", wsClient.getUserID());
+                                     //recordField.put("assigned_user_id", wsClient.getUserID());
                                      recordField.put("type", "Fornitore");
-                                     recordMap.put("elementType", fieldname);
-                                     recordMap.put("element", Util.getJson(recordField));
-                                     recordMap.put("searchOn", fieldToSearch);
+                                     //recordMap.put("elementType", fieldname);
+                                     //recordMap.put("element", Util.getJson(recordField));
+                                     //recordMap.put("searchOn", fieldToSearch);
                                      recordField.put("assigned_user_id", wsClient.getUserID());
                                      recordMap.put("elementType", moduleFieldInfo.get(fieldname));
                                      recordMap.put("element", Util.getJson(recordField));
                                      recordMap.put("searchOn", fieldToSearch.get(orgfieldName));
+                                     StringBuilder builderRemoveIndexZero = new StringBuilder(recordField.keySet().toString());
+                                     builderRemoveIndexZero.deleteCharAt(0);
+                                     StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                     String updatedfields = builderRemoveIndexLast.toString();
+                                     recordMap.put("updatedfields", updatedfields);
                                      Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -276,6 +289,7 @@ public class UpdateConsumer extends Consumer {
                              Map<String, Object> recordField = new HashMap<>();
                              //1. Get Map for Adding that Module from Rest API
                              String mapName = orgfieldName + "2" + moduleFieldInfo.get(fieldname);
+                             //System.out.println(mapName);
                              String mapModule = "cbMap";
                              String condition = "mapname" + "='" + mapName + "'";
                              String queryMap = "select * from " + mapModule + " where " + condition;
@@ -288,8 +302,11 @@ public class UpdateConsumer extends Consumer {
                              for (Object field: fields_array) {
                                  JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
                                  JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                 //System.out.println("Before calling getFieldValue");
                                  Object value = getFieldValue(originalFiled.get("OrgfieldName").toString(), (Map) record.get(orgfieldName), moduleFieldInfo, parentModule, fieldname);
+                                 //System.out.println(value);
                                  if (((JSONObject) value).get("status").toString().equals("found")) {
+                                     //System.out.println(field);
                                      if (moduleDateFields.containsKey(fieldname) &&
                                              (moduleDateFields.get(fieldname).equals("5") ||
                                                      moduleDateFields.get(fieldname).equals("50"))) {
@@ -298,6 +315,7 @@ public class UpdateConsumer extends Consumer {
                                      } else {
                                          recordField.put(((JSONObject)field).get("fieldname").toString(), ((JSONObject)value).get("value"));
                                      }
+                                     //System.out.println(recordField);
                                  }
                              }
 
@@ -308,34 +326,266 @@ public class UpdateConsumer extends Consumer {
                                  /*
                                   * Query Geoboundary Module  where geoname == comune
                                   */
-                                 System.out.println("Current Value::" + ((JSONObject) parser.parse(jsonValue)).get("comune").toString());
+                                 //System.out.println("Current Value::" + ((JSONObject) parser.parse(jsonValue)).get("comune").toString());
                                  Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                          ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
-                                         "geoname");
-                                 System.out.println("searchResultGeoboundary:::" + searchResultGeoboundary);
+                                         "geoname", "");
+                                 //System.out.println("searchResultGeoboundary:::" + searchResultGeoboundary);
                                  if (((boolean) searchResultGeoboundary.get("status"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
-                                     System.out.println("Reference Field::" + referenceFields);
+                                     //System.out.println("Reference Field::" + referenceFields);
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
-                                         System.out.println("Key String::" + keyStr);
+                                         //System.out.println("Key String::" + keyStr);
                                          if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                             System.out.println("value::" + searchResultGeoboundary.get("crmid"));
+                                             //System.out.println("value::" + searchResultGeoboundary.get("crmid"));
                                              recordField.put(keyStr, searchResultGeoboundary.get("crmid"));
-                                             System.out.println("Record Field::" + recordField);
+                                             //System.out.println("Record Field::" + recordField);
                                          }
                                      }
 
                                  }
                              }
 
+                             System.out.println("ISOLATION NJE");
+                             if (orgfieldName.equals("ritiro")) {
+                                 System.out.println("ISOLATION NDANI");
+                                 /*
+                                  * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
+                                  */
+                                 Map<String, Object> searchResultCompany = searchRecord("cbCompany",
+                                         ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
+                                         "branchsrcid", "");
+
+                                 if (((boolean) searchResultCompany.get("status"))) {
+                                     Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
+                                     //System.out.println("Reference Field Company::" + referenceFields);
+                                     for (Object key : referenceFields.keySet()) {
+                                         String keyStr = (String)key;
+                                        // System.out.println("Key String::" + keyStr);
+                                         if (referenceFields.get(keyStr).equals("cbCompany")) {
+                                             //System.out.println("value::" + searchResultCompany.get("crmid"));
+                                             recordField.put(keyStr, searchResultCompany.get("crmid"));
+                                             //System.out.println("Record Field::" + recordField);
+                                         }
+                                     }
+
+                                 } else {
+                                     /*
+                                      * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
+                                      */
+                                     System.out.println("ISOLATION");
+                                     //System.out.println(parser.parse(jsonValue));
+                                     if (startRestService()) {
+                                         if (parser.parse(jsonValue) != null) {
+                                             String endpoint = "filiali";
+                                             String objectKey = "filiali";
+                                             JSONObject ritiro = (JSONObject) parser.parse(jsonValue);
+                                             String id = ritiro.get("filialeId").toString();
+                                             //System.out.println(ritiro);
+
+                                             Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                                             //System.out.println(filialiResponse);
+                                             if (filialiResponse != null) {
+                                                 Map<String, Object> filialiObject = searchByID(filialiResponse, id);
+                                                 if (!filialiObject.isEmpty()) {
+                                                     Map<String, Object> recordMapFiliali = new HashMap<>();
+                                                     Map<String, Object> recordFieldFiliali = new HashMap<>();
+                                                     String mapNameFiliali = "filialeId2cbCompany";
+                                                     String mapModuleFiliali = "cbMap";
+                                                     String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                                                     String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                                                     JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
+                                                     JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
+                                                     JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
+                                                     JSONArray fields_arrayFiliali = (JSONArray) fieldsFiliali.get("field");
+                                                     for (Object field: fields_arrayFiliali) {
+                                                         JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                         JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                         recordFieldFiliali.put(((JSONObject)field).get("fieldname").toString(), filialiObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                     }
+
+                                                     /*
+                                                     * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
+                                                     * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
+                                                     * */
+                                                     Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
+                                                             ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
+                                                             "geoname", "");
+                                                     if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                         Map<String, String> referenceFields = getUIType10Field("cbCompany");
+                                                         for (Object key : referenceFields.keySet()) {
+                                                             String keyStr = (String)key;
+                                                             if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                                 recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                             }
+                                                         }
+                                                     }
+
+                                                     System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
+                                                     Map<String, Object> searchResultVendorModule;
+                                                     /*
+                                                     * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
+                                                     * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
+                                                     * vettoreId
+                                                     * */
+                                                     System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                                                     searchResultVendorModule = searchRecord("Vendors",
+                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                                             "suppliersrcid", "Vettore");
+
+                                                     System.out.println(searchResultGeoboundary);
+                                                     if (((boolean) searchResultVendorModule.get("status"))) {
+                                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
+                                                     } else {
+                                                         // To Search in Rest Service
+                                                         if (startRestService()) {
+                                                             String vettoriEndpoint = "vettori";
+                                                             String vettoriDataKey = "vettori";
+
+                                                             Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                                             System.out.println(vettoriResponse);
+                                                             if (vettoriResponse != null) {
+                                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
+                                                                         ((JSONObject) parser.parse(filialiResponse.toString())).get("vettoreId").toString());
+                                                                 if (!vettoriObject.isEmpty()) {
+                                                                     Map<String, Object> vettoriRecordMap = new HashMap<>();
+                                                                     Map<String, Object> vettoriRecordField = new HashMap<>();
+                                                                     //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                                     String vettoriMapName = "vettoreId2Vendors";
+                                                                     String vettoriMapModule = "cbMap";
+                                                                     String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                                                     String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                                                     JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                                                     JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
+                                                                     JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
+                                                                     JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
+                                                                     JSONArray vettoriFieldsArray = (JSONArray) vettoriMapFields.get("field");
+                                                                     for (Object field: vettoriFieldsArray) {
+                                                                         JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                                         JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                                         vettoriRecordField.put(((JSONObject)field).get("fieldname").toString(), vettoriObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                                     }
+
+                                                                     vettoriRecordField.put("assigned_user_id", wsClient.getUserID());
+                                                                     vettoriRecordField.put("type", "Vettore");
+                                                                     vettoriRecordMap.put("elementType", "Vendors");
+                                                                     vettoriRecordMap.put("element", Util.getJson(vettoriRecordField));
+                                                                     vettoriRecordMap.put("searchOn", "suppliersrcid");
+                                                                     StringBuilder builderRemoveIndexZero = new StringBuilder(vettoriRecordField.keySet().toString());
+                                                                     builderRemoveIndexZero.deleteCharAt(0);
+                                                                     StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                                     String updatedfields = builderRemoveIndexLast.toString();
+                                                                     vettoriRecordMap.put("updatedfields", updatedfields);
+                                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                                                     JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                                     if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
+                                                                         recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
+                                                                     }
+                                                                 }
+                                                             }
+                                                         }
+                                                     }
+
+                                                     /*
+                                                      * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
+                                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
+                                                      * fornitoreId
+                                                      * */
+                                                     searchResultVendorModule = searchRecord("Vendors",
+                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
+                                                             "suppliersrcid", "Fornitore");
+                                                     if (((boolean) searchResultVendorModule.get("status"))) {
+                                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
+                                                     } else {
+                                                         // To Search in Rest Service
+                                                         if (startRestService()) {
+                                                             String fornitoriEndpoint = "fornitori";
+                                                             String fornitoriDataKey = "fornitori";
+
+                                                             Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                                             if (fornitoriResponse != null) {
+                                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
+                                                                         ((JSONObject) parser.parse(filialiResponse.toString())).get("fornitoreId").toString());
+                                                                 if (!fornitoriObject.isEmpty()) {
+                                                                     Map<String, Object> fornitoriRecordMap = new HashMap<>();
+                                                                     Map<String, Object> fornitoriRecordField = new HashMap<>();
+                                                                     //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                                     String fornitoriMapName = "fornitoreId2Vendors";
+                                                                     String fornitoriMapModule = "cbMap";
+                                                                     String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                                                     String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                                                     JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                                                     JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
+                                                                     JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
+                                                                     JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
+                                                                     JSONArray fornitoriFieldsArray = (JSONArray) fornitoriMapFields.get("field");
+                                                                     for (Object field: fornitoriFieldsArray) {
+                                                                         JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                                         JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                                         fornitoriRecordField.put(((JSONObject)field).get("fieldname").toString(), fornitoriObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                                     }
+
+                                                                     fornitoriRecordField.put("assigned_user_id", wsClient.getUserID());
+                                                                     fornitoriRecordField.put("type", "Vettore");
+                                                                     fornitoriRecordMap.put("elementType", "Vendors");
+                                                                     fornitoriRecordMap.put("element", Util.getJson(fornitoriRecordField));
+                                                                     fornitoriRecordMap.put("searchOn", "suppliersrcid");
+                                                                     StringBuilder builderRemoveIndexZero = new StringBuilder(fornitoriRecordField.keySet().toString());
+                                                                     builderRemoveIndexZero.deleteCharAt(0);
+                                                                     StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                                     String updatedfields = builderRemoveIndexLast.toString();
+                                                                     fornitoriRecordMap.put("updatedfields", updatedfields);
+                                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                                     JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                                     if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
+                                                                         recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
+                                                                     }
+                                                                 }
+                                                             }
+                                                         }
+                                                     }
+
+                                                     recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
+                                                     recordMapFiliali.put("elementType", "cbCompany");
+                                                     recordMapFiliali.put("element", Util.getJson(recordFieldFiliali));
+                                                     recordMapFiliali.put("searchOn", "branchsrcid");
+                                                     StringBuilder builderRemoveIndexZero = new StringBuilder(recordFieldFiliali.keySet().toString());
+                                                     builderRemoveIndexZero.deleteCharAt(0);
+                                                     StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                     String updatedfields = builderRemoveIndexLast.toString();
+                                                     recordMapFiliali.put("updatedfields", updatedfields);
+                                                     System.out.println(recordMapFiliali);
+                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                                                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
+                                                         recordField.put("branchid", obj.get("id").toString());
+                                                     }
+                                                 }
+                                             }
+                                         }
+                                     }
+                                 }
+                             }
+
+
                              recordField.put("assigned_user_id", wsClient.getUserID());
+                             //System.out.println(recordField);
                              recordMap.put("elementType", moduleFieldInfo.get(fieldname));
                              recordMap.put("element", Util.getJson(recordField));
                              recordMap.put("searchOn", fieldToSearch.get(orgfieldName));
+                             StringBuilder builderRemoveIndexZero = new StringBuilder(recordField.keySet().toString());
+                             builderRemoveIndexZero.deleteCharAt(0);
+                             StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                             String updatedfields = builderRemoveIndexLast.toString();
+                             recordMap.put("updatedfields", updatedfields);
                              Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
                              JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
-                             //System.out.println(obj.get("id").toString());
                              if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                  rs.put("status", "found");
                                  rs.put("value",  obj.get("id").toString());
@@ -503,7 +753,7 @@ public class UpdateConsumer extends Consumer {
         return fieldmap;
     }
 
-    private Map<String, Object> searchRecord(String module, String value, String fieldname) throws ParseException {
+    private Map<String, Object> searchRecord(String module, String value, String fieldname, String otherCondition) throws ParseException {
         Map<String, Object> result = new HashMap<>();
         // Check if value contain any Special character especially '
 
@@ -514,14 +764,19 @@ public class UpdateConsumer extends Consumer {
         }
         String condition;
         if (module.equals("Vendors")) {
-            condition = fieldname + "='" + value + "'"  + "AND type ='Fornitore'";
+            if  (otherCondition.isEmpty()) {
+                condition = fieldname + "='" + value + "'"  + "AND type ='Fornitore'";
+            } else {
+                condition = fieldname + "='" + value + "'"  + "AND type ='" + otherCondition + "'";
+            }
+
         } else {
             condition = fieldname + "='" + value + "'";
         }
         String queryMap = "select * from " + module + " where " + condition;
         System.out.println(queryMap);
         JSONArray mapdata = wsClient.doQuery(queryMap);
-        System.out.println(mapdata);
+        //System.out.println(mapdata);
         if (mapdata.size() == 0) {
             result.put("status", false);
             result.put("crmid", "");
@@ -622,6 +877,12 @@ public class UpdateConsumer extends Consumer {
         recordMap.put("elementType", fieldname);
         recordMap.put("element", Util.getJson(recordField));
         recordMap.put("searchOn", fieldToSearch);
+        StringBuilder builderRemoveIndexZero = new StringBuilder(recordField.keySet().toString());
+        builderRemoveIndexZero.deleteCharAt(0);
+        StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+        builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+        String updatedfields = builderRemoveIndexLast.toString();
+        recordMap.put("updatedfields", updatedfields);
         //System.out.println(recordMap);
         return recordMap;
     }
@@ -664,7 +925,7 @@ public class UpdateConsumer extends Consumer {
                         //System.out.println("search:: " + fieldToSearch.get(keyStr));
 
                         Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
-                                String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString());
+                                String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(), "");
                         if (((boolean) searchResult.get("status"))) {
                             recordFields.put(keyStr, searchResult.get("crmid"));
                         }
@@ -680,14 +941,24 @@ public class UpdateConsumer extends Consumer {
     }
 
     private Map<String, Object> searchByID(Object response, String id) throws ParseException {
+        //System.out.println(response);
+        //System.out.println(id);
+
+
+
         Map<String, Object> objValue = new HashMap<>();
         JSONParser parser = new JSONParser();
         JSONArray resArray = (JSONArray) parser.parse(response.toString());
+
         for (Object object: resArray
              ) {
             JSONObject record = (JSONObject) parser.parse(object.toString());
-            if (record.get("id") == id) {
+            //System.out.println(record.get("ID").toString().equals(id));
+            //System.out.println(id);
+            if (record.get("ID").toString().equals(id)) {
+                //System.out.println("KIGAGULAAAAAAAA");
                 objValue = record;
+                return objValue;
             }
         }
 
