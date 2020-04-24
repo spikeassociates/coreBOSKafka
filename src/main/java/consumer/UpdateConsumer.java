@@ -362,16 +362,18 @@ public class UpdateConsumer extends Consumer {
                                          ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
                                          "branchsrcid", "");
 
+                                 System.out.println(searchResultCompany);
                                  if (((boolean) searchResultCompany.get("status"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
-                                     //System.out.println("Reference Field Company::" + referenceFields);
+                                     System.out.println("MOduleeee::" + moduleFieldInfo.get(fieldname));
+                                     System.out.println("Reference Field Company::" + referenceFields);
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
                                         // System.out.println("Key String::" + keyStr);
                                          if (referenceFields.get(keyStr).equals("cbCompany")) {
                                              //System.out.println("value::" + searchResultCompany.get("crmid"));
                                              recordField.put(keyStr, searchResultCompany.get("crmid"));
-                                             //System.out.println("Record Field::" + recordField);
+                                             System.out.println("Record Field::" + recordField);
                                          }
                                      }
 
