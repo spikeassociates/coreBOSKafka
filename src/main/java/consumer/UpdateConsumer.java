@@ -833,6 +833,7 @@ public class UpdateConsumer extends Consumer {
                              builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                              String updatedfields = builderRemoveIndexLast.toString();
                              recordMap.put("updatedfields", updatedfields);
+                             System.out.println("Record to Send:: " + recordMap);
                              Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
                              JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                              if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
