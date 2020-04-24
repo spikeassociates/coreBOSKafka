@@ -824,6 +824,7 @@ public class UpdateConsumer extends Consumer {
 
                              recordField.put("assigned_user_id", wsClient.getUserID());
                              recordField.put("created_user_id", wsClient.getUserID());
+                             recordField.put("smownerid", wsClient.getUserID());
                              //System.out.println(recordField);
                              recordMap.put("elementType", moduleFieldInfo.get(fieldname));
                              recordMap.put("element", Util.getJson(recordField));
