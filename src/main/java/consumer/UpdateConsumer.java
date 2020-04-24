@@ -50,7 +50,7 @@ public class UpdateConsumer extends Consumer {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
-            // kafkaConsumer.close();
+//             kafkaConsumer.close();
         }
     }
 
@@ -326,21 +326,26 @@ public class UpdateConsumer extends Consumer {
                                  /*
                                   * Query Geoboundary Module  where geoname == comune
                                   */
-                                 //System.out.println("Current Value::" + ((JSONObject) parser.parse(jsonValue)).get("comune").toString());
                                  Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                          ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
                                          "geoname", "");
-                                 //System.out.println("searchResultGeoboundary:::" + searchResultGeoboundary);
-                                 if (((boolean) searchResultGeoboundary.get("status"))) {
+                                 /*
+                                 * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
+                                 * */
+
+                                 Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                         "DA VERIFICARE",
+                                         "geoname", "");
+                                 if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
-                                     //System.out.println("Reference Field::" + referenceFields);
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
-                                         //System.out.println("Key String::" + keyStr);
                                          if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                             //System.out.println("value::" + searchResultGeoboundary.get("crmid"));
-                                             recordField.put(keyStr, searchResultGeoboundary.get("crmid"));
-                                             //System.out.println("Record Field::" + recordField);
+                                             if (searchResultGeoboundary.get("crmid").toString() != "") {
+                                                 recordField.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                             } else {
+                                                 recordField.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                             }
                                          }
                                      }
 
@@ -413,12 +418,25 @@ public class UpdateConsumer extends Consumer {
                                                      Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                                              "geoname", "");
-                                                     if (((boolean) searchResultGeoboundary.get("status"))) {
+
+                                                     /*
+                                                     * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
+                                                     * */
+                                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                                             "DA VERIFICARE",
+                                                             "geoname", "");
+
+                                                     if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                                          Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                                          for (Object key : referenceFields.keySet()) {
                                                              String keyStr = (String)key;
                                                              if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                                                 recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                                 if (!searchResultGeoboundary.get("crmid").toString().equals("")) {
+                                                                     recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                                 } else {
+                                                                     recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                                 }
+
                                                              }
                                                          }
                                                      }
@@ -633,7 +651,7 @@ public class UpdateConsumer extends Consumer {
                                                       * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                                       * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                                                       * */
-                                                     if (filialiObject.get("comune") != null) {
+                                                     if (filialiObject.get("comune") != null && !filialiObject.get("comune").toString().isEmpty()) {
                                                          Map<String, Object> searchResultGeoboundary = searchRecord(
                                                                  "Geoboundary", filialiObject.get("comune").toString(),
                                                                  "geoname", "");
