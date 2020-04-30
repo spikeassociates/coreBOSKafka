@@ -56,16 +56,136 @@ public class UpdateConsumer extends Consumer {
 
 
     private void readRecord(ConsumerRecord record) throws Exception {
-        //System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
+        System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         KeyData keyData = Util.getObjectFromJson((String) record.key(), KeyData.class);
         Object value = Util.getObjectFromJson((String) record.value(), Object.class);
         if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
             System.out.println("Upserting the Record");
             lastRecordToCreate.clear();
-            upsertRecord(keyData.module, (Map) value);
+            //upsertRecord(keyData.module, (Map) value);
+            if (!keyData.module.equals("ProcessLog")) {
+                upsertRecord(keyData.module, (Map) value);
+            } else {
+                updateShipmentsStatus(keyData.module, (Map) value);
+            }
         } else if (keyData.operation.equals(Util.methodDELETE)) {
             System.out.println("Deleting the Record");
             deleteRecord(keyData.module, (String) value);
+        }
+    }
+
+    private void updateShipmentsStatus(String module, Map message) throws Exception{
+        Map<String, Object> status = message;
+        Map<String, Object> mapToSend = new HashMap<>();
+        Map<String, Object> fieldUpdate = new HashMap<>();
+        JSONObject processedMessageData = new JSONObject();
+        if (!status.keySet().isEmpty() && (!status.values().isEmpty())) {
+            for (Map.Entry<String, Object> entry : status.entrySet()) {
+                String k = entry.getKey();
+                if (entry.getValue() != null) {
+                    /*
+                    * The script should query ProcessLog module with the following conditions:
+                    * */
+
+                    String v = entry.getValue().toString();
+                    String[] statusArray = v.split("#");
+                    for (String statusChanges:statusArray) {
+                        String[] currentStatusArray = statusChanges.split("!");
+
+                        /*
+                         *   query Shipments module in order to find the record where pckslip_code == key. Connect ProcessLog to that
+                         *   Shipment by filling linktoshipments with shipmentsid of the found record.
+                         * */
+                        Map<String, Object> searchShipment = searchRecord("Shipments", k, "pckslip_code", "");
+                        if (((boolean) searchShipment.get("status"))) {
+                            processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
+                        }
+
+                        /*
+                         * query Packages module in order to find the record where packagesrcid == 1st param value. Connect ProcessLog
+                         * to that Package by filling linktopackages with packagesid of the found record.
+                         * */
+                        Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0], "packagesrcid", "");
+                        if (((boolean) searchPackages.get("status"))) {
+                            processedMessageData.put("linktopackages", searchPackages.get("crmid"));
+                        }
+
+                        /*
+                         * dtime
+                         * */
+                        processedMessageData.put("dtime", currentStatusArray[2]);
+
+                        /*
+                         * query cbStatus module in order to find the record where statussrcid == 4th param value.
+                         * Connect ProcessLog to that cbStatus by filling its linktostatus with statusid of the found record
+                         * */
+                        Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3], "statussrcid", "");
+                        if (((boolean) searchcbStatus.get("status"))) {
+                            processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
+                        }
+
+                        /*
+                         * query cbCompany module in order to find the record where branchcode == 5th param value.
+                         * Connect ProcessLog to that cbCompany by filling its linktomainbranch with cbcompanyid of the found record.
+                         * */
+                        Map<String, Object> searchcbCompany;
+                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[4], "branchcode", "");
+                        if (((boolean) searchcbCompany.get("status"))) {
+                            processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
+                        }
+
+                        /*
+                         * query cbCompany module in order to find the record where branchcode == 6th param value.
+                         * Connect ProcessLog to that cbCompany by filling its linktodestbranch with cbcompanyid of the found record.
+                         * */
+                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[5], "branchcode", "");
+                        if (((boolean) searchcbCompany.get("status"))) {
+                            processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
+                        }
+
+                        String queryCondition = "linktoshipments ='" + processedMessageData.get("linktoshipments") + "'" +
+                                " AND linktopackages ='" + processedMessageData.get("linktopackages") + "'" + " AND dtime ='" +
+                                processedMessageData.get("dtime") + "'" + " AND linktostatus ='" +
+                                processedMessageData.get("linktostatus") + "'" + " AND linktomainbranch ='" +
+                                processedMessageData.get("linktomainbranch") + "'" + " AND linktodestbranch ='" +
+                                processedMessageData.get("linktodestbranch") + "'";
+
+                        Map<String, Object> searchProcessLog = searchRecord(module, "", "", queryCondition);
+                        if (!((boolean) searchProcessLog.get("status"))) {
+                            System.out.println("NDANIIIIIIIIIII" + processedMessageData);
+                            String mapName = "REST2" + module;
+                            String mapModule = "cbMap";
+                            String condition = "mapname" + "='" + mapName + "'";
+                            String queryMap = "select * from " + mapModule + " where " + condition;
+
+                            JSONArray mapdata = wsClient.doQuery(queryMap);
+                            JSONParser parser = new JSONParser();
+                            JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
+                            JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
+                            JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
+                            JSONArray fields_array = (JSONArray) fields.get("field");
+                            for (Object field: fields_array) {
+                                fieldUpdate.put(((JSONObject)field).get("fieldname").toString(), processedMessageData.get((
+                                        (JSONObject)field).get("fieldname").toString()));
+                            }
+                            fieldUpdate.put("assigned_user_id", wsClient.getUserID());
+                            mapToSend.put("elementType", module);
+                            mapToSend.put("element", Util.getJson(fieldUpdate));
+                            mapToSend.put("searchOn", "linktoshipments");
+                            StringBuilder builderRemoveIndexZero = new StringBuilder(fieldUpdate.keySet().toString());
+                            builderRemoveIndexZero.deleteCharAt(0);
+                            StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                            builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                            String updatedfields = builderRemoveIndexLast.toString();
+                            mapToSend.put("updatedfields", updatedfields);
+                            System.out.println("Map to Send" +  mapToSend);
+                            Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
+                            System.out.println("Util.getJson(d) = " + Util.getJson(d));
+                            System.out.println("Updated Shipment Status");
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1025,6 +1145,8 @@ public class UpdateConsumer extends Consumer {
 
         } else if (module.equals("cbEmployee")) {
             condition = fieldname + "='" + value + "'"  + "AND emptype ='" + otherCondition + "'";
+        } else if (module.equals("ProcessLog")) {
+            condition = otherCondition;
         } else {
             condition = fieldname + "='" + value + "'";
         }

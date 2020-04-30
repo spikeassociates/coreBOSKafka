@@ -10,6 +10,9 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import service.RESTClient;
 
 import java.util.*;
@@ -71,56 +74,63 @@ public class RESTAPIProducer {
         }
     }
 
-    public void init() {
+    public void init() throws ParseException {
 
         Object response = doGet(restClient.get_servicetoken());
         System.out.println("Waiting for Result");
         if (response == null)
             return;
-        List updatedList = getUpdated(response);
-        System.out.println(updatedList);
+        List shipmentsData = getShipmentsData(response);
+        JSONObject shipmentsStatus = getShipmentStatus(response);
 
-
-        for (Object updated : updatedList) {
-//            String moduleId = (String) wsClient.getModuleId("" + ((Map) updated).get("id"));
-//            if (!moduleMap.containsKey(moduleId))
-//                continue;
-
-//            String module = (String) ((Map) moduleMap.get(moduleId)).get("name");
-            // TODO: 4/10/20 The Module Name Should be Dynamic nat hardcoded value
+        for (Object shipment : shipmentsData) {
             String module = "Shipments";
             KeyData keyData = new KeyData();
             keyData.module = module;
             keyData.operation = Util.methodUPDATE;
-            System.out.println(Util.getJson(updated));
-            publishMessage(topic, Util.getJson(keyData), Util.getJson(updated));
+            System.out.println(Util.getJson(shipment));
+            publishMessage(topic, Util.getJson(keyData), Util.getJson(shipment));
         }
+
+        for (Object key : shipmentsStatus.keySet()) {
+            String shipmentid = (String)key;
+            Object status = shipmentsStatus.get(shipmentid);
+            String module = "ProcessLog";
+            KeyData keyData = new KeyData();
+            keyData.module = module;
+            keyData.operation = Util.methodUPDATE;
+            JSONObject singleStatus = new JSONObject();
+            singleStatus.put(shipmentid, status);
+            System.out.println(Util.getJson(singleStatus));
+            publishMessage(topic, Util.getJson(keyData), Util.getJson(singleStatus));
+        }
+
         Config.getInstance().save();
-        System.out.println("Producer Finished");
+    }
+
+    private JSONObject getShipmentStatus(Object response) throws ParseException {
+        JSONParser  jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
+        return (JSONObject) jsonObject.get("mappaEsitiPerSpedizione");
+    }
+
+    private List getShipmentsData(Object response) throws ParseException {
+        JSONParser  jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
+        return (List) jsonObject.get("listaSpedizioni");
     }
 
     private Object doGet(String token) {
-        String modifiedTime = Config.getInstance().getLastTimeStampToSync();
-//        if (modifiedTime.equals(""))
-//            modifiedTime = syncInitTimestamp;
         Map<String, String> mapToSend = new HashMap<>();
-        //mapToSend.put("modifiedTime", modifiedTime);
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
         headersArray[1] = new BasicHeader("Authorization", token);
         System.out.println(Arrays.toString(headersArray));
-        Object response = restClient.doGet(_endpoint, mapToSend, headersArray,key);
+        Object response = restClient.doGet(_endpoint, mapToSend, headersArray);
         if (response == null)
             return null;
         long currentTime = new Date().getTime() / 1000;
         Config.getInstance().setLastTimeStampToSync("" + currentTime);
         return response;
-    }
-
-    private List getUpdated(Object o) {
-//        if (!(o instanceof Map)) {
-//            return new ArrayList();
-//        }
-        return (List) o;
     }
 }

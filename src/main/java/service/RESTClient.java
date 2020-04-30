@@ -37,6 +37,14 @@ public class RESTClient {
        // }
     }
 
+    public JSONObject doGet(String endPoint, Map<String, String> queryParameters, Header[] headerParameters) {
+        String urlToCall = this._servicebaseurl + endPoint;
+        this._client = new HTTP_Client(urlToCall);
+        Object response = this._client.doGet(queryParameters, true, headerParameters);
+        return (JSONObject) (response);
+    }
+
+
     public boolean hasError(Object result) {
         boolean isError = false;
 
