@@ -36,6 +36,7 @@ public class RESTAPIProducer {
     protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
 
     protected RESTClient restClient;
+    private final String pagesize = Util.getProperty("corebos.restproducer.pagesize");
     public RESTAPIProducer() throws Exception {
         restClient = new RESTClient(rest_api_url);
         String auth_credentials = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
@@ -76,7 +77,76 @@ public class RESTAPIProducer {
 
     public void init() throws ParseException {
 
-        Object response = doGet(restClient.get_servicetoken());
+        /*
+        * We send the first request with filter in which will act as the first round
+        * pageSize=100
+        * pageNr=1
+        * */
+
+        String isFirstRequest = Config.getInstance().isFirstRequest();
+        if (isFirstRequest.isEmpty() || isFirstRequest.equals("YES")) {
+            int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
+            int pageNr = 1;
+
+            Object response = doGet(restClient.get_servicetoken(), pageSize, pageNr);
+
+            if (response == null)
+                return;
+
+            JSONParser  jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
+            int totalNumberOfRecords = Integer.parseInt(jsonObject.get("nSpedizioniAccordingFilters").toString());
+            int numberOfPages;
+            if ((totalNumberOfRecords % pageSize) == 0 ) {
+                numberOfPages = totalNumberOfRecords / pageSize;
+            } else {
+                numberOfPages = totalNumberOfRecords / pageSize;
+                numberOfPages = numberOfPages + 1;
+            }
+            Config.getInstance().setTotalNumberOfPages("" + numberOfPages);
+            Config.getInstance().setFirstRequest("" + "NO");
+            processResponseData(response);
+        } else {
+            int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
+            int savedPageNumbers = Integer.parseInt(Config.getInstance().getTotalNumberOfPages());
+            Config.getInstance().setFirstRequest("" + "YES");
+            for (int page = 2; page <= savedPageNumbers; page++) {
+                Object response = doGet(restClient.get_servicetoken(), pageSize, page);
+                processResponseData(response);
+            }
+        }
+
+    }
+
+    private JSONObject getShipmentStatus(Object response) throws ParseException {
+        JSONParser  jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
+        return (JSONObject) jsonObject.get("mappaEsitiPerSpedizione");
+    }
+
+    private List getShipmentsData(Object response) throws ParseException {
+        JSONParser  jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
+        return (List) jsonObject.get("listaSpedizioni");
+    }
+
+    private Object doGet(String token, int pageSize, int pageNumber) {
+        Map<String, String> mapToSend = new HashMap<>();
+        mapToSend.put("pageSize", String.valueOf(pageSize));
+        mapToSend.put("pageNr", String.valueOf(pageNumber));
+        Header[] headersArray = new Header[2];
+        headersArray[0] = new BasicHeader("Content-type", "application/json");
+        headersArray[1] = new BasicHeader("Authorization", token);
+        System.out.println(Arrays.toString(headersArray));
+        Object response = restClient.doGet(_endpoint, mapToSend, headersArray);
+        if (response == null)
+            return null;
+        long currentTime = new Date().getTime() / 1000;
+        Config.getInstance().setLastTimeStampToSync("" + currentTime);
+        return response;
+    }
+
+    private void processResponseData(Object response) throws ParseException {
         System.out.println("Waiting for Result");
         if (response == null)
             return;
@@ -106,31 +176,5 @@ public class RESTAPIProducer {
         }
 
         Config.getInstance().save();
-    }
-
-    private JSONObject getShipmentStatus(Object response) throws ParseException {
-        JSONParser  jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
-        return (JSONObject) jsonObject.get("mappaEsitiPerSpedizione");
-    }
-
-    private List getShipmentsData(Object response) throws ParseException {
-        JSONParser  jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
-        return (List) jsonObject.get("listaSpedizioni");
-    }
-
-    private Object doGet(String token) {
-        Map<String, String> mapToSend = new HashMap<>();
-        Header[] headersArray = new Header[2];
-        headersArray[0] = new BasicHeader("Content-type", "application/json");
-        headersArray[1] = new BasicHeader("Authorization", token);
-        System.out.println(Arrays.toString(headersArray));
-        Object response = restClient.doGet(_endpoint, mapToSend, headersArray);
-        if (response == null)
-            return null;
-        long currentTime = new Date().getTime() / 1000;
-        Config.getInstance().setLastTimeStampToSync("" + currentTime);
-        return response;
     }
 }

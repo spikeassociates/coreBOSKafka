@@ -74,7 +74,7 @@ public class UpdateConsumer extends Consumer {
         }
     }
 
-    private void updateShipmentsStatus(String module, Map message) throws Exception{
+    private void updateShipmentsStatus(String module, Map message) throws Exception {
         Map<String, Object> status = message;
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();

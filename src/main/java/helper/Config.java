@@ -5,6 +5,8 @@ import java.io.File;
 public class Config {
 
     private String lastTimeStampToSync = "";
+    private String totalNumberOfPages = "";
+    private String isFirstRequest = "";
 
 
     private static Config config;
@@ -38,4 +40,19 @@ public class Config {
         this.lastTimeStampToSync = lastTimeStampSync;
     }
 
+    public String getTotalNumberOfPages() {
+        return totalNumberOfPages;
+    }
+
+    public void setTotalNumberOfPages(String totalNumberOfPages) {
+        this.totalNumberOfPages = totalNumberOfPages;
+    }
+
+    public String isFirstRequest() {
+        return isFirstRequest;
+    }
+
+    public void setFirstRequest(String firstRequest) {
+        this.isFirstRequest = firstRequest;
+    }
 }
