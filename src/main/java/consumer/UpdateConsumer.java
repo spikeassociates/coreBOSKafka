@@ -99,6 +99,7 @@ public class UpdateConsumer extends Consumer {
                          * */
                         Map<String, Object> searchShipment = searchRecord("Shipments", k, "pckslip_code", "");
                         if (((boolean) searchShipment.get("status"))) {
+                            queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
                             queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
                         }
