@@ -173,8 +173,10 @@ public class UpdateConsumer extends Consumer {
                             JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
                             JSONArray fields_array = (JSONArray) fields.get("field");
                             for (Object field: fields_array) {
-                                fieldUpdate.put(((JSONObject)field).get("fieldname").toString(), processedMessageData.get((
-                                        (JSONObject)field).get("fieldname").toString()));
+                                if (processedMessageData.get(((JSONObject)field).get("fieldname").toString()) != null) {
+                                    fieldUpdate.put(((JSONObject)field).get("fieldname").toString(), processedMessageData.get((
+                                            (JSONObject)field).get("fieldname").toString()));
+                                }
                             }
                             fieldUpdate.put("assigned_user_id", wsClient.getUserID());
                             mapToSend.put("elementType", module);
