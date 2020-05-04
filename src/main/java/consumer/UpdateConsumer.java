@@ -74,11 +74,12 @@ public class UpdateConsumer extends Consumer {
         }
     }
 
-    private void updateShipmentsStatus(String module, Map message) throws Exception {
+    private void updateShipmentsStatus(String module, Map message) throws Exception{
         Map<String, Object> status = message;
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
         JSONObject processedMessageData = new JSONObject();
+        StringBuilder queryCondition = new StringBuilder();
         if (!status.keySet().isEmpty() && (!status.values().isEmpty())) {
             for (Map.Entry<String, Object> entry : status.entrySet()) {
                 String k = entry.getKey();
@@ -99,6 +100,7 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchShipment = searchRecord("Shipments", k, "pckslip_code", "");
                         if (((boolean) searchShipment.get("status"))) {
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
+                            queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
                         }
 
                         /*
@@ -108,12 +110,14 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0], "packagesrcid", "");
                         if (((boolean) searchPackages.get("status"))) {
                             processedMessageData.put("linktopackages", searchPackages.get("crmid"));
+                            queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
                         }
 
                         /*
                          * dtime
                          * */
                         processedMessageData.put("dtime", currentStatusArray[2]);
+                        queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
 
                         /*
                          * query cbStatus module in order to find the record where statussrcid == 4th param value.
@@ -122,6 +126,7 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3], "statussrcid", "");
                         if (((boolean) searchcbStatus.get("status"))) {
                             processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
+                            queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
                         }
 
                         /*
@@ -132,6 +137,7 @@ public class UpdateConsumer extends Consumer {
                         searchcbCompany = searchRecord("cbCompany", currentStatusArray[4], "branchcode", "");
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
+                            queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
                         }
 
                         /*
@@ -141,16 +147,17 @@ public class UpdateConsumer extends Consumer {
                         searchcbCompany = searchRecord("cbCompany", currentStatusArray[5], "branchcode", "");
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
+                            queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
                         }
 
-                        String queryCondition = "linktoshipments ='" + processedMessageData.get("linktoshipments") + "'" +
+                        /*String queryCondition = "linktoshipments ='" + processedMessageData.get("linktoshipments") + "'" +
                                 " AND linktopackages ='" + processedMessageData.get("linktopackages") + "'" + " AND dtime ='" +
                                 processedMessageData.get("dtime") + "'" + " AND linktostatus ='" +
                                 processedMessageData.get("linktostatus") + "'" + " AND linktomainbranch ='" +
                                 processedMessageData.get("linktomainbranch") + "'" + " AND linktodestbranch ='" +
-                                processedMessageData.get("linktodestbranch") + "'";
+                                processedMessageData.get("linktodestbranch") + "'";*/
 
-                        Map<String, Object> searchProcessLog = searchRecord(module, "", "", queryCondition);
+                        Map<String, Object> searchProcessLog = searchRecord(module, "", "", queryCondition.toString());
                         if (!((boolean) searchProcessLog.get("status"))) {
                             System.out.println("NDANIIIIIIIIIII" + processedMessageData);
                             String mapName = "REST2" + module;
