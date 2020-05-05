@@ -15,6 +15,7 @@ import service.RESTClient;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 
@@ -90,6 +91,10 @@ public class UpdateConsumer extends Consumer {
 
                     String v = entry.getValue().toString();
                     String[] statusArray = v.split("#");
+                    String statusLatestDate = "";
+                    String latestStatus = "";
+                    String linkToStatusCRMID = "";
+                    String latestStatusShipmentKey = "";
                     for (String statusChanges:statusArray) {
                         String[] currentStatusArray = statusChanges.split("!");
 
@@ -114,11 +119,6 @@ public class UpdateConsumer extends Consumer {
                             queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
                         }
 
-                        /*
-                         * dtime
-                         * */
-                        processedMessageData.put("dtime", currentStatusArray[2]);
-                        queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
 
                         /*
                          * query cbStatus module in order to find the record where statussrcid == 4th param value.
@@ -128,6 +128,31 @@ public class UpdateConsumer extends Consumer {
                         if (((boolean) searchcbStatus.get("status"))) {
                             processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
                             queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                        }
+
+
+                        /*
+                         * dtime
+                         * */
+                        processedMessageData.put("dtime", currentStatusArray[2]);
+                        queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
+                        if (statusLatestDate.isEmpty()) {
+                            statusLatestDate = processedMessageData.get("dtime").toString();
+                            latestStatus = statusChanges;
+                            linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
+                            latestStatusShipmentKey = k;
+                        } else {
+                            // we need to compare the dates
+                            SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                            Date dtLatest = sdformat.parse(statusLatestDate);
+                            Date dtToCompare= sdformat.parse(processedMessageData.get("dtime").toString());
+
+                            if (dtLatest.compareTo(dtToCompare) < 0) {
+                                statusLatestDate = processedMessageData.get("dtime").toString();
+                                latestStatus = statusChanges;
+                                linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
+                                latestStatusShipmentKey = k;
+                            }
                         }
 
                         /*
@@ -192,11 +217,53 @@ public class UpdateConsumer extends Consumer {
                             Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
                             System.out.println("Util.getJson(d) = " + Util.getJson(d));
                             System.out.println("Updated Shipment Status");
+
+                            /*
+                            * http://phabricator.studioevolutivo.it/T10534#
+                            * Packages
+                            * */
+                            String[] latestStatusData = latestStatus.split("!");
+                            Map<String, Object> packageModuleFieldToUpdate = new HashMap<>();
+                            packageModuleFieldToUpdate.put("packagesrcid", latestStatusData[0]); // it will used as the search field too
+                            if (!linkToStatusCRMID.isEmpty())
+                                packageModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
+                            packageModuleFieldToUpdate.put("statusdate", statusLatestDate);
+                            updateModuleRecord("Packages", "packagesrcid", packageModuleFieldToUpdate);
+
+                            /*
+                             * http://phabricator.studioevolutivo.it/T10534#
+                             * Shipments
+                             * */
+
+                            Map<String, Object> shipmentModuleFieldToUpdate = new HashMap<>();
+                            shipmentModuleFieldToUpdate.put("pckslip_code", latestStatusShipmentKey); // it will used as the search field too
+                            if (!linkToStatusCRMID.isEmpty())
+                                shipmentModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
+                            shipmentModuleFieldToUpdate.put("statusdate", statusLatestDate);
+                            updateModuleRecord("Shipments", "pckslip_code", shipmentModuleFieldToUpdate);
+
                         }
                     }
                 }
             }
         }
+    }
+
+    private void updateModuleRecord(String module, String searchOnField, Map<String, Object> fieldUpdate) {
+        Map<String, Object> mapToSend = new HashMap<>();
+        fieldUpdate.put("assigned_user_id", wsClient.getUserID());
+        mapToSend.put("elementType", module);
+        mapToSend.put("element", Util.getJson(fieldUpdate));
+        mapToSend.put("searchOn", searchOnField);
+        StringBuilder builderRemoveIndexZero = new StringBuilder(fieldUpdate.keySet().toString());
+        builderRemoveIndexZero.deleteCharAt(0);
+        StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+        builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+        String updatedfields = builderRemoveIndexLast.toString();
+        mapToSend.put("updatedfields", updatedfields);
+        System.out.println("Map to Send" +  mapToSend);
+        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
+        System.out.println("Util.getJson(d) = " + Util.getJson(d));
     }
 
     private void upsertRecord(String module, Map element) throws Exception {
