@@ -106,7 +106,7 @@ public class UpdateConsumer extends Consumer {
                         if (((boolean) searchShipment.get("status"))) {
                             queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
-                            queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
+                            //queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
                         }
 
                         /*
@@ -116,7 +116,8 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0], "packagesrcid", "");
                         if (((boolean) searchPackages.get("status"))) {
                             processedMessageData.put("linktopackages", searchPackages.get("crmid"));
-                            queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                            //queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                            queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
                         }
 
 
@@ -127,7 +128,7 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3], "statussrcid", "");
                         if (((boolean) searchcbStatus.get("status"))) {
                             processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
-                            queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                            //queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
                         }
 
 
@@ -163,7 +164,7 @@ public class UpdateConsumer extends Consumer {
                         searchcbCompany = searchRecord("cbCompany", currentStatusArray[4], "branchcode", "");
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
-                            queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
+                            //queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
                         }
 
                         /*
