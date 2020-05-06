@@ -219,29 +219,29 @@ public class UpdateConsumer extends Consumer {
                             System.out.println("Util.getJson(d) = " + Util.getJson(d));
                             System.out.println("Updated Shipment Status");
 
-                            /*
-                            * http://phabricator.studioevolutivo.it/T10534#
-                            * Packages
-                            * */
-                            String[] latestStatusData = latestStatus.split("!");
-                            Map<String, Object> packageModuleFieldToUpdate = new HashMap<>();
-                            packageModuleFieldToUpdate.put("packagesrcid", latestStatusData[0]); // it will used as the search field too
-                            if (!linkToStatusCRMID.isEmpty())
-                                packageModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
-                            packageModuleFieldToUpdate.put("statusdate", statusLatestDate);
-                            updateModuleRecord("Packages", "packagesrcid", packageModuleFieldToUpdate);
-
-                            /*
-                             * http://phabricator.studioevolutivo.it/T10534#
-                             * Shipments
-                             * */
-
-                            Map<String, Object> shipmentModuleFieldToUpdate = new HashMap<>();
-                            shipmentModuleFieldToUpdate.put("pckslip_code", latestStatusShipmentKey); // it will used as the search field too
-                            if (!linkToStatusCRMID.isEmpty())
-                                shipmentModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
-                            shipmentModuleFieldToUpdate.put("statusdate", statusLatestDate);
-                            updateModuleRecord("Shipments", "pckslip_code", shipmentModuleFieldToUpdate);
+//                            /*
+//                            * http://phabricator.studioevolutivo.it/T10534#
+//                            * Packages
+//                            * */
+//                            String[] latestStatusData = latestStatus.split("!");
+//                            Map<String, Object> packageModuleFieldToUpdate = new HashMap<>();
+//                            packageModuleFieldToUpdate.put("packagesrcid", latestStatusData[0]); // it will used as the search field too
+//                            if (!linkToStatusCRMID.isEmpty())
+//                                packageModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
+//                            packageModuleFieldToUpdate.put("statusdate", statusLatestDate);
+//                            updateModuleRecord("Packages", "packagesrcid", packageModuleFieldToUpdate);
+//
+//                            /*
+//                             * http://phabricator.studioevolutivo.it/T10534#
+//                             * Shipments
+//                             * */
+//
+//                            Map<String, Object> shipmentModuleFieldToUpdate = new HashMap<>();
+//                            shipmentModuleFieldToUpdate.put("pckslip_code", latestStatusShipmentKey); // it will used as the search field too
+//                            if (!linkToStatusCRMID.isEmpty())
+//                                shipmentModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
+//                            shipmentModuleFieldToUpdate.put("statusdate", statusLatestDate);
+//                            updateModuleRecord("Shipments", "pckslip_code", shipmentModuleFieldToUpdate);
 
                         }
                     }
