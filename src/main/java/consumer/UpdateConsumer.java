@@ -102,7 +102,8 @@ public class UpdateConsumer extends Consumer {
                          *   query Shipments module in order to find the record where pckslip_code == key. Connect ProcessLog to that
                          *   Shipment by filling linktoshipments with shipmentsid of the found record.
                          * */
-                        Map<String, Object> searchShipment = searchRecord("Shipments", k, "pckslip_code", "");
+                        Map<String, Object> searchShipment = searchRecord("Shipments", k,
+                                "pckslip_code", "", false);
                         if (((boolean) searchShipment.get("status"))) {
                             queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
@@ -113,7 +114,8 @@ public class UpdateConsumer extends Consumer {
                          * query Packages module in order to find the record where packagesrcid == 1st param value. Connect ProcessLog
                          * to that Package by filling linktopackages with packagesid of the found record.
                          * */
-                        Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0], "packagesrcid", "");
+                        Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0],
+                                "packagesrcid", "", false);
                         if (((boolean) searchPackages.get("status"))) {
                             processedMessageData.put("linktopackages", searchPackages.get("crmid"));
                             //queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
@@ -125,7 +127,8 @@ public class UpdateConsumer extends Consumer {
                          * query cbStatus module in order to find the record where statussrcid == 4th param value.
                          * Connect ProcessLog to that cbStatus by filling its linktostatus with statusid of the found record
                          * */
-                        Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3], "statussrcid", "");
+                        Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3],
+                                "statussrcid", "", false);
                         if (((boolean) searchcbStatus.get("status"))) {
                             processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
                             //queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
@@ -161,7 +164,8 @@ public class UpdateConsumer extends Consumer {
                          * Connect ProcessLog to that cbCompany by filling its linktomainbranch with cbcompanyid of the found record.
                          * */
                         Map<String, Object> searchcbCompany;
-                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[4], "branchcode", "");
+                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[4],
+                                "branchcode", "", false);
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
                             //queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
@@ -171,7 +175,8 @@ public class UpdateConsumer extends Consumer {
                          * query cbCompany module in order to find the record where branchcode == 6th param value.
                          * Connect ProcessLog to that cbCompany by filling its linktodestbranch with cbcompanyid of the found record.
                          * */
-                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[5], "branchcode", "");
+                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[5],
+                                "branchcode", "", false);
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
                             queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
@@ -184,7 +189,8 @@ public class UpdateConsumer extends Consumer {
                                 processedMessageData.get("linktomainbranch") + "'" + " AND linktodestbranch ='" +
                                 processedMessageData.get("linktodestbranch") + "'";*/
 
-                        Map<String, Object> searchProcessLog = searchRecord(module, "", "", queryCondition.toString());
+                        Map<String, Object> searchProcessLog = searchRecord(module, "", "",
+                                queryCondition.toString(), false);
                         if (!((boolean) searchProcessLog.get("status"))) {
                             System.out.println("NDANIIIIIIIIIII" + processedMessageData);
                             String mapName = "REST2" + module;
@@ -396,9 +402,9 @@ public class UpdateConsumer extends Consumer {
                          searchID = ((JSONObject) parser.parse(jsonValue)).get("ID").toString();
                      }
                      //System.out.println(searchID);
-                     Map<String, Object> searchResult = searchRecord(moduleFieldInfo.get(fieldname), searchID,
-                             fieldToSearch.get(orgfieldName).toString(), "");
-                     if (((boolean) searchResult.get("status"))) {
+                     Map<String, Object> searchResult = searchRecord(moduleFieldInfo.get(fieldname),
+                             searchID, fieldToSearch.get(orgfieldName).toString(), "", true);
+                     if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
                          rs.put("status", "found");
                          rs.put("value",  searchResult.get("crmid"));
                      } else {
@@ -526,14 +532,13 @@ public class UpdateConsumer extends Consumer {
                                   */
                                  Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                          ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
-                                         "geoname", "");
+                                         "geoname", "", false);
                                  /*
                                  * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
                                  * */
 
                                  Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
-                                         "DA VERIFICARE",
-                                         "geoname", "");
+                                         "DA VERIFICARE", "geoname", "", false);
                                  if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      for (Object key : referenceFields.keySet()) {
@@ -558,10 +563,10 @@ public class UpdateConsumer extends Consumer {
                                   */
                                  Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                                          ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
-                                         "branchsrcid", "");
+                                         "branchsrcid", "", true);
 
                                  System.out.println(searchResultCompany);
-                                 if (((boolean) searchResultCompany.get("status"))) {
+                                 if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      System.out.println("MOduleeee::" + moduleFieldInfo.get(fieldname));
                                      System.out.println("Reference Field Company::" + referenceFields);
@@ -617,14 +622,14 @@ public class UpdateConsumer extends Consumer {
                                                      * */
                                                      Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
-                                                             "geoname", "");
+                                                             "geoname", "", false);
 
                                                      /*
                                                      * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
                                                      * */
-                                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
-                                                             "DA VERIFICARE",
-                                                             "geoname", "");
+                                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                                             "Geoboundary", "DA VERIFICARE", "geoname",
+                                                             "", false);
 
                                                      if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                                          Map<String, String> referenceFields = getUIType10Field("cbCompany");
@@ -650,11 +655,11 @@ public class UpdateConsumer extends Consumer {
                                                      * */
                                                      System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                      searchResultVendorModule = searchRecord("Vendors",
-                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                                             "suppliersrcid", "Vettore");
+                                                     ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                                             "suppliersrcid", "Vettore", true);
 
                                                      System.out.println(searchResultGeoboundary);
-                                                     if (((boolean) searchResultVendorModule.get("status"))) {
+                                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
                                                          // To Search in Rest Service
@@ -714,8 +719,8 @@ public class UpdateConsumer extends Consumer {
                                                       * */
                                                      searchResultVendorModule = searchRecord("Vendors",
                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                                             "suppliersrcid", "Fornitore");
-                                                     if (((boolean) searchResultVendorModule.get("status"))) {
+                                                             "suppliersrcid", "Fornitore", true);
+                                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
                                                          // To Search in Rest Service
@@ -798,10 +803,10 @@ public class UpdateConsumer extends Consumer {
                                  System.out.println(parser.parse(jsonValue));
                                  Map<String, Object> searchResultDeliveryAreas = searchRecord("DeliveryAreas",
                                          ((JSONObject) parser.parse(jsonValue)).get("ID").toString(),
-                                         "areasrcid", "");
+                                         "areasrcid", "", true);
                                  System.out.println(searchResultDeliveryAreas);
 
-                                 if (((boolean) searchResultDeliveryAreas.get("status"))) {
+                                 if (((boolean) searchResultDeliveryAreas.get("status")) && !((boolean) searchResultDeliveryAreas.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
@@ -854,7 +859,7 @@ public class UpdateConsumer extends Consumer {
                                                      if (filialiObject.get("comune") != null && !filialiObject.get("comune").toString().isEmpty()) {
                                                          Map<String, Object> searchResultGeoboundary = searchRecord(
                                                                  "Geoboundary", filialiObject.get("comune").toString(),
-                                                                 "geoname", "");
+                                                                 "geoname", "", false);
                                                          System.out.println("SEARCH GEOBOUNDARY");
                                                          System.out.println(searchResultGeoboundary);
                                                          if (((boolean) searchResultGeoboundary.get("status"))) {
@@ -878,10 +883,11 @@ public class UpdateConsumer extends Consumer {
                                                           * vettoreId
                                                           * */
                                                          System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
-                                                         searchResultVendorModule = searchRecord("Vendors", filialiObject.get("vettoreId").toString(),
-                                                                 "suppliersrcid", "Vettore");
+                                                         searchResultVendorModule = searchRecord("Vendors",
+                                                                 filialiObject.get("vettoreId").toString(),
+                                                                 "suppliersrcid", "Vettore", true);
 
-                                                         if (((boolean) searchResultVendorModule.get("status"))) {
+                                                         if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                          } else {
                                                              // To Search in Rest Service
@@ -941,9 +947,10 @@ public class UpdateConsumer extends Consumer {
                                                           * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                                           * fornitoreId
                                                           * */
-                                                         searchResultVendorModule = searchRecord("Vendors", filialiObject.get("fornitoreId").toString(),
-                                                                 "suppliersrcid", "Fornitore");
-                                                         if (((boolean) searchResultVendorModule.get("status"))) {
+                                                         searchResultVendorModule = searchRecord("Vendors",
+                                                                 filialiObject.get("fornitoreId").toString(),
+                                                                 "suppliersrcid", "Fornitore", true);
+                                                         if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                          } else {
                                                              // To Search in Rest Service
@@ -1204,7 +1211,8 @@ public class UpdateConsumer extends Consumer {
         return fieldmap;
     }
 
-    private Map<String, Object> searchRecord(String module, String value, String fieldname, String otherCondition) throws ParseException {
+    private Map<String, Object> searchRecord(String module, String value, String fieldname, String otherCondition,
+                                             boolean mustBeUpdated) throws ParseException {
         Map<String, Object> result = new HashMap<>();
         // Check if value contain any Special character especially '
 
@@ -1248,6 +1256,7 @@ public class UpdateConsumer extends Consumer {
                 result.put("status", false);
             }
             result.put("crmid", crmid);
+            result.put("mustbeupdated", mustBeUpdated);
         }
         System.out.println(result);
         return result;
@@ -1344,11 +1353,11 @@ public class UpdateConsumer extends Consumer {
             if (prenotazioni.get("restFiliale") instanceof JSONObject) {
                 JSONObject restFiliale = (JSONObject) prenotazioni.get("restFiliale");
                 System.out.println(restFiliale);
-                Map<String, Object> searchResultCompany = searchRecord("cbCompany", restFiliale.get("ID").toString(),
-                        "branchsrcid", "");
+                Map<String, Object> searchResultCompany = searchRecord("cbCompany",
+                        restFiliale.get("ID").toString(), "branchsrcid", "", true);
 
 
-                if (((boolean) searchResultCompany.get("status"))) {
+                if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
                     for (Object key : referenceFields.keySet()) {
                         String keyStr = (String)key;
@@ -1388,7 +1397,7 @@ public class UpdateConsumer extends Consumer {
                              * */
                             Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
-                                    "geoname", "");
+                                    "geoname", "", false);
                             if (((boolean) searchResultGeoboundary.get("status"))) {
                                 Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                 for (Object key : referenceFields.keySet()) {
@@ -1408,10 +1417,10 @@ public class UpdateConsumer extends Consumer {
                             System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                             searchResultVendorModule = searchRecord("Vendors",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                    "suppliersrcid", "Vettore");
+                                    "suppliersrcid", "Vettore", true);
 
                             System.out.println(searchResultGeoboundary);
-                            if (((boolean) searchResultVendorModule.get("status"))) {
+                            if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
                                 // To Search in Rest Service
@@ -1471,8 +1480,8 @@ public class UpdateConsumer extends Consumer {
                              * */
                             searchResultVendorModule = searchRecord("Vendors",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                    "suppliersrcid", "Fornitore");
-                            if (((boolean) searchResultVendorModule.get("status"))) {
+                                    "suppliersrcid", "Fornitore", true);
+                            if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
                                 // To Search in Rest Service
@@ -1553,10 +1562,10 @@ public class UpdateConsumer extends Consumer {
                  * */
                 JSONObject restAutista = (JSONObject) prenotazioni.get("restAutista");
                 System.out.println(restAutista);
-                Map<String, Object> searchResultEmployee = searchRecord("cbEmployee", restAutista.get("ID").toString(),
-                        "nif", "Autista");
+                Map<String, Object> searchResultEmployee = searchRecord("cbEmployee",
+                        restAutista.get("ID").toString(), "nif", "Autista", true);
 
-                if (((boolean) searchResultEmployee.get("status"))) {
+                if (((boolean) searchResultEmployee.get("status")) && !((boolean) searchResultEmployee.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
                     for (Object key : referenceFields.keySet()) {
                         String keyStr = (String)key;
@@ -1623,7 +1632,7 @@ public class UpdateConsumer extends Consumer {
                                      * */
                                     Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
-                                            "geoname", "");
+                                            "geoname", "", false);
                                     if (((boolean) searchResultGeoboundary.get("status"))) {
                                         Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                         for (Object key : referenceFields.keySet()) {
@@ -1644,10 +1653,10 @@ public class UpdateConsumer extends Consumer {
                                     System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                            "suppliersrcid", "Vettore");
+                                            "suppliersrcid", "Vettore", true);
 
                                     System.out.println(searchResultGeoboundary);
-                                    if (((boolean) searchResultVendorModule.get("status"))) {
+                                    if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
@@ -1707,8 +1716,8 @@ public class UpdateConsumer extends Consumer {
                                      * */
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                            "suppliersrcid", "Fornitore");
-                                    if (((boolean) searchResultVendorModule.get("status"))) {
+                                            "suppliersrcid", "Fornitore", true);
+                                    if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
@@ -1851,8 +1860,9 @@ public class UpdateConsumer extends Consumer {
                         //System.out.println("search:: " + fieldToSearch.get(keyStr));
 
                         Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
-                                String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(), "");
-                        if (((boolean) searchResult.get("status"))) {
+                                String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(),
+                                "", false);
+                        if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
                             recordFields.put(keyStr, searchResult.get("crmid"));
                         }
                     }
