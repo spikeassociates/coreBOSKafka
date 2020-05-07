@@ -668,10 +668,11 @@ public class UpdateConsumer extends Consumer {
                                                              String vettoriDataKey = "vettori";
 
                                                              Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
-                                                             System.out.println(vettoriResponse);
+                                                             //System.out.println(vettoriResponse);
+                                                             //System.out.println(filialiResponse);
                                                              if (vettoriResponse != null) {
                                                                  Map<String, Object> vettoriObject = searchByID(vettoriResponse,
-                                                                         ((JSONObject) parser.parse(filialiResponse.toString())).get("vettoreId").toString());
+                                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                                  if (!vettoriObject.isEmpty()) {
                                                                      Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                                      Map<String, Object> vettoriRecordField = new HashMap<>();
@@ -731,7 +732,7 @@ public class UpdateConsumer extends Consumer {
                                                              Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
                                                              if (fornitoriResponse != null) {
                                                                  Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
-                                                                         ((JSONObject) parser.parse(filialiResponse.toString())).get("fornitoreId").toString());
+                                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
                                                                  if (!fornitoriObject.isEmpty()) {
                                                                      Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                                      Map<String, Object> fornitoriRecordField = new HashMap<>();
@@ -829,7 +830,7 @@ public class UpdateConsumer extends Consumer {
                                              String id = zonaConsegna.get("filialeId").toString();
 
                                              Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
-                                             System.out.println(filialiResponse);
+                                             //System.out.println(filialiResponse);
                                              if (filialiResponse != null) {
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                                  if (!filialiObject.isEmpty()) {
@@ -899,7 +900,7 @@ public class UpdateConsumer extends Consumer {
                                                                  System.out.println(vettoriResponse);
                                                                  if (vettoriResponse != null) {
                                                                      Map<String, Object> vettoriObject = searchByID(vettoriResponse,
-                                                                             ((JSONObject) parser.parse(filialiResponse.toString())).get("vettoreId").toString());
+                                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                                      if (!vettoriObject.isEmpty()) {
                                                                          Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                                          Map<String, Object> vettoriRecordField = new HashMap<>();
@@ -961,7 +962,7 @@ public class UpdateConsumer extends Consumer {
                                                                  Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
                                                                  if (fornitoriResponse != null) {
                                                                      Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
-                                                                             ((JSONObject) parser.parse(filialiResponse.toString())).get("fornitoreId").toString());
+                                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
                                                                      if (!fornitoriObject.isEmpty()) {
                                                                          Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                                          Map<String, Object> fornitoriRecordField = new HashMap<>();
@@ -1668,7 +1669,7 @@ public class UpdateConsumer extends Consumer {
                                             System.out.println(vettoriResponse);
                                             if (vettoriResponse != null) {
                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
-                                                        ((JSONObject) parser.parse(filialiResponse.toString())).get("vettoreId").toString());
+                                                        ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                 if (!vettoriObject.isEmpty()) {
                                                     Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                     Map<String, Object> vettoriRecordField = new HashMap<>();
@@ -1728,7 +1729,7 @@ public class UpdateConsumer extends Consumer {
                                             Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
                                             if (fornitoriResponse != null) {
                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
-                                                        ((JSONObject) parser.parse(filialiResponse.toString())).get("fornitoreId").toString());
+                                                        ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
                                                 if (!fornitoriObject.isEmpty()) {
                                                     Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                     Map<String, Object> fornitoriRecordField = new HashMap<>();
@@ -1885,7 +1886,7 @@ public class UpdateConsumer extends Consumer {
         Map<String, Object> objValue = new HashMap<>();
         JSONParser parser = new JSONParser();
         JSONArray resArray = (JSONArray) parser.parse(response.toString());
-
+        //System.out.println(resArray);
         for (Object object: resArray
              ) {
             JSONObject record = (JSONObject) parser.parse(object.toString());
