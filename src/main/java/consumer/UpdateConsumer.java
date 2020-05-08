@@ -41,7 +41,7 @@ public class UpdateConsumer extends Consumer {
 
         try {
             while (true) {
-                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
+                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(2000));
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
                     ConsumerRecord record = (ConsumerRecord) it.next();
@@ -555,9 +555,9 @@ public class UpdateConsumer extends Consumer {
                                  }
                              }
 
-                             System.out.println("ISOLATION NJE");
+                             System.out.println("RITIRO PROCESSING START");
                              if (orgfieldName.equals("ritiro")) {
-                                 System.out.println("ISOLATION NDANI");
+                                 System.out.println("RITIRO PROCESSSING ENTER");
                                  /*
                                   * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
                                   */
@@ -565,7 +565,7 @@ public class UpdateConsumer extends Consumer {
                                          ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
                                          "branchsrcid", "", true);
 
-                                 System.out.println(searchResultCompany);
+                                 //System.out.println(searchResultCompany);
                                  if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      System.out.println("MOduleeee::" + moduleFieldInfo.get(fieldname));
@@ -584,20 +584,23 @@ public class UpdateConsumer extends Consumer {
                                      /*
                                       * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
                                       */
-                                     System.out.println("ISOLATION");
+                                     System.out.println("CREATING RITIRO");
                                      //System.out.println(parser.parse(jsonValue));
                                      if (startRestService()) {
                                          if (parser.parse(jsonValue) != null) {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
                                              JSONObject ritiro = (JSONObject) parser.parse(jsonValue);
+                                             System.out.println(ritiro);
                                              String id = ritiro.get("filialeId").toString();
-                                             //System.out.println(ritiro);
+                                             System.out.println(id);
 
                                              Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
-                                             //System.out.println(filialiResponse);
+                                             System.out.println(filialiResponse);
                                              if (filialiResponse != null) {
+                                                 System.out.println("GETTING FILIALI");
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
+                                                 System.out.println(filialiObject);
                                                  if (!filialiObject.isEmpty()) {
                                                      Map<String, Object> recordMapFiliali = new HashMap<>();
                                                      Map<String, Object> recordFieldFiliali = new HashMap<>();
@@ -615,23 +618,27 @@ public class UpdateConsumer extends Consumer {
                                                          JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
                                                          recordFieldFiliali.put(((JSONObject)field).get("fieldname").toString(), filialiObject.get(originalFiled.get("OrgfieldName").toString()));
                                                      }
+                                                     System.out.println("RECORD FILIALI");
+                                                     System.out.println(recordFieldFiliali);
 
                                                      /*
                                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                                      * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                                                      * */
-                                                     Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
-                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
-                                                             "geoname", "", false);
+                                                     if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null) {
+                                                         Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
+                                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
+                                                                 "geoname", "", false);
+                                                         System.out.println("MCHAWI");
+                                                         System.out.println(searchResultGeoboundary);
+                                                         /*
+                                                         * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
+                                                         * */
+                                                         Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                                                 "Geoboundary", "DA VERIFICARE", "geoname",
+                                                                 "", false);
 
-                                                     /*
-                                                     * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
-                                                     * */
-                                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
-                                                             "Geoboundary", "DA VERIFICARE", "geoname",
-                                                             "", false);
-
-                                                     if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                                        if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                                          Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                                          for (Object key : referenceFields.keySet()) {
                                                              String keyStr = (String)key;
@@ -644,6 +651,7 @@ public class UpdateConsumer extends Consumer {
 
                                                              }
                                                          }
+                                                     }
                                                      }
 
                                                      System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
@@ -658,7 +666,7 @@ public class UpdateConsumer extends Consumer {
                                                      ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
                                                              "suppliersrcid", "Vettore", true);
 
-                                                     System.out.println(searchResultGeoboundary);
+                                                     //System.out.println(searchResultGeoboundary);
                                                      if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
@@ -1216,6 +1224,12 @@ public class UpdateConsumer extends Consumer {
                                              boolean mustBeUpdated) throws ParseException {
         Map<String, Object> result = new HashMap<>();
         // Check if value contain any Special character especially '
+//        if (value == null) {
+//            result.put("status", false);
+//            result.put("crmid", "");
+//            return result;
+//        }
+
 
         if (value.contains("'")) {
             int specialCharPosition = value.indexOf("'") + 1;

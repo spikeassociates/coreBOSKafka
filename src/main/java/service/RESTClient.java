@@ -22,6 +22,7 @@ public class RESTClient {
     public JSONArray doGet(String endPoint, Map<String, String> queryParameters, Header[] headerParameters, String key) {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
+        System.out.println(urlToCall);
 //        queryParameters.put("codiceClienteOrdinante", "EPRICE");
         //queryParameters.put("pageSize", "10");
        // queryParameters.put("ldv", "624");
@@ -40,6 +41,7 @@ public class RESTClient {
     public JSONObject doGet(String endPoint, Map<String, String> queryParameters, Header[] headerParameters) {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
+        System.out.println(urlToCall);
         Object response = this._client.doGet(queryParameters, true, headerParameters);
         return (JSONObject) (response);
     }
