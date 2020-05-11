@@ -869,9 +869,11 @@ public class UpdateConsumer extends Consumer {
                                                          Map<String, Object> searchResultGeoboundary = searchRecord(
                                                                  "Geoboundary", filialiObject.get("comune").toString(),
                                                                  "geoname", "", false);
+                                                         Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                                                 "DA VERIFICARE", "geoname", "", false);
                                                          System.out.println("SEARCH GEOBOUNDARY");
                                                          System.out.println(searchResultGeoboundary);
-                                                         if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                         if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                                              Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                                              for (Object key : referenceFields.keySet()) {
                                                                  String keyStr = (String)key;
@@ -1413,7 +1415,9 @@ public class UpdateConsumer extends Consumer {
                             Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                     "geoname", "", false);
-                            if (((boolean) searchResultGeoboundary.get("status"))) {
+                            Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                    "DA VERIFICARE", "geoname", "", false);
+                            if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                 Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                 for (Object key : referenceFields.keySet()) {
                                     String keyStr = (String)key;
@@ -1648,7 +1652,9 @@ public class UpdateConsumer extends Consumer {
                                     Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                             "geoname", "", false);
-                                    if (((boolean) searchResultGeoboundary.get("status"))) {
+                                    Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                            "DA VERIFICARE", "geoname", "", false);
+                                    if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                         Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                         for (Object key : referenceFields.keySet()) {
                                             String keyStr = (String)key;
