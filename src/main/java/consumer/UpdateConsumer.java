@@ -1273,7 +1273,8 @@ public class UpdateConsumer extends Consumer {
                 result.put("status", false);
             }
             result.put("crmid", crmid);
-            result.put("mustbeupdated", mustBeUpdated);
+            //result.put("mustbeupdated", mustBeUpdated);
+            result.put("mustbeupdated", false);
         }
         System.out.println(result);
         return result;
