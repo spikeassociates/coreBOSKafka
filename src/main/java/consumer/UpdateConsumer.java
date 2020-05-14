@@ -41,7 +41,7 @@ public class UpdateConsumer extends Consumer {
 
         try {
             while (true) {
-                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(2000));
+                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
                     ConsumerRecord record = (ConsumerRecord) it.next();
@@ -51,7 +51,7 @@ public class UpdateConsumer extends Consumer {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
-//             kafkaConsumer.close();
+             kafkaConsumer.close();
         }
     }
 
@@ -544,7 +544,7 @@ public class UpdateConsumer extends Consumer {
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
                                          if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                             if (searchResultGeoboundary.get("crmid").toString() != "") {
+                                             if (((boolean) searchResultGeoboundary.get("status"))) {
                                                  recordField.put(keyStr, searchResultGeoboundary.get("crmid"));
                                              } else {
                                                  recordField.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
@@ -643,7 +643,7 @@ public class UpdateConsumer extends Consumer {
                                                          for (Object key : referenceFields.keySet()) {
                                                              String keyStr = (String)key;
                                                              if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                                                 if (!searchResultGeoboundary.get("crmid").toString().equals("")) {
+                                                                 if (((boolean) searchResultGeoboundary.get("status"))) {
                                                                      recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
                                                                  } else {
                                                                      recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
@@ -652,6 +652,22 @@ public class UpdateConsumer extends Consumer {
                                                              }
                                                          }
                                                      }
+                                                     } else {
+                                                         /*
+                                                          * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
+                                                          * */
+                                                         Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                                                 "Geoboundary", "DA VERIFICARE", "geoname",
+                                                                 "", false);
+                                                         if (((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                                             Map<String, String> referenceFields = getUIType10Field("cbCompany");
+                                                             for (Object key : referenceFields.keySet()) {
+                                                                 String keyStr = (String)key;
+                                                                 if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                                     recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                                 }
+                                                             }
+                                                         }
                                                      }
 
                                                      System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
@@ -802,6 +818,58 @@ public class UpdateConsumer extends Consumer {
                                          }
                                      }
                                  }
+
+                                 /*
+                                  * FOR NEW REQUIREMENT USE EXITING CODE
+                                  * http://phabricator.studioevolutivo.it/T10781
+                                  * 	Query GeoBoundary module in order to find the record where geoname == comune.
+                                  * If the query returns a result, then relate Pickups with that GeoBoundary by filling its linktocities field with geobid.
+                                  *  If there exists none, then implement the solution described here
+                                  * */
+
+                                 if (((JSONObject) parser.parse(jsonValue)).get("comune") != null) {
+                                     Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
+                                             ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
+                                             "geoname", "", false);
+
+
+                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                             "Geoboundary", "DA VERIFICARE", "geoname",
+                                             "", false);
+
+                                     if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                         Map<String, String> referenceFields = getUIType10Field("Pickups");
+                                         for (Object key : referenceFields.keySet()) {
+                                             String keyStr = (String)key;
+                                             if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                 if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                     recordField.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                 } else {
+                                                     recordField.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                 }
+
+                                             }
+                                         }
+                                     }
+                                 } else {
+                                     /*
+                                      * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
+                                      * */
+                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                             "Geoboundary", "DA VERIFICARE", "geoname",
+                                             "", false);
+                                     if (((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                         Map<String, String> referenceFields = getUIType10Field("Pickups");
+                                         for (Object key : referenceFields.keySet()) {
+                                             String keyStr = (String)key;
+                                             if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                 recordField.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                             }
+                                         }
+                                     }
+
+                                 }
+
                              }
 
                              if (orgfieldName.equals("zonaConsegna")) {
@@ -878,7 +946,24 @@ public class UpdateConsumer extends Consumer {
                                                              for (Object key : referenceFields.keySet()) {
                                                                  String keyStr = (String)key;
                                                                  if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                                                     recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                                     if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                                         recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                                     } else {
+                                                                         recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                                     }
+
+                                                                 }
+                                                             }
+                                                         }
+                                                     } else {
+                                                         Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                                                 "DA VERIFICARE", "geoname", "", false);
+                                                         if (((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                                             Map<String, String> referenceFields = getUIType10Field("cbCompany");
+                                                             for (Object key : referenceFields.keySet()) {
+                                                                 String keyStr = (String)key;
+                                                                 if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                                         recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
                                                                  }
                                                              }
                                                          }
@@ -1034,6 +1119,117 @@ public class UpdateConsumer extends Consumer {
                                              }
                                          }
                                      }
+
+                                     /* In zonaConsegna, there is an API parameter, called tecnicoId.
+                                        Query Technicians module in order to check whether there already exists a record where techniciansrcid == zonaConsegna.tecnicoId. If there exists none, then make an HTTP request to GET /tecnici/{id} where id should be the value of zonaConsegna.tecnicoId.
+                                        Afterwards, create a new Technicians record in CoreBOS with the following mapping:
+                                        */
+                                     if (((JSONObject) parser.parse(jsonValue)).get("tecnicoId") != null) {
+                                         Map<String, Object> searchResultTechnicians = searchRecord("Technicians",
+                                                 ((JSONObject) parser.parse(jsonValue)).get("tecnicoId").toString(),
+                                                 "techniciansrcid", "", true);
+
+                                         if (((boolean) searchResultTechnicians.get("status")) && !((boolean) searchResultTechnicians.get("mustbeupdated"))) {
+                                             Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
+                                             for (Object key : referenceFields.keySet()) {
+                                                 String keyStr = (String)key;
+                                                 if (referenceFields.get(keyStr).equals("DeliveryAreas")) {
+                                                     recordField.put(keyStr, searchResultTechnicians.get("crmid"));
+                                                 }
+                                             }
+
+                                         } else {
+                                             if (startRestService()) {
+                                                 String endpoint = "tecnici";
+                                                 String objectKey = "tecnico";
+                                                 JSONObject zonaConsegna = (JSONObject) parser.parse(jsonValue);
+                                                 String id = zonaConsegna.get("tecnicoId").toString();
+                                                 Object tecniciResponse = doGet(restClient.get_servicetoken(),
+                                                         endpoint+"/" + id, objectKey);
+
+                                                 if (tecniciResponse != null) {
+                                                     JSONObject tecniciObject = (JSONObject) parser.parse(tecniciResponse.toString());
+                                                     JSONObject indirizzoObject = (JSONObject) tecniciObject.get("indirizzo");
+                                                     Map<String, Object> recordMapTecnici = new HashMap<>();
+                                                     Map<String, Object> recordFieldTecnici = new HashMap<>();
+                                                     String mapNameTecnici = "tecnicoId2Technicians";
+                                                     String mapModuleTecnici = "cbMap";
+                                                     String conditionTecnici = "mapname" + "='" + mapNameTecnici + "'";
+                                                     String queryMapTecnici = "select * from " + mapModuleTecnici + " where " + conditionTecnici;
+                                                     JSONArray mapdataTecnici = wsClient.doQuery(queryMapTecnici);
+                                                     JSONObject resultTecnici = (JSONObject)parser.parse(mapdataTecnici.get(0).toString());
+                                                     JSONObject contentjsonTecnici = (JSONObject)parser.parse(resultTecnici.get("contentjson").toString());
+                                                     JSONObject fieldsTecnici = (JSONObject)parser.parse(contentjsonTecnici.get("fields").toString());
+                                                     JSONArray fields_arrayTecnici = (JSONArray) fieldsTecnici.get("field");
+                                                     for (Object field: fields_arrayTecnici) {
+                                                         JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                         JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                         if (((JSONObject) field).get("fieldname").toString().equals("techniciansrcid")) {
+                                                             recordFieldTecnici.put(((JSONObject)field).get("fieldname").toString(),
+                                                                     tecniciObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                         } else {
+                                                             if (originalFiled.get("OrgfieldName").toString().equals("comune")) {
+                                                                 if (indirizzoObject.get("comune") != null && !indirizzoObject.get("comune").toString().isEmpty()) {
+                                                                     Map<String, Object> searchResultGeoboundary = searchRecord(
+                                                                             "Geoboundary", indirizzoObject.get("comune").toString(),
+                                                                             "geoname", "", false);
+                                                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                                                             "DA VERIFICARE", "geoname", "", false);
+                                                                     if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                                                         Map<String, String> referenceFields = getUIType10Field("Technicians");
+                                                                         for (Object key : referenceFields.keySet()) {
+                                                                             String keyStr = (String)key;
+                                                                             if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                                                 if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                                                     recordFieldTecnici.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                                                 } else {
+                                                                                     recordFieldTecnici.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                                                 }
+                                                                             }
+                                                                         }
+                                                                     }
+                                                                 } else {
+                                                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
+                                                                             "DA VERIFICARE", "geoname", "", false);
+                                                                     if (((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                                                         Map<String, String> referenceFields = getUIType10Field("Technicians");
+                                                                         for (Object key : referenceFields.keySet()) {
+                                                                             String keyStr = (String)key;
+                                                                             if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                                                 recordFieldTecnici.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                                             }
+                                                                         }
+                                                                     }
+                                                                 }
+                                                             } else {
+                                                                 recordFieldTecnici.put(((JSONObject)field).get("fieldname").toString(),
+                                                                         indirizzoObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                             }
+                                                         }
+
+                                                     }
+
+                                                     recordFieldTecnici.put("assigned_user_id", wsClient.getUserID());
+                                                     recordMapTecnici.put("elementType", "Technicians");
+                                                     recordMapTecnici.put("element", Util.getJson(recordFieldTecnici));
+                                                     recordMapTecnici.put("searchOn", "branchsrcid");
+                                                     StringBuilder builderRemoveIndexZero = new StringBuilder(recordFieldTecnici.keySet().toString());
+                                                     builderRemoveIndexZero.deleteCharAt(0);
+                                                     StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                     String updatedfields = builderRemoveIndexLast.toString();
+                                                     recordMapTecnici.put("updatedfields", updatedfields);
+                                                     System.out.println(recordMapTecnici);
+                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapTecnici, "POST");
+                                                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
+                                                         recordField.put("linktotechnician", obj.get("id").toString());
+                                                     }
+                                                 }
+                                             }
+                                         }
+                                     }
+
                                  }
 
                              }
@@ -1122,18 +1318,271 @@ public class UpdateConsumer extends Consumer {
                 rs.put("status", "notfound");
                 rs.put("value",  "");
                 return rs;
-            }
-            else {
-                rs.put("status", "found");
-                if (moduleDateFields.containsKey(fieldname) && (moduleDateFields.get(fieldname).equals("5") || moduleDateFields.get(fieldname).equals("50"))) {
-                    String dateValue = record.get(orgfieldName).toString().replace("T", " ");
-                    rs.put("value",  dateValue);
+            } else {
+                /*
+                * filialePartenzaId Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialePartenzaId.
+                * If there exists none, then call the api/filiali endpoint and retrieve the object where ID == filialePartenzaId. The, create a new cbCompany based on the standard filiale mapping that we have defined in this task http://phabricator.studioevolutivo.it/T10384#192074.
+                * Relate the Shipment (which has been just created) with that cbCompany by fillings its departurebranch with cbcompanyid of that cbCompany.
+                * */
+                if (orgfieldName.equals("filialePartenzaId")) {
+
+                    if (Integer.parseInt(record.get(orgfieldName).toString()) == 0) {
+                        rs.put("status", "notfound");
+                        rs.put("value",  "");
+                        return rs;
+                    }
+                    Map<String, Object> searchResultCompany = searchRecord("cbCompany",
+                            record.get(orgfieldName).toString(), "branchsrcid", "", false);
+
+
+                    if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
+                        Map<String, String> referenceFields = getUIType10Field(fieldname);
+                        for (Object key : referenceFields.keySet()) {
+                            String keyStr = (String)key;
+                            if (referenceFields.get(keyStr).equals("cbCompany")) {
+                                rs.put("status", "found");
+                                rs.put("value", searchResultCompany.get("crmid"));
+                            }
+                        }
+                    } else {
+                        if (startRestService()) {
+                            String endpoint = "filiali";
+                            String objectKey = "filiali";
+                            String id = record.get(orgfieldName).toString();
+
+                            Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                            System.out.println(filialiResponse);
+                            if (filialiResponse != null) {
+                                System.out.println("GETTING FILIALI");
+                                Map<String, Object> filialiObject = searchByID(filialiResponse, id);
+                                System.out.println(filialiObject);
+                                if (!filialiObject.isEmpty()) {
+                                    Map<String, Object> recordMapFiliali = new HashMap<>();
+                                    Map<String, Object> recordFieldFiliali = new HashMap<>();
+                                    String mapNameFiliali = "filialeId2cbCompany";
+                                    String mapModuleFiliali = "cbMap";
+                                    String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                                    String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                                    JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
+                                    JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
+                                    JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
+                                    JSONArray fields_arrayFiliali = (JSONArray) fieldsFiliali.get("field");
+                                    for (Object field: fields_arrayFiliali) {
+                                        JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                        JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                        recordFieldFiliali.put(((JSONObject)field).get("fieldname").toString(), filialiObject.get(originalFiled.get("OrgfieldName").toString()));
+                                    }
+                                    System.out.println("RECORD FILIALI");
+                                    System.out.println(recordFieldFiliali);
+
+                                    /*
+                                     * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
+                                     * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
+                                     * */
+                                    if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null) {
+                                        Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
+                                                ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
+                                                "geoname", "", false);
+                                        System.out.println("MCHAWI");
+                                        System.out.println(searchResultGeoboundary);
+                                        /*
+                                         * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
+                                         * */
+                                        Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                                "Geoboundary", "DA VERIFICARE", "geoname",
+                                                "", false);
+
+                                        if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                            Map<String, String> referenceFields = getUIType10Field("cbCompany");
+                                            for (Object key : referenceFields.keySet()) {
+                                                String keyStr = (String)key;
+                                                if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                    if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                        recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                    } else {
+                                                        recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        Map<String, Object> searchResultGeoboundaryDefault = searchRecord(
+                                                "Geoboundary", "DA VERIFICARE", "geoname",
+                                                "", false);
+                                        if (((boolean) searchResultGeoboundaryDefault.get("status"))) {
+                                            Map<String, String> referenceFields = getUIType10Field("cbCompany");
+                                            for (Object key : referenceFields.keySet()) {
+                                                String keyStr = (String)key;
+                                                if (referenceFields.get(keyStr).equals("GeoBoundary")) {
+                                                        recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
+                                    Map<String, Object> searchResultVendorModule;
+                                    /*
+                                     * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
+                                     * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
+                                     * vettoreId
+                                     * */
+                                    System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                                    searchResultVendorModule = searchRecord("Vendors",
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                            "suppliersrcid", "Vettore", true);
+
+                                    //System.out.println(searchResultGeoboundary);
+                                    if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
+                                        recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
+                                    } else {
+                                        // To Search in Rest Service
+                                        if (startRestService()) {
+                                            String vettoriEndpoint = "vettori";
+                                            String vettoriDataKey = "vettori";
+
+                                            Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                            //System.out.println(vettoriResponse);
+                                            //System.out.println(filialiResponse);
+                                            if (vettoriResponse != null) {
+                                                Map<String, Object> vettoriObject = searchByID(vettoriResponse,
+                                                        ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                                                if (!vettoriObject.isEmpty()) {
+                                                    Map<String, Object> vettoriRecordMap = new HashMap<>();
+                                                    Map<String, Object> vettoriRecordField = new HashMap<>();
+                                                    //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                    String vettoriMapName = "vettoreId2Vendors";
+                                                    String vettoriMapModule = "cbMap";
+                                                    String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                                    String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                                    JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
+                                                    JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
+                                                    JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
+                                                    JSONArray vettoriFieldsArray = (JSONArray) vettoriMapFields.get("field");
+                                                    for (Object field: vettoriFieldsArray) {
+                                                        JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                        JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                        vettoriRecordField.put(((JSONObject)field).get("fieldname").toString(), vettoriObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                    }
+
+                                                    vettoriRecordField.put("assigned_user_id", wsClient.getUserID());
+                                                    vettoriRecordField.put("type", "Vettore");
+                                                    vettoriRecordMap.put("elementType", "Vendors");
+                                                    vettoriRecordMap.put("element", Util.getJson(vettoriRecordField));
+                                                    vettoriRecordMap.put("searchOn", "suppliersrcid");
+                                                    StringBuilder builderRemoveIndexZero = new StringBuilder(vettoriRecordField.keySet().toString());
+                                                    builderRemoveIndexZero.deleteCharAt(0);
+                                                    StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                    builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                    String updatedfields = builderRemoveIndexLast.toString();
+                                                    vettoriRecordMap.put("updatedfields", updatedfields);
+                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                                    JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                    if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
+                                                        recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    /*
+                                     * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
+                                     * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
+                                     * fornitoreId
+                                     * */
+                                    searchResultVendorModule = searchRecord("Vendors",
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
+                                            "suppliersrcid", "Fornitore", true);
+                                    if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
+                                        recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
+                                    } else {
+                                        // To Search in Rest Service
+                                        if (startRestService()) {
+                                            String fornitoriEndpoint = "fornitori";
+                                            String fornitoriDataKey = "fornitori";
+
+                                            Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                            if (fornitoriResponse != null) {
+                                                Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
+                                                        ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
+                                                if (!fornitoriObject.isEmpty()) {
+                                                    Map<String, Object> fornitoriRecordMap = new HashMap<>();
+                                                    Map<String, Object> fornitoriRecordField = new HashMap<>();
+                                                    //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                    String fornitoriMapName = "fornitoreId2Vendors";
+                                                    String fornitoriMapModule = "cbMap";
+                                                    String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                                    String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                                    JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
+                                                    JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
+                                                    JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
+                                                    JSONArray fornitoriFieldsArray = (JSONArray) fornitoriMapFields.get("field");
+                                                    for (Object field: fornitoriFieldsArray) {
+                                                        JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                        JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                        fornitoriRecordField.put(((JSONObject)field).get("fieldname").toString(), fornitoriObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                    }
+
+                                                    fornitoriRecordField.put("assigned_user_id", wsClient.getUserID());
+                                                    fornitoriRecordField.put("type", "Vettore");
+                                                    fornitoriRecordMap.put("elementType", "Vendors");
+                                                    fornitoriRecordMap.put("element", Util.getJson(fornitoriRecordField));
+                                                    fornitoriRecordMap.put("searchOn", "suppliersrcid");
+                                                    StringBuilder builderRemoveIndexZero = new StringBuilder(fornitoriRecordField.keySet().toString());
+                                                    builderRemoveIndexZero.deleteCharAt(0);
+                                                    StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                    builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                    String updatedfields = builderRemoveIndexLast.toString();
+                                                    fornitoriRecordMap.put("updatedfields", updatedfields);
+                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                    JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                    if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
+                                                        recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
+                                    recordMapFiliali.put("elementType", "cbCompany");
+                                    recordMapFiliali.put("element", Util.getJson(recordFieldFiliali));
+                                    recordMapFiliali.put("searchOn", "branchsrcid");
+                                    StringBuilder builderRemoveIndexZero = new StringBuilder(recordFieldFiliali.keySet().toString());
+                                    builderRemoveIndexZero.deleteCharAt(0);
+                                    StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                    builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                    String updatedfields = builderRemoveIndexLast.toString();
+                                    recordMapFiliali.put("updatedfields", updatedfields);
+                                    System.out.println(recordMapFiliali);
+                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                                    JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                    if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
+                                        rs.put("status", "found");
+                                        rs.put("value", obj.get("id").toString());
+                                    }
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    rs.put("value",  record.get(orgfieldName));
+                    System.out.println(orgfieldName);
+                    rs.put("status", "found");
+                    if (moduleDateFields.containsKey(fieldname) && (moduleDateFields.get(fieldname).equals("5") || moduleDateFields.get(fieldname).equals("50"))) {
+                        String dateValue = record.get(orgfieldName).toString().replace("T", " ");
+                        rs.put("value",  dateValue);
+                    } else {
+                        rs.put("value",  record.get(orgfieldName));
+                    }
                 }
             }
             return rs;
-        }else {
+        } else {
             for (Object o : record.entrySet()) {
                 rs.clear();
                 Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
@@ -1273,8 +1722,8 @@ public class UpdateConsumer extends Consumer {
                 result.put("status", false);
             }
             result.put("crmid", crmid);
-            //result.put("mustbeupdated", mustBeUpdated);
-            result.put("mustbeupdated", false);
+            result.put("mustbeupdated", mustBeUpdated);
+            //result.put("mustbeupdated", false);
         }
         System.out.println(result);
         return result;
@@ -1423,7 +1872,12 @@ public class UpdateConsumer extends Consumer {
                                 for (Object key : referenceFields.keySet()) {
                                     String keyStr = (String)key;
                                     if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                        recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                        if (((boolean) searchResultGeoboundary.get("status"))) {
+                                            recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                        } else {
+                                            recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                        }
+
                                     }
                                 }
                             }
@@ -1660,7 +2114,11 @@ public class UpdateConsumer extends Consumer {
                                         for (Object key : referenceFields.keySet()) {
                                             String keyStr = (String)key;
                                             if (referenceFields.get(keyStr).equals("GeoBoundary")) {
-                                                recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                if (((boolean) searchResultGeoboundary.get("status"))) {
+                                                    recordFieldFiliali.put(keyStr, searchResultGeoboundary.get("crmid"));
+                                                } else {
+                                                    recordFieldFiliali.put(keyStr, searchResultGeoboundaryDefault.get("crmid"));
+                                                }
                                             }
                                         }
                                     }
@@ -1826,6 +2284,81 @@ public class UpdateConsumer extends Consumer {
                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                         recordField.put("linktodriver", obj.get("id").toString());
+                    }
+                }
+            }
+        }
+
+        /*
+        * http://phabricator.studioevolutivo.it/T10781
+        * Query cbproductcategory module in order to find the record where categorysrcid == categoryId.
+        * If there exists none, then make an HTTP request to GET /rest/categorieMerceologiche and retrieve the object where ID == categoryId.
+        * Afterwards, create a new cbproductcategory record in CoreBOS with the following mapping:
+        * */
+        if (orgfieldName.equals("prodotti")) {
+            JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
+            if (Integer.parseInt(prodottiObject.get("categoryId").toString()) != 0) {
+                Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
+                        prodottiObject.get("categoryId").toString(), "categorysrcid", "", true);
+
+                if (((boolean) searchResultCbproductcategory.get("status")) && !((boolean) searchResultCbproductcategory.get("mustbeupdated"))) {
+                    Map<String, String> referenceFields = getUIType10Field(fieldname);
+                    for (Object key : referenceFields.keySet()) {
+                        String keyStr = (String)key;
+                        if (referenceFields.get(keyStr).equals("cbproductcategory")) {
+                            recordField.put(keyStr, searchResultCbproductcategory.get("crmid"));
+                        }
+                    }
+                } else {
+                    if (startRestService()) {
+                        String endpoint = "categorieMerceologiche";
+                        String objectKey = "categorieMerceologiche";
+                        String id = prodottiObject.get("categoryId").toString();
+
+                        Object categorieMerceologicheResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                        System.out.println(categorieMerceologicheResponse);
+                        if (categorieMerceologicheResponse != null) {
+                            System.out.println("GETTING FILIALI");
+                            Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
+                            System.out.println(categorieMerceologicheObject);
+                            if (!categorieMerceologicheObject.isEmpty()) {
+                                Map<String, Object> recordMapCategoryId = new HashMap<>();
+                                Map<String, Object> recordFieldCategoryId = new HashMap<>();
+                                String mapNameCategoryId = "categoryId2cbproductcategory";
+                                String mapModuleCategoryId = "cbMap";
+                                String conditionCategoryId = "mapname" + "='" + mapNameCategoryId + "'";
+                                String queryMapCategoryId = "select * from " + mapModuleCategoryId + " where " + conditionCategoryId;
+                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId);
+                                JSONObject resultCategoryId = (JSONObject)parser.parse(mapdataCategoryId.get(0).toString());
+                                JSONObject contentjsonCategoryId = (JSONObject)parser.parse(resultCategoryId.get("contentjson").toString());
+                                JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonCategoryId.get("fields").toString());
+                                JSONArray fields_arrayFiliali = (JSONArray) fieldsFiliali.get("field");
+                                for (Object field: fields_arrayFiliali) {
+                                    JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                    JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                    recordFieldCategoryId.put(((JSONObject)field).get("fieldname").toString(), categorieMerceologicheObject.get(originalFiled.get("OrgfieldName").toString()));
+                                }
+                                System.out.println("RECORD PRODUCT CATEGORY");
+                                System.out.println(recordFieldCategoryId);
+
+                                recordFieldCategoryId.put("assigned_user_id", wsClient.getUserID());
+                                recordMapCategoryId.put("elementType", "cbproductcategory");
+                                recordMapCategoryId.put("element", Util.getJson(recordFieldCategoryId));
+                                recordMapCategoryId.put("searchOn", "categorysrcid");
+                                StringBuilder builderRemoveIndexZero = new StringBuilder(recordFieldCategoryId.keySet().toString());
+                                builderRemoveIndexZero.deleteCharAt(0);
+                                StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                String updatedfields = builderRemoveIndexLast.toString();
+                                recordMapCategoryId.put("updatedfields", updatedfields);
+                                System.out.println(recordMapCategoryId);
+                                Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST");
+                                JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
+                                    recordField.put("linktocategory", obj.get("id").toString());
+                                }
+                            }
+                        }
                     }
                 }
             }
