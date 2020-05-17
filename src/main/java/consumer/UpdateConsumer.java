@@ -41,7 +41,7 @@ public class UpdateConsumer extends Consumer {
 
         try {
             while (true) {
-                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
+                ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(10000));
                 Iterator it = records.iterator();
                 while (it.hasNext()) {
                     ConsumerRecord record = (ConsumerRecord) it.next();
