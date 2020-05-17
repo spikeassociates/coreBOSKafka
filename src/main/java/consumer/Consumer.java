@@ -40,7 +40,7 @@ public class Consumer {
         properties.put("enable.auto.commit", true);
 //        properties.put("request.timeout.ms", 400000);
         properties.put("max.poll.interval.ms", Integer.MAX_VALUE);
-//        properties.put("session.timeout.ms", 500000);
+        properties.put("session.timeout.ms", 500000);
 //        properties.put("heartbeat_interval_ms", 60000);
 //        properties.put("metadata_max_age_ms", 50000);
         kafkaConsumer = new KafkaConsumer(properties);
