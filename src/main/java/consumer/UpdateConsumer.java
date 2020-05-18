@@ -1335,11 +1335,11 @@ public class UpdateConsumer extends Consumer {
                         return rs;
                     }
                     Map<String, Object> searchResultCompany = searchRecord("cbCompany",
-                            record.get(orgfieldName).toString(), "branchsrcid", "", false);
+                            record.get(orgfieldName).toString(), "branchsrcid", "", true);
 
                     System.out.println("filialePartenzaId");
                     if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
-                        Map<String, String> referenceFields = getUIType10Field(fieldname);
+                        Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                         for (Object key : referenceFields.keySet()) {
                             String keyStr = (String)key;
                             if (referenceFields.get(keyStr).equals("cbCompany")) {
