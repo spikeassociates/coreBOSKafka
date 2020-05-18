@@ -565,7 +565,7 @@ public class UpdateConsumer extends Consumer {
                                          ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
                                          "branchsrcid", "", true);
 
-                                 //System.out.println(searchResultCompany);
+                                 System.out.println("RITIRO");
                                  if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      System.out.println("MOduleeee::" + moduleFieldInfo.get(fieldname));
@@ -1337,7 +1337,7 @@ public class UpdateConsumer extends Consumer {
                     Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                             record.get(orgfieldName).toString(), "branchsrcid", "", false);
 
-
+                    System.out.println("filialePartenzaId");
                     if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                         Map<String, String> referenceFields = getUIType10Field(fieldname);
                         for (Object key : referenceFields.keySet()) {
@@ -1827,6 +1827,7 @@ public class UpdateConsumer extends Consumer {
                 Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                         restFiliale.get("ID").toString(), "branchsrcid", "", true);
 
+                System.out.println("PRENOTAZIONI");
 
                 if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
