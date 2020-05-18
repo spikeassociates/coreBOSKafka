@@ -131,7 +131,12 @@ public class UpdateConsumer extends Consumer {
                                 "statussrcid", "", false);
                         if (((boolean) searchcbStatus.get("status"))) {
                             processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
-                            //queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                            if (queryCondition.length() > 0) {
+                                queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                            } else {
+                                queryCondition.append("linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                            }
+
                         }
 
 
@@ -139,7 +144,11 @@ public class UpdateConsumer extends Consumer {
                          * dtime
                          * */
                         processedMessageData.put("dtime", currentStatusArray[2]);
-                        queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
+                        if (queryCondition.length() > 0) {
+                            queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
+                        } else {
+                            queryCondition.append("dtime ='").append(processedMessageData.get("dtime")).append("'");
+                        }
                         if (statusLatestDate.isEmpty()) {
                             statusLatestDate = processedMessageData.get("dtime").toString();
                             latestStatus = statusChanges;
