@@ -38,7 +38,7 @@ public class Consumer {
         properties.put("max.poll.records", 100000);
 //        properties.put("auto.commit.interval.ms", 8000);
         properties.put("enable.auto.commit", true);
-        properties.put("request.timeout.ms", Integer.MAX_VALUE);
+//        properties.put("request.timeout.ms", Integer.MAX_VALUE);
         properties.put("max.poll.interval.ms", Integer.MAX_VALUE);
 //        properties.put("session.timeout.ms", Integer.MAX_VALUE);
 //        properties.put("heartbeat.interval.ms", Integer.MAX_VALUE);
