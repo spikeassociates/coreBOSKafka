@@ -51,7 +51,7 @@ public class UpdateConsumer extends Consumer {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
-             kafkaConsumer.close();
+//             kafkaConsumer.close();
         }
     }
 
