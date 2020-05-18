@@ -188,7 +188,7 @@ public class UpdateConsumer extends Consumer {
                                 "branchcode", "", false);
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
-                            queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
+                            // queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
                         }
 
                         /*String queryCondition = "linktoshipments ='" + processedMessageData.get("linktoshipments") + "'" +
