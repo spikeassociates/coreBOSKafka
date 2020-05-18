@@ -1268,6 +1268,7 @@ public class UpdateConsumer extends Consumer {
                          Map<String, Object> objValue = (Map<String, Object>) element.get(orgfieldName);
                          Map<String, Object> recordToCreate =  getMapOfRecordToBeCreated(uitype10fields, fieldname,
                                  parentModule, objValue, fieldToSearch.get(orgfieldName).toString(), orgfieldName);
+                         System.out.println("RECORD to CREATE::" + recordToCreate);
                          lastRecordToCreate.add(recordToCreate);
                      } else {
                          // TODO: 4/8/20 Handle for module which do not contain any reference field
@@ -1307,7 +1308,7 @@ public class UpdateConsumer extends Consumer {
                             }
                             Map<String, Object> recordToCreate =  getMapOfRecordToBeCreated(uitype10fields, fieldname,
                                     parentModule, objValue, fldsearch, orgfieldName);
-                            //System.out.println("GIS::" + recordToCreate);
+                            System.out.println("RECORD to CREATE::" + recordToCreate);
                             lastRecordToCreate.add(recordToCreate);
                         } else {
                             // TODO: 4/8/20 Handle for Module which do not contain any reference field
@@ -2375,6 +2376,7 @@ public class UpdateConsumer extends Consumer {
         builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
         String updatedfields = builderRemoveIndexLast.toString();
         recordMap.put("updatedfields", updatedfields);
+        System.out.println(recordMap);
         return recordMap;
     }
 
