@@ -343,11 +343,11 @@ public class UpdateConsumer extends Consumer {
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
         // We Nee to Create Other Module Record which depend on this Created Record
-        Map<String, String> moduleCRMID = new HashMap<>();
-        JSONParser parser = new JSONParser();
-        JSONObject createdRecord = (JSONObject)parser.parse(Util.getJson(d));
-        moduleCRMID.put(module, createdRecord.get("id").toString());
-        createRecordsInMap(moduleCRMID);
+//        Map<String, String> moduleCRMID = new HashMap<>();
+//        JSONParser parser = new JSONParser();
+//        JSONObject createdRecord = (JSONObject)parser.parse(Util.getJson(d));
+//        moduleCRMID.put(module, createdRecord.get("id").toString());
+//        createRecordsInMap(moduleCRMID);
 
 
     }
