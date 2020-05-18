@@ -2298,7 +2298,7 @@ public class UpdateConsumer extends Consumer {
         * */
         if (orgfieldName.equals("prodotti")) {
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
-            if (Integer.parseInt(prodottiObject.get("categoryId").toString()) != 0) {
+            if (Integer.parseInt(prodottiObject.get("categoryId").toString()) != 0 && prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
                         prodottiObject.get("categoryId").toString(), "categorysrcid", "", true);
 
