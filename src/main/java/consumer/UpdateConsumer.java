@@ -2310,11 +2310,12 @@ public class UpdateConsumer extends Consumer {
                         }
                     }
                 } else {
-                    if (startRestService()) {
+                    if (startRestService() && prodottiObject.get("categoryId") != null) {
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
                         String id = prodottiObject.get("categoryId").toString();
 
+                        System.out.println("CATEGORY PRDUCT :: "+ id);
                         Object categorieMerceologicheResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
                         System.out.println(categorieMerceologicheResponse);
                         if (categorieMerceologicheResponse != null) {
