@@ -625,7 +625,8 @@ public class UpdateConsumer extends Consumer {
                                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                                      * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                                                      * */
-                                                     if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null) {
+                                                     if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null &&
+                                                             !((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString().isEmpty()) {
                                                          Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                                  ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                                                  "geoname", "", false);
@@ -827,7 +828,8 @@ public class UpdateConsumer extends Consumer {
                                   *  If there exists none, then implement the solution described here
                                   * */
 
-                                 if (((JSONObject) parser.parse(jsonValue)).get("comune") != null) {
+                                 if (((JSONObject) parser.parse(jsonValue)).get("comune") != null &&
+                                         !((JSONObject) parser.parse(jsonValue)).get("comune").toString().isEmpty()) {
                                      Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                              ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
                                              "geoname", "", false);
@@ -1381,7 +1383,8 @@ public class UpdateConsumer extends Consumer {
                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                      * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                                      * */
-                                    if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null) {
+                                    if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null &&
+                                            !((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString().isEmpty()) {
                                         Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                                 "geoname", "", false);
