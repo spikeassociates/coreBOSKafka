@@ -2400,35 +2400,35 @@ public class UpdateConsumer extends Consumer {
             Map<String, String> uitype10fields = getUIType10Field(module);
             JSONParser parser = new JSONParser();
             JSONObject recordFields = (JSONObject) parser.parse(record.get("element").toString());
-            //System.out.println("Element:: " + recordFields);
-            //System.out.println("Uitype10fields:: " + uitype10fields);
-            //System.out.println("Module CRMID:: " + moduleCRMID);
+            System.out.println("Element:: " + recordFields);
+            System.out.println("Uitype10fields:: " + uitype10fields);
+            System.out.println("Module CRMID:: " + moduleCRMID);
             for (Object key : uitype10fields.keySet()) {
                 String keyStr = (String)key;
                 if (moduleCRMID.containsKey(uitype10fields.get(keyStr))) {
                     // set the field value
                     recordFields.put(keyStr, moduleCRMID.get(uitype10fields.get(keyStr)));
                 } else {
-                    //System.out.println("SEMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                    //System.out.println("Module:: " + module);
-                    //System.out.println("record:: " + record);
-                    //System.out.println("key:: " + keyStr);
-//                    System.out.println(recordFields.containsKey(keyStr));
-//                    System.out.println(recordFields.get(keyStr).toString().equals(""));
-//                    System.out.println( recordFields.get(keyStr).toString());
+                    System.out.println("SEMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                    System.out.println("Module:: " + module);
+                    System.out.println("record:: " + record);
+                    System.out.println("key:: " + keyStr);
+                    System.out.println(recordFields.containsKey(keyStr));
+                    System.out.println(recordFields.get(keyStr).toString().equals(""));
+                    System.out.println( recordFields.get(keyStr).toString());
                     if (recordFields.containsKey(keyStr) && recordFields.get(keyStr) != null &&
                             recordFields.get(keyStr) != "") {
 
-                        //System.out.println(recordFields.containsKey(keyStr));
-                        //System.out.println(recordFields.get(keyStr));
-                        //System.out.println( recordFields.get(keyStr).toString());
+                        System.out.println(recordFields.containsKey(keyStr));
+                        System.out.println(recordFields.get(keyStr));
+                        System.out.println( recordFields.get(keyStr).toString());
                         // TODO: 4/10/20 Scenario for Prodotti
-                        //System.out.println("SUKARIIIIIIIIIIII YA WALEBOOOOOOOOOOOOOOOOOOOOO");
+                        System.out.println("SUKARIIIIIIIIIIII YA WALEBOOOOOOOOOOOOOOOOOOOOO");
                         //Get field to search when we want to create module record
                         Map<String, Object> fieldToSearch = getSearchField(module);
-                        //System.out.println("search:: " + uitype10fields.get(keyStr));
-                        //System.out.println("search:: " + recordFields.get(keyStr));
-                        //System.out.println("search:: " + fieldToSearch.get(keyStr));
+                        System.out.println("search:: " + uitype10fields.get(keyStr));
+                        System.out.println("search:: " + recordFields.get(keyStr));
+                        System.out.println("search:: " + fieldToSearch.get(keyStr));
 
                         Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
                                 String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(),
@@ -2440,9 +2440,9 @@ public class UpdateConsumer extends Consumer {
                 }
             }
             record.put("element", Util.getJson(recordFields));
-            //System.out.println("Util.getJson(d) for Child Record = " + record);
+            System.out.println("Util.getJson(d) for Child Record = " + record);
             Object d = wsClient.doInvoke(Util.methodUPSERT, record, "POST");
-            //System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
+            System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
         }
 
     }
