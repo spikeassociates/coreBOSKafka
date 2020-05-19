@@ -2430,11 +2430,16 @@ public class UpdateConsumer extends Consumer {
                         System.out.println("search:: " + recordFields.get(keyStr));
                         //System.out.println("search:: " + fieldToSearch.get(keyStr));
 
-                        Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
-                                String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(),
-                                "", false);
-                        if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
-                            recordFields.put(keyStr, searchResult.get("crmid"));
+
+                        if (recordFields.get(keyStr).toString().contains("x")) {
+                            recordFields.put(keyStr, recordFields.get(keyStr));
+                        } else {
+                            Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
+                                    String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(),
+                                    "", false);
+                            if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
+                                recordFields.put(keyStr, searchResult.get("crmid"));
+                            }
                         }
                     }
                 }
