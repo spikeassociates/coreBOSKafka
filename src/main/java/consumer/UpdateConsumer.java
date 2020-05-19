@@ -2428,7 +2428,7 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> fieldToSearch = getSearchField(module);
                         System.out.println("search:: " + uitype10fields.get(keyStr));
                         System.out.println("search:: " + recordFields.get(keyStr));
-                        System.out.println("search:: " + fieldToSearch.get(keyStr));
+                        //System.out.println("search:: " + fieldToSearch.get(keyStr));
 
                         Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
                                 String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(),
