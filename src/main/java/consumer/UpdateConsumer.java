@@ -2414,8 +2414,8 @@ public class UpdateConsumer extends Consumer {
                     System.out.println("record:: " + record);
                     System.out.println("key:: " + keyStr);
                     System.out.println(recordFields.containsKey(keyStr));
-                    System.out.println(recordFields.get(keyStr).toString().equals(""));
-                    System.out.println( recordFields.get(keyStr).toString());
+                    //System.out.println(recordFields.get(keyStr).toString().equals(""));
+                    //System.out.println( recordFields.get(keyStr).toString());
                     if (recordFields.containsKey(keyStr) && recordFields.get(keyStr) != null &&
                             recordFields.get(keyStr) != "") {
 
