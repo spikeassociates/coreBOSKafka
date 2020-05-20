@@ -42,6 +42,10 @@ public class RESTClient {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
         System.out.println(urlToCall);
+        queryParameters.clear();
+        //queryParameters.put("codiceClienteOrdinante", "EPRICE");
+        //queryParameters.put("pageSize", "10");
+         queryParameters.put("ldv", "124");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
         return (JSONObject) (response);
     }
