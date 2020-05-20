@@ -87,7 +87,28 @@ public class RESTClient {
             "token": "ff032afadc042091ca576a9ae8a9f0a2"
         }*/
         if (this.hasError(response)) {
-            return false;
+            // First Retry for network Connection
+            response = this._client.doPost(auth_credentials, true);
+            if (!this.hasError(response)) {
+                this._servicetoken = (String)((JSONObject) response).get("token");
+                return true;
+            } else {
+                // Second Retry for Network Connection
+                response = this._client.doPost(auth_credentials, true);
+                if (!this.hasError(response)) {
+                    this._servicetoken = (String)((JSONObject) response).get("token");
+                    return true;
+                } else {
+                    // Third Retry for Network Connection
+                    response = this._client.doPost(auth_credentials, true);
+                    if (!this.hasError(response)) {
+                        this._servicetoken = (String)((JSONObject) response).get("token");
+                        return true;
+                    } {
+                        return false;
+                    }
+                }
+            }
         } else {
             this._servicetoken = (String)((JSONObject) response).get("token");
             return true;
