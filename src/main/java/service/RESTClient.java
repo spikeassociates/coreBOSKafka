@@ -45,7 +45,7 @@ public class RESTClient {
         queryParameters.clear();
         //queryParameters.put("codiceClienteOrdinante", "EPRICE");
         //queryParameters.put("pageSize", "10");
-         queryParameters.put("ldv", "124");
+         queryParameters.put("ldv", "262");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
         return (JSONObject) (response);
     }
