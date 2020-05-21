@@ -879,7 +879,6 @@ public class UpdateConsumer extends Consumer {
                                  /*
                                   * Query DeliveryAreas module in order to check whether there already exists a record where areasrcid == zonaConsegna.ID.
                                   */
-                                 System.out.println("WALETEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
                                  System.out.println(parser.parse(jsonValue));
                                  Map<String, Object> searchResultDeliveryAreas = searchRecord("DeliveryAreas",
                                          ((JSONObject) parser.parse(jsonValue)).get("ID").toString(),
@@ -903,8 +902,8 @@ public class UpdateConsumer extends Consumer {
                                          if (parser.parse(jsonValue) != null) {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
-                                             System.out.println("DELIVERY AREEEEEEEEEEEEEEEEEEEEE");
-                                             System.out.println(parser.parse(jsonValue));
+                                             //.out.println("DELIVERY AREEEEEEEEEEEEEEEEEEEEE");
+                                             // System.out.println(parser.parse(jsonValue));
                                              JSONObject zonaConsegna = (JSONObject) parser.parse(jsonValue);
                                              String id = zonaConsegna.get("filialeId").toString();
 
@@ -930,8 +929,8 @@ public class UpdateConsumer extends Consumer {
                                                          recordFieldFiliali.put(((JSONObject)field).get("fieldname").toString(), filialiObject.get(originalFiled.get("OrgfieldName").toString()));
                                                      }
 
-                                                     System.out.println("RECORD DARA");
-                                                     System.out.println(recordFieldFiliali);
+                                                     // System.out.println("RECORD DARA");
+                                                     // System.out.println(recordFieldFiliali);
                                                      /*
                                                       * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                                       * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
@@ -942,8 +941,8 @@ public class UpdateConsumer extends Consumer {
                                                                  "geoname", "", false);
                                                          Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
                                                                  "DA VERIFICARE", "geoname", "", false);
-                                                         System.out.println("SEARCH GEOBOUNDARY");
-                                                         System.out.println(searchResultGeoboundary);
+                                                         // System.out.println("SEARCH GEOBOUNDARY");
+                                                         // System.out.println(searchResultGeoboundary);
                                                          if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                                              Map<String, String> referenceFields = getUIType10Field("cbCompany");
                                                              for (Object key : referenceFields.keySet()) {
@@ -995,7 +994,7 @@ public class UpdateConsumer extends Consumer {
                                                                  String vettoriDataKey = "vettori";
 
                                                                  Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
-                                                                 System.out.println(vettoriResponse);
+                                                                 // System.out.println(vettoriResponse);
                                                                  if (vettoriResponse != null) {
                                                                      Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
@@ -1112,7 +1111,7 @@ public class UpdateConsumer extends Consumer {
                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                      recordMapFiliali.put("updatedfields", updatedfields);
-                                                     System.out.println(recordMapFiliali);
+                                                     // System.out.println(recordMapFiliali);
                                                      Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
                                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -1222,7 +1221,7 @@ public class UpdateConsumer extends Consumer {
                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                      recordMapTecnici.put("updatedfields", updatedfields);
-                                                     System.out.println(recordMapTecnici);
+                                                     // System.out.println(recordMapTecnici);
                                                      Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapTecnici, "POST");
                                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -1566,7 +1565,7 @@ public class UpdateConsumer extends Consumer {
                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                     String updatedfields = builderRemoveIndexLast.toString();
                                     recordMapFiliali.put("updatedfields", updatedfields);
-                                    System.out.println(recordMapFiliali);
+                                    // System.out.println(recordMapFiliali);
                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
                                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -1825,7 +1824,7 @@ public class UpdateConsumer extends Consumer {
             // System.out.println(prenotazioni);
             if (prenotazioni.get("restFiliale") instanceof JSONObject) {
                 JSONObject restFiliale = (JSONObject) prenotazioni.get("restFiliale");
-                System.out.println(restFiliale);
+                // System.out.println(restFiliale);
                 Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                         restFiliale.get("ID").toString(), "branchsrcid", "", true);
 
@@ -2024,7 +2023,7 @@ public class UpdateConsumer extends Consumer {
                             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                             String updatedfields = builderRemoveIndexLast.toString();
                             recordMapFiliali.put("updatedfields", updatedfields);
-                            System.out.println(recordMapFiliali);
+                            // System.out.println(recordMapFiliali);
                             Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
                             JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                             if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {

@@ -42,7 +42,7 @@ public class RESTClient {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
         System.out.println(urlToCall);
-        queryParameters.clear();
+        // queryParameters.clear();
         // queryParameters.put("codiceClienteOrdinante", "EPRICE");
         // queryParameters.put("pageSize", "10");
         // queryParameters.put("ldv", "262");

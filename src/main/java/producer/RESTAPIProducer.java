@@ -86,7 +86,7 @@ public class RESTAPIProducer {
         String isFirstRequest = Config.getInstance().isFirstRequest();
         if (isFirstRequest.isEmpty() || isFirstRequest.equals("YES")) {
             int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
-            //int pageSize = 25; //to Delete After Testing
+            // int pageSize = 25; //to Delete After Testing
             int pageNr = 1;
 
             Object response = doGet(restClient.get_servicetoken(), pageSize, pageNr);
@@ -97,7 +97,7 @@ public class RESTAPIProducer {
             JSONParser  jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
             int totalNumberOfRecords = Integer.parseInt(jsonObject.get("nSpedizioniAccordingFilters").toString());
-            //int totalNumberOfRecords = 100;//to Delete After Testing
+            // int totalNumberOfRecords = 100;//to Delete After Testing
             int numberOfPages;
             if ((totalNumberOfRecords % pageSize) == 0 ) {
                 numberOfPages = totalNumberOfRecords / pageSize;
@@ -139,7 +139,7 @@ public class RESTAPIProducer {
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
         headersArray[1] = new BasicHeader("Authorization", token);
-        System.out.println(Arrays.toString(headersArray));
+        // System.out.println(Arrays.toString(headersArray));
         Object response = restClient.doGet(_endpoint, mapToSend, headersArray);
         if (response == null)
             return null;
