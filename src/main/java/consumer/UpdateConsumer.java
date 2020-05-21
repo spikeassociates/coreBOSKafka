@@ -107,7 +107,7 @@ public class UpdateConsumer extends Consumer {
                         if (((boolean) searchShipment.get("status"))) {
                             queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
-                            //queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
+                            // queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
                         }
 
                         /*
@@ -118,7 +118,7 @@ public class UpdateConsumer extends Consumer {
                                 "packagesrcid", "", false);
                         if (((boolean) searchPackages.get("status"))) {
                             processedMessageData.put("linktopackages", searchPackages.get("crmid"));
-                            //queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                            // queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
                             queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
                         }
 
@@ -177,7 +177,7 @@ public class UpdateConsumer extends Consumer {
                                 "branchcode", "", false);
                         if (((boolean) searchcbCompany.get("status"))) {
                             processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
-                            //queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
+                            // queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
                         }
 
                         /*
@@ -201,7 +201,7 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchProcessLog = searchRecord(module, "", "",
                                 queryCondition.toString(), false);
                         if (!((boolean) searchProcessLog.get("status"))) {
-                            System.out.println("NDANIIIIIIIIIII" + processedMessageData);
+                            // System.out.println("NDANIIIIIIIIIII" + processedMessageData);
                             String mapName = "REST2" + module;
                             String mapModule = "cbMap";
                             String condition = "mapname" + "='" + mapName + "'";
@@ -229,34 +229,34 @@ public class UpdateConsumer extends Consumer {
                             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                             String updatedfields = builderRemoveIndexLast.toString();
                             mapToSend.put("updatedfields", updatedfields);
-                            System.out.println("Map to Send" +  mapToSend);
+                            // System.out.println("Map to Send" +  mapToSend);
                             Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
                             System.out.println("Util.getJson(d) = " + Util.getJson(d));
                             System.out.println("Updated Shipment Status");
 
-//                            /*
-//                            * http://phabricator.studioevolutivo.it/T10534#
-//                            * Packages
-//                            * */
-//                            String[] latestStatusData = latestStatus.split("!");
-//                            Map<String, Object> packageModuleFieldToUpdate = new HashMap<>();
-//                            packageModuleFieldToUpdate.put("packagesrcid", latestStatusData[0]); // it will used as the search field too
-//                            if (!linkToStatusCRMID.isEmpty())
-//                                packageModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
-//                            packageModuleFieldToUpdate.put("statusdate", statusLatestDate);
-//                            updateModuleRecord("Packages", "packagesrcid", packageModuleFieldToUpdate);
-//
-//                            /*
-//                             * http://phabricator.studioevolutivo.it/T10534#
-//                             * Shipments
-//                             * */
-//
-//                            Map<String, Object> shipmentModuleFieldToUpdate = new HashMap<>();
-//                            shipmentModuleFieldToUpdate.put("pckslip_code", latestStatusShipmentKey); // it will used as the search field too
-//                            if (!linkToStatusCRMID.isEmpty())
-//                                shipmentModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
-//                            shipmentModuleFieldToUpdate.put("statusdate", statusLatestDate);
-//                            updateModuleRecord("Shipments", "pckslip_code", shipmentModuleFieldToUpdate);
+                            /*
+                            * http://phabricator.studioevolutivo.it/T10534#
+                            * Packages
+                            * */
+                            // String[] latestStatusData = latestStatus.split("!");
+                            // Map<String, Object> packageModuleFieldToUpdate = new HashMap<>();
+                            // packageModuleFieldToUpdate.put("packagesrcid", latestStatusData[0]); // it will used as the search field too
+                            // if (!linkToStatusCRMID.isEmpty())
+                                // packageModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
+                            // packageModuleFieldToUpdate.put("statusdate", statusLatestDate);
+                            // updateModuleRecord("Packages", "packagesrcid", packageModuleFieldToUpdate);
+
+                            /*
+                             * http://phabricator.studioevolutivo.it/T10534#
+                             * Shipments
+                             * */
+
+                            // Map<String, Object> shipmentModuleFieldToUpdate = new HashMap<>();
+                            // shipmentModuleFieldToUpdate.put("pckslip_code", latestStatusShipmentKey); // it will used as the search field too
+                            // if (!linkToStatusCRMID.isEmpty())
+                                // shipmentModuleFieldToUpdate.put("linktostatus", linkToStatusCRMID);
+                            // shipmentModuleFieldToUpdate.put("statusdate", statusLatestDate);
+                            // updateModuleRecord("Shipments", "pckslip_code", shipmentModuleFieldToUpdate);
 
                         }
                     }
@@ -367,36 +367,32 @@ public class UpdateConsumer extends Consumer {
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
-        //System.out.println(orgfieldName);
-        //System.out.println(fieldname);
+        // System.out.println(orgfieldName);
+        // System.out.println(fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
-            //System.out.println("MAMA JIKOLA");
             /*
             1. Check if the field value can be converted to JSONArray or JSONObject
             2. If is Object or JSON Array check if it exit in Module field search and is one of the module field
             3. if the above statement if false means the JSONArray or JSONObject record depend on the Main Module Record which is about to be created
             */
             String jsonValue = Util.getJson(record.get(orgfieldName));
-            //System.out.println(jsonValue);
-            //System.out.println(orgfieldName);
+            // System.out.println(jsonValue);
+            // System.out.println(orgfieldName);
             JSONParser parser = new JSONParser();
-            //System.out.println((parser.parse(jsonValue) instanceof JSONObject));
+            // System.out.println((parser.parse(jsonValue) instanceof JSONObject));
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
                     orgfieldName.equals("raeeFornitoreId")) {
-                //System.out.println("IMEPENYA");
-                //Get the Search fields
+                // Get the Search fields
                  Map<String, Object> fieldToSearch = getSearchField(parentModule);
-                //System.out.println(fieldToSearch);
-                //System.out.println(moduleFieldInfo);
+                // System.out.println(fieldToSearch);
+                // System.out.println(moduleFieldInfo);
                  if (!fieldToSearch.isEmpty() && moduleFieldInfo.containsKey(fieldname)) {
-                     //System.out.println("UNYANWEZUUUU");
                      String searchID;
                      if (orgfieldName.equals("distribuzioneFornitoreId") || orgfieldName.equals("raeeFornitoreId")) {
-                         //System.out.println("UKUKU DANGER");
                          JSONObject importoSpedizione = (JSONObject) parser.parse(Util.getJson(record.get("importoSpedizione")));
-                         //System.out.println(importoSpedizione.isEmpty());
-                         //System.out.println(importoSpedizione);
+                         // System.out.println(importoSpedizione.isEmpty());
+                         // System.out.println(importoSpedizione);
                          if (importoSpedizione == null) {
                              rs.put("status", "notfound");
                              rs.put("value",  "");
@@ -457,20 +453,16 @@ public class UpdateConsumer extends Consumer {
                                      for (Object field: fields_array) {
                                          JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
                                          JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
-//                                         if (moduleDateFields.containsKey(fieldname) && (moduleDateFields.get(fieldname).equals("5") || moduleDateFields.get(fieldname).equals("50"))) {
-//                                             String dateValue = fonitoriObject.get(originalFiled.get("OrgfieldName")).toString().replace("T", " ");
-//                                             recordField.put(((JSONObject)field).get("fieldname").toString(), dateValue);
-//                                         } else {
-                                             //assert fonitoriObject != null;
+                                         // if (moduleDateFields.containsKey(fieldname) && (moduleDateFields.get(fieldname).equals("5") || moduleDateFields.get(fieldname).equals("50"))) {
+                                             // String dateValue = fonitoriObject.get(originalFiled.get("OrgfieldName")).toString().replace("T", " ");
+                                             // recordField.put(((JSONObject)field).get("fieldname").toString(), dateValue);
+                                         // } else {
+                                             // assert fonitoriObject != null;
                                              recordField.put(((JSONObject)field).get("fieldname").toString(), fonitoriObject.get(originalFiled.get("OrgfieldName").toString()));
-//                                         }
+                                         // }
                                      }
 
-                                     //recordField.put("assigned_user_id", wsClient.getUserID());
                                      recordField.put("type", "Fornitore");
-                                     //recordMap.put("elementType", fieldname);
-                                     //recordMap.put("element", Util.getJson(recordField));
-                                     //recordMap.put("searchOn", fieldToSearch);
                                      recordField.put("assigned_user_id", wsClient.getUserID());
                                      recordMap.put("elementType", moduleFieldInfo.get(fieldname));
                                      recordMap.put("element", Util.getJson(recordField));
@@ -500,9 +492,9 @@ public class UpdateConsumer extends Consumer {
                              // We Have to Create the New Record and get Its CRMID
                              Map<String, Object> recordMap = new HashMap<>();
                              Map<String, Object> recordField = new HashMap<>();
-                             //1. Get Map for Adding that Module from Rest API
+                             // 1. Get Map for Adding that Module from Rest API
                              String mapName = orgfieldName + "2" + moduleFieldInfo.get(fieldname);
-                             //System.out.println(mapName);
+                             // System.out.println(mapName);
                              String mapModule = "cbMap";
                              String condition = "mapname" + "='" + mapName + "'";
                              String queryMap = "select * from " + mapModule + " where " + condition;
@@ -1249,7 +1241,7 @@ public class UpdateConsumer extends Consumer {
                              recordField.put("created_user_id", wsClient.getUserID());
                              recordField.put("smownerid", wsClient.getUserID());
                              recordField.put("smcreatorid", wsClient.getUserID());
-                             //System.out.println(recordField);
+                             // System.out.println(recordField);
                              recordMap.put("elementType", moduleFieldInfo.get(fieldname));
                              recordMap.put("element", Util.getJson(recordField));
                              recordMap.put("searchOn", fieldToSearch.get(orgfieldName));
@@ -1294,25 +1286,25 @@ public class UpdateConsumer extends Consumer {
                 // TODO: 4/8/20 Handle Object and Array if value contain those data
                 // Note: Here we assumed that the object inside the array its key value pair and its value is never Object or an Array
                 // If we Need to Handle for Object and Array we Need to just add very very simple code which is already implemented
-                //System.out.println(parser.parse(jsonValue));
+                // System.out.println(parser.parse(jsonValue));
                 JSONArray recordsArray = (JSONArray) parser.parse(jsonValue);
                 Map<String, Object> fieldToSearch = getSearchField(parentModule);
-                //System.out.println(fieldToSearch);
+                // System.out.println(fieldToSearch);
                 for (Object objRecord : recordsArray) {
                     if (objRecord instanceof JSONObject) {
                         uitype10fields = getUIType10Field(fieldname);
-                        //System.out.println(uitype10fields);
-                        //System.out.println(objRecord);
+                        // System.out.println(uitype10fields);
+                        // System.out.println(objRecord);
                         if (!uitype10fields.isEmpty()) {
                             Map<String, Object> objValue = (Map<String, Object>) objRecord;
-                            //System.out.println(objValue);
-                            //System.out.println("TESSSSS");
-                            //System.out.println(uitype10fields);
-                            //System.out.println(fieldname);
-                            //System.out.println(parentModule);
-                            //System.out.println(objValue);
-                            //System.out.println(fieldToSearch.get(orgfieldName).toString());
-                            //System.out.println(orgfieldName);
+                            // System.out.println(objValue);
+                            // System.out.println("TESSSSS");
+                            // System.out.println(uitype10fields);
+                            // System.out.println(fieldname);
+                            // System.out.println(parentModule);
+                            // System.out.println(objValue);
+                            // System.out.println(fieldToSearch.get(orgfieldName).toString());
+                            // System.out.println(orgfieldName);
                             String fldsearch = "";
                             if (fieldToSearch.containsKey(orgfieldName)) {
                                 fldsearch = fieldToSearch.get(orgfieldName).toString();
@@ -1346,7 +1338,7 @@ public class UpdateConsumer extends Consumer {
                     Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                             record.get(orgfieldName).toString(), "branchsrcid", "", true);
 
-                    System.out.println("filialePartenzaId");
+                    System.out.println("Processing filialePartenzaId Response Key Data");
                     if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                         Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                         for (Object key : referenceFields.keySet()) {
@@ -1358,16 +1350,17 @@ public class UpdateConsumer extends Consumer {
                         }
                     } else {
                         if (startRestService()) {
+                            System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
                             String objectKey = "filiali";
                             String id = record.get(orgfieldName).toString();
 
                             Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
-                            System.out.println(filialiResponse);
+                            // System.out.println(filialiResponse);
                             if (filialiResponse != null) {
-                                System.out.println("GETTING FILIALI");
+                                // System.out.println("GETTING FILIALI");
                                 Map<String, Object> filialiObject = searchByID(filialiResponse, id);
-                                System.out.println(filialiObject);
+                                // System.out.println(filialiObject);
                                 if (!filialiObject.isEmpty()) {
                                     Map<String, Object> recordMapFiliali = new HashMap<>();
                                     Map<String, Object> recordFieldFiliali = new HashMap<>();
@@ -1385,8 +1378,8 @@ public class UpdateConsumer extends Consumer {
                                         JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
                                         recordFieldFiliali.put(((JSONObject)field).get("fieldname").toString(), filialiObject.get(originalFiled.get("OrgfieldName").toString()));
                                     }
-                                    System.out.println("RECORD FILIALI");
-                                    System.out.println(recordFieldFiliali);
+
+                                    // System.out.println(recordFieldFiliali);
 
                                     /*
                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
@@ -1397,8 +1390,8 @@ public class UpdateConsumer extends Consumer {
                                         Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                                 "geoname", "", false);
-                                        System.out.println("MCHAWI");
-                                        System.out.println(searchResultGeoboundary);
+
+                                        // System.out.println(searchResultGeoboundary);
                                         /*
                                          * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
                                          * */
@@ -1435,7 +1428,6 @@ public class UpdateConsumer extends Consumer {
                                         }
                                     }
 
-                                    System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
                                     Map<String, Object> searchResultVendorModule;
                                     /*
                                      * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
@@ -1447,25 +1439,26 @@ public class UpdateConsumer extends Consumer {
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
                                             "suppliersrcid", "Vettore", true);
 
-                                    //System.out.println(searchResultGeoboundary);
+                                    // System.out.println(searchResultGeoboundary);
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
                                         if (startRestService()) {
+                                            System.out.println("Processing vettori Response Data");
                                             String vettoriEndpoint = "vettori";
                                             String vettoriDataKey = "vettori";
 
                                             Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
-                                            //System.out.println(vettoriResponse);
-                                            //System.out.println(filialiResponse);
+                                            // System.out.println(vettoriResponse);
+                                            // System.out.println(filialiResponse);
                                             if (vettoriResponse != null) {
                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                 if (!vettoriObject.isEmpty()) {
                                                     Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                     Map<String, Object> vettoriRecordField = new HashMap<>();
-                                                    //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                    // String vettoriMapName = orgfieldName + "2" + fieldname;
                                                     String vettoriMapName = "vettoreId2Vendors";
                                                     String vettoriMapModule = "cbMap";
                                                     String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
@@ -1515,6 +1508,7 @@ public class UpdateConsumer extends Consumer {
                                     } else {
                                         // To Search in Rest Service
                                         if (startRestService()) {
+                                            System.out.println("Processing fornitori Response Data");
                                             String fornitoriEndpoint = "fornitori";
                                             String fornitoriDataKey = "fornitori";
 
@@ -1584,7 +1578,7 @@ public class UpdateConsumer extends Consumer {
                         }
                     }
                 } else {
-                    System.out.println(orgfieldName);
+                    // System.out.println(orgfieldName);
                     rs.put("status", "found");
                     if (moduleDateFields.containsKey(fieldname) && (moduleDateFields.get(fieldname).equals("5") || moduleDateFields.get(fieldname).equals("50"))) {
                         String dateValue = record.get(orgfieldName).toString().replace("T", " ");
@@ -1688,11 +1682,11 @@ public class UpdateConsumer extends Consumer {
                                              boolean mustBeUpdated) throws ParseException {
         Map<String, Object> result = new HashMap<>();
         // Check if value contain any Special character especially '
-//        if (value == null) {
-//            result.put("status", false);
-//            result.put("crmid", "");
-//            return result;
-//        }
+        // if (value == null) {
+            // result.put("status", false);
+            // result.put("crmid", "");
+            // return result;
+        // }
 
 
         if (value.contains("'")) {
@@ -1716,19 +1710,19 @@ public class UpdateConsumer extends Consumer {
             condition = fieldname + "='" + value + "'";
         }
         String queryMap = "select * from " + module + " where " + condition;
-        System.out.println(queryMap);
+        // System.out.println(queryMap);
         JSONArray mapdata = wsClient.doQuery(queryMap);
-        //System.out.println(mapdata);
+        // System.out.println(mapdata);
         if (mapdata.size() == 0) {
             result.put("status", false);
             result.put("crmid", "");
         } else {
             JSONParser parser = new JSONParser();
             JSONObject queryResult = (JSONObject)parser.parse(mapdata.get(0).toString());
-            //System.out.println(queryResult);
-            //System.out.println(queryResult.get("id").toString());
+            // System.out.println(queryResult);
+            // System.out.println(queryResult.get("id").toString());
             String crmid = queryResult.get("id").toString();
-            //System.out.println(crmid);
+            // System.out.println(crmid);
             if (!crmid.isEmpty()) {
                 result.put("status", true);
             } else {
@@ -1736,9 +1730,9 @@ public class UpdateConsumer extends Consumer {
             }
             result.put("crmid", crmid);
             result.put("mustbeupdated", mustBeUpdated);
-            //result.put("mustbeupdated", false);
+            // result.put("mustbeupdated", false);
         }
-        System.out.println(result);
+        // System.out.println(result);
         return result;
     }
 
@@ -1772,8 +1766,8 @@ public class UpdateConsumer extends Consumer {
                 this.moduleDateFields.put(fieldInfo.get("name").toString(), fieldInfo.get("uitype").toString());
             }
         }
-        //System.out.println("Get Module Date Fields");
-        //System.out.println(this.moduleDateFields);
+        // System.out.println("Get Module Date Fields");
+        // System.out.println(this.moduleDateFields);
     }
 
     private Map<String, Object> getMapOfRecordToBeCreated(Map<String, String> moduleFieldInfo, String fieldname,
@@ -1781,23 +1775,23 @@ public class UpdateConsumer extends Consumer {
                                                           String orgfieldName) throws Exception {
         // We Have to Create the New Record and get Its CRMID
         // String modulesIdField = Objects.requireNonNull(modulesDeclared).getFieldsDoQuery(moduleFieldInfo.get(fieldname)).get(0);
-        //System.out.println(moduleFieldInfo);
-        //System.out.println(fieldname);
-        //System.out.println(parentModule);
-        //System.out.println(element);
-        //System.out.println(fieldToSearch);
-        //System.out.println(orgfieldName);
+        // System.out.println(moduleFieldInfo);
+        // System.out.println(fieldname);
+        // System.out.println(parentModule);
+        // System.out.println(element);
+        // System.out.println(fieldToSearch);
+        // System.out.println(orgfieldName);
 
         Map<String, Object> recordMap = new HashMap<>();
         Map<String, Object> recordField = new HashMap<>();
         JSONParser parser = new JSONParser();
         // Get Map for Adding that Module from Rest API
         String mapName = orgfieldName + "2" + fieldname;
-        //System.out.println(mapName);
+        // System.out.println(mapName);
         String mapModule = "cbMap";
         String condition = "mapname" + "='" + mapName + "'";
         String queryMap = "select * from " + mapModule + " where " + condition;
-        //System.out.println(queryMap);
+        // System.out.println(queryMap);
         JSONArray mapdata = wsClient.doQuery(queryMap);
         JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
         JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
@@ -1817,26 +1811,25 @@ public class UpdateConsumer extends Consumer {
             }
         }
 
-        System.out.println("MWANAMKE DELAAAAAAAAAAAAAAAAA");
-        System.out.println(recordField);
-        System.out.println(element);
+        // System.out.println(recordField);
+        // System.out.println(element);
 
         if (orgfieldName.equals("prenotazioni")) {
             /*
              * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
              */
-
-            System.out.println("PRENOTAZIONI");
-            System.out.println(element);
+            System.out.println("Processing prenotazioni Response key Data");
+            // System.out.println("PRENOTAZIONI");
+            // System.out.println(element);
             JSONObject prenotazioni = (JSONObject) parser.parse(element.toString());
-            System.out.println(prenotazioni);
+            // System.out.println(prenotazioni);
             if (prenotazioni.get("restFiliale") instanceof JSONObject) {
                 JSONObject restFiliale = (JSONObject) prenotazioni.get("restFiliale");
                 System.out.println(restFiliale);
                 Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                         restFiliale.get("ID").toString(), "branchsrcid", "", true);
 
-                System.out.println("PRENOTAZIONI");
+                // System.out.println("PRENOTAZIONI");
 
                 if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
@@ -1853,7 +1846,7 @@ public class UpdateConsumer extends Consumer {
                      */
                     if (prenotazioni.get("restFiliale") instanceof JSONObject) {
                         Map<String, Object> filialiObject = (Map<String, Object>) prenotazioni.get("restFiliale");
-                        System.out.println(filialiObject);
+                        // System.out.println(filialiObject);
                         if (!filialiObject.isEmpty()) {
                             Map<String, Object> recordMapFiliali = new HashMap<>();
                             Map<String, Object> recordFieldFiliali = new HashMap<>();
@@ -1902,12 +1895,12 @@ public class UpdateConsumer extends Consumer {
                              * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                              * vettoreId
                              * */
-                            System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                            // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                             searchResultVendorModule = searchRecord("Vendors",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
                                     "suppliersrcid", "Vettore", true);
 
-                            System.out.println(searchResultGeoboundary);
+                            // System.out.println(searchResultGeoboundary);
                             if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
@@ -1917,14 +1910,14 @@ public class UpdateConsumer extends Consumer {
                                     String vettoriDataKey = "vettori";
 
                                     Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
-                                    System.out.println(vettoriResponse);
+                                    // System.out.println(vettoriResponse);
                                     if (vettoriResponse != null) {
                                         Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                         if (!vettoriObject.isEmpty()) {
                                             Map<String, Object> vettoriRecordMap = new HashMap<>();
                                             Map<String, Object> vettoriRecordField = new HashMap<>();
-                                            //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                            // String vettoriMapName = orgfieldName + "2" + fieldname;
                                             String vettoriMapName = "vettoreId2Vendors";
                                             String vettoriMapModule = "cbMap";
                                             String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
@@ -1984,7 +1977,7 @@ public class UpdateConsumer extends Consumer {
                                         if (!fornitoriObject.isEmpty()) {
                                             Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                             Map<String, Object> fornitoriRecordField = new HashMap<>();
-                                            //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                            // String fornitoriMapName = orgfieldName + "2" + fieldname;
                                             String fornitoriMapName = "fornitoreId2Vendors";
                                             String fornitoriMapModule = "cbMap";
                                             String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
@@ -2044,12 +2037,13 @@ public class UpdateConsumer extends Consumer {
 
 
             if (prenotazioni.get("restAutista") instanceof JSONObject) {
+                System.out.println("Processing restAutista Response Data");
                 /*
                  * Query cbEmployee module in order to check whether there already exists a record where nif == restAutista.ID AND emptype == 'Autista'.
                  * If there exists none, then create a new one with the following mapping:
                  * */
                 JSONObject restAutista = (JSONObject) prenotazioni.get("restAutista");
-                System.out.println(restAutista);
+                // System.out.println(restAutista);
                 Map<String, Object> searchResultEmployee = searchRecord("cbEmployee",
                         restAutista.get("ID").toString(), "nif", "Autista", true);
 
@@ -2090,6 +2084,7 @@ public class UpdateConsumer extends Consumer {
                      * */
                     if (startRestService()) {
                         if (parser.parse(restAutista.toString()) != null) {
+                            System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
                             String objectKey = "filiali";
                             String id = restAutista.get("filialeId").toString();
@@ -2137,19 +2132,18 @@ public class UpdateConsumer extends Consumer {
                                         }
                                     }
 
-                                    System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
                                     Map<String, Object> searchResultVendorModule;
                                     /*
                                      * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                      * vettoreId
                                      * */
-                                    System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                                    // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
                                             "suppliersrcid", "Vettore", true);
 
-                                    System.out.println(searchResultGeoboundary);
+                                    // System.out.println(searchResultGeoboundary);
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
@@ -2159,14 +2153,14 @@ public class UpdateConsumer extends Consumer {
                                             String vettoriDataKey = "vettori";
 
                                             Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
-                                            System.out.println(vettoriResponse);
+                                            // System.out.println(vettoriResponse);
                                             if (vettoriResponse != null) {
                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                 if (!vettoriObject.isEmpty()) {
                                                     Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                     Map<String, Object> vettoriRecordField = new HashMap<>();
-                                                    //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                    // String vettoriMapName = orgfieldName + "2" + fieldname;
                                                     String vettoriMapName = "vettoreId2Vendors";
                                                     String vettoriMapModule = "cbMap";
                                                     String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
@@ -2226,7 +2220,7 @@ public class UpdateConsumer extends Consumer {
                                                 if (!fornitoriObject.isEmpty()) {
                                                     Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                     Map<String, Object> fornitoriRecordField = new HashMap<>();
-                                                    //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                    // String fornitoriMapName = orgfieldName + "2" + fieldname;
                                                     String fornitoriMapName = "fornitoreId2Vendors";
                                                     String fornitoriMapModule = "cbMap";
                                                     String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
@@ -2273,7 +2267,7 @@ public class UpdateConsumer extends Consumer {
                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                     String updatedfields = builderRemoveIndexLast.toString();
                                     recordMapFiliali.put("updatedfields", updatedfields);
-                                    System.out.println(recordMapFiliali);
+                                    // System.out.println(recordMapFiliali);
                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
                                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -2310,6 +2304,7 @@ public class UpdateConsumer extends Consumer {
         * Afterwards, create a new cbproductcategory record in CoreBOS with the following mapping:
         * */
         if (orgfieldName.equals("prodotti")) {
+            System.out.println("Processing prodotti Response Key Data");
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
             if (prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
@@ -2325,17 +2320,18 @@ public class UpdateConsumer extends Consumer {
                     }
                 } else {
                     if (startRestService() && prodottiObject.get("categoryId") != null) {
+                        System.out.println("Processing categoryId Response Data");
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
                         String id = prodottiObject.get("categoryId").toString();
 
-                        System.out.println("CATEGORY PRDUCT :: "+ id);
+                        // System.out.println("CATEGORY PRDUCT :: "+ id);
                         Object categorieMerceologicheResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
-                        System.out.println(categorieMerceologicheResponse);
+                        // System.out.println(categorieMerceologicheResponse);
                         if (categorieMerceologicheResponse != null) {
-                            System.out.println("GETTING FILIALI");
+                            // System.out.println("GETTING FILIALI");
                             Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
-                            System.out.println(categorieMerceologicheObject);
+                            // System.out.println(categorieMerceologicheObject);
                             if (!categorieMerceologicheObject.isEmpty()) {
                                 Map<String, Object> recordMapCategoryId = new HashMap<>();
                                 Map<String, Object> recordFieldCategoryId = new HashMap<>();
@@ -2353,8 +2349,8 @@ public class UpdateConsumer extends Consumer {
                                     JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
                                     recordFieldCategoryId.put(((JSONObject)field).get("fieldname").toString(), categorieMerceologicheObject.get(originalFiled.get("OrgfieldName").toString()));
                                 }
-                                System.out.println("RECORD PRODUCT CATEGORY");
-                                System.out.println(recordFieldCategoryId);
+                                // System.out.println("RECORD PRODUCT CATEGORY");
+                                // System.out.println(recordFieldCategoryId);
 
                                 recordFieldCategoryId.put("assigned_user_id", wsClient.getUserID());
                                 recordMapCategoryId.put("elementType", "cbproductcategory");
@@ -2366,7 +2362,7 @@ public class UpdateConsumer extends Consumer {
                                 builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                 String updatedfields = builderRemoveIndexLast.toString();
                                 recordMapCategoryId.put("updatedfields", updatedfields);
-                                System.out.println(recordMapCategoryId);
+                                // System.out.println(recordMapCategoryId);
                                 Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST");
                                 JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                 if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -2389,7 +2385,7 @@ public class UpdateConsumer extends Consumer {
         builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
         String updatedfields = builderRemoveIndexLast.toString();
         recordMap.put("updatedfields", updatedfields);
-        System.out.println(recordMap);
+        // System.out.println(recordMap);
         return recordMap;
     }
 
@@ -2400,35 +2396,35 @@ public class UpdateConsumer extends Consumer {
             Map<String, String> uitype10fields = getUIType10Field(module);
             JSONParser parser = new JSONParser();
             JSONObject recordFields = (JSONObject) parser.parse(record.get("element").toString());
-            System.out.println("Element:: " + recordFields);
-            System.out.println("Uitype10fields:: " + uitype10fields);
-            System.out.println("Module CRMID:: " + moduleCRMID);
+            // System.out.println("Element:: " + recordFields);
+            // System.out.println("Uitype10fields:: " + uitype10fields);
+            // System.out.println("Module CRMID:: " + moduleCRMID);
             for (Object key : uitype10fields.keySet()) {
                 String keyStr = (String)key;
                 if (moduleCRMID.containsKey(uitype10fields.get(keyStr))) {
                     // set the field value
                     recordFields.put(keyStr, moduleCRMID.get(uitype10fields.get(keyStr)));
                 } else {
-                    System.out.println("SEMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                    System.out.println("Module:: " + module);
-                    System.out.println("record:: " + record);
-                    System.out.println("key:: " + keyStr);
-                    System.out.println(recordFields.containsKey(keyStr));
-                    //System.out.println(recordFields.get(keyStr).toString().equals(""));
-                    //System.out.println( recordFields.get(keyStr).toString());
+                    // System.out.println("SEMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                    // System.out.println("Module:: " + module);
+                    // System.out.println("record:: " + record);
+                    // System.out.println("key:: " + keyStr);
+                    // System.out.println(recordFields.containsKey(keyStr));
+                    // System.out.println(recordFields.get(keyStr).toString().equals(""));
+                    // System.out.println( recordFields.get(keyStr).toString());
                     if (recordFields.containsKey(keyStr) && recordFields.get(keyStr) != null &&
                             recordFields.get(keyStr) != "") {
 
-                        System.out.println(recordFields.containsKey(keyStr));
-                        System.out.println(recordFields.get(keyStr));
-                        System.out.println( recordFields.get(keyStr).toString());
+                        // System.out.println(recordFields.containsKey(keyStr));
+                        // System.out.println(recordFields.get(keyStr));
+                        // System.out.println( recordFields.get(keyStr).toString());
                         // TODO: 4/10/20 Scenario for Prodotti
-                        System.out.println("SUKARIIIIIIIIIIII YA WALEBOOOOOOOOOOOOOOOOOOOOO");
-                        //Get field to search when we want to create module record
+                        // System.out.println("SUKARIIIIIIIIIIII YA WALEBOOOOOOOOOOOOOOOOOOOOO");
+                        // Get field to search when we want to create module record
                         Map<String, Object> fieldToSearch = getSearchField(module);
-                        System.out.println("search:: " + uitype10fields.get(keyStr));
-                        System.out.println("search:: " + recordFields.get(keyStr));
-                        //System.out.println("search:: " + fieldToSearch.get(keyStr));
+                        // System.out.println("search:: " + uitype10fields.get(keyStr));
+                        // System.out.println("search:: " + recordFields.get(keyStr));
+                        // System.out.println("search:: " + fieldToSearch.get(keyStr));
 
 
                         if (recordFields.get(keyStr).toString().contains("x")) {
@@ -2453,22 +2449,22 @@ public class UpdateConsumer extends Consumer {
     }
 
     private Map<String, Object> searchByID(Object response, String id) throws ParseException {
-        //System.out.println(response);
-        //System.out.println(id);
+        // System.out.println(response);
+        // System.out.println(id);
 
 
 
         Map<String, Object> objValue = new HashMap<>();
         JSONParser parser = new JSONParser();
         JSONArray resArray = (JSONArray) parser.parse(response.toString());
-        //System.out.println(resArray);
+        // System.out.println(resArray);
         for (Object object: resArray
              ) {
             JSONObject record = (JSONObject) parser.parse(object.toString());
-            //System.out.println(record.get("ID").toString().equals(id));
-            //System.out.println(id);
+            // System.out.println(record.get("ID").toString().equals(id));
+            // System.out.println(id);
             if (record.get("ID").toString().equals(id)) {
-                //System.out.println("KIGAGULAAAAAAAA");
+                // System.out.println("KIGAGULAAAAAAAA");
                 objValue = record;
                 return objValue;
             }
@@ -2489,7 +2485,7 @@ public class UpdateConsumer extends Consumer {
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
         headersArray[1] = new BasicHeader("Authorization", token);
-        //System.out.println(Arrays.toString(headersArray));
+        // System.out.println(Arrays.toString(headersArray));
         Object response = restClient.doGet(_endpoint, mapToSend, headersArray,key);
         if (response == null)
             return null;
@@ -2508,7 +2504,7 @@ public class UpdateConsumer extends Consumer {
         mapToSend.put("id", element.get("id"));
 
         Object d = wsClient.doInvoke(Util.methodDELETE, mapToSend, "POST");
-        //System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        // System.out.println("Util.getJson(d) = " + Util.getJson(d));
     }
 
     private Object getRecord(String module, String object) {

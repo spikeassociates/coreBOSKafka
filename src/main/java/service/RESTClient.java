@@ -23,16 +23,16 @@ public class RESTClient {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
         System.out.println(urlToCall);
-//        queryParameters.put("codiceClienteOrdinante", "EPRICE");
-        //queryParameters.put("pageSize", "10");
+        // queryParameters.put("codiceClienteOrdinante", "EPRICE");
+        // queryParameters.put("pageSize", "10");
        // queryParameters.put("ldv", "624");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
-        //System.out.println(response);
-//        if (this.hasError(response)) {
-//            return null;
-//        } else {
-            //JSONArray result = (JSONArray) ((JSONObject) response).get(key);
-            //System.out.println(response);
+        // System.out.println(response);
+        // if (this.hasError(response)) {
+              // return null;
+        // } else {
+            // JSONArray result = (JSONArray) ((JSONObject) response).get(key);
+            // System.out.println(response);
             JSONObject result = (JSONObject) (response);
             return (JSONArray) result.get(key);
        // }
@@ -43,9 +43,9 @@ public class RESTClient {
         this._client = new HTTP_Client(urlToCall);
         System.out.println(urlToCall);
         queryParameters.clear();
-        //queryParameters.put("codiceClienteOrdinante", "EPRICE");
-        //queryParameters.put("pageSize", "10");
-         queryParameters.put("ldv", "262");
+        // queryParameters.put("codiceClienteOrdinante", "EPRICE");
+        // queryParameters.put("pageSize", "10");
+        // queryParameters.put("ldv", "262");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
         return (JSONObject) (response);
     }

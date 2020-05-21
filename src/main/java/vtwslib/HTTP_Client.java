@@ -100,7 +100,7 @@ public class HTTP_Client extends DefaultHttpClient {
             System.out.println(uri);
             HttpGet httpGet = new HttpGet(uri);
             httpGet.setHeader("Accept", "application/json");
-            //httpGet.setHeader("Content-type", "application/json");
+            // httpGet.setHeader("Content-type", "application/json");
             httpGet.setHeaders(headerParameters);
             HttpResponse httpResponse = this.execute(httpGet);
             HttpEntity httpEntity = httpResponse.getEntity();
