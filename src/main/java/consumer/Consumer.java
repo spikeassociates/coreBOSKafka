@@ -43,6 +43,7 @@ public class Consumer {
         // properties.put("session.timeout.ms", Integer.MAX_VALUE);
         // properties.put("heartbeat.interval.ms", Integer.MAX_VALUE);
         // properties.put("metadata_max_age_ms", 50000);
+        properties.put("auto.offset.reset", "earliest");
         kafkaConsumer = new KafkaConsumer(properties);
     }
 }
