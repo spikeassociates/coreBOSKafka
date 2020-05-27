@@ -30,11 +30,13 @@ public class UpdateConsumer extends Consumer {
     private Map<String, String> uitype10fields = new HashMap<>();
     private Map<String, String> moduleDateFields = new HashMap<>();
     protected RESTClient restClient;
+    RebalanceListner rebalanceListner;
 
     public UpdateConsumer() throws Exception {
         List topics = new ArrayList();
         topics.add(topic);
-        kafkaConsumer.subscribe(topics);
+        rebalanceListner = new RebalanceListner(kafkaConsumer);
+        kafkaConsumer.subscribe(topics, rebalanceListner);
     }
 
     public void init() {
@@ -42,16 +44,17 @@ public class UpdateConsumer extends Consumer {
         try {
             while (true) {
                 ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
-                Iterator it = records.iterator();
-                while (it.hasNext()) {
-                    ConsumerRecord record = (ConsumerRecord) it.next();
+                for (Object o : records) {
+                    ConsumerRecord record = (ConsumerRecord) o;
                     readRecord(record);
+                    rebalanceListner.setCurrentOffsets(record.topic(), record.partition(), record.offset());
                 }
+                kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
-//             kafkaConsumer.close();
+            kafkaConsumer.close();
         }
     }
 
