@@ -107,14 +107,14 @@ public class RESTAPIProducer {
             }
             Config.getInstance().setTotalNumberOfPages("" + numberOfPages);
             Config.getInstance().setFirstRequest("" + "NO");
-            processResponseData(response);
+            processResponseData(response, 1);
         } else {
             int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
             int savedPageNumbers = Integer.parseInt(Config.getInstance().getTotalNumberOfPages());
             Config.getInstance().setFirstRequest("" + "YES");
             for (int page = 2; page <= savedPageNumbers; page++) {
                 Object response = doGet(restClient.get_servicetoken(), pageSize, page);
-                processResponseData(response);
+                processResponseData(response, page);
             }
         }
 
@@ -148,20 +148,25 @@ public class RESTAPIProducer {
         return response;
     }
 
-    private void processResponseData(Object response) throws ParseException {
+    private void processResponseData(Object response, int currentPage) throws ParseException {
         System.out.println("Waiting for Result");
         if (response == null)
             return;
         List shipmentsData = getShipmentsData(response);
         JSONObject shipmentsStatus = getShipmentStatus(response);
 
+        String partitionKey = "partition-" + currentPage;
         for (Object shipment : shipmentsData) {
             String module = "Shipments";
             KeyData keyData = new KeyData();
             keyData.module = module;
             keyData.operation = Util.methodUPDATE;
-            System.out.println(Util.getJson(shipment));
-            publishMessage(topic, Util.getJson(keyData), Util.getJson(shipment));
+            // System.out.println(Util.getJson(shipment));
+            JSONObject messageToSend = new JSONObject();
+            messageToSend.put("operation", keyData);
+            messageToSend.put("data", shipment);
+            // publishMessage(topic, Util.getJson(keyData), Util.getJson(shipment));
+            publishMessage(topic, partitionKey, Util.getJson(messageToSend));
         }
 
         for (Object key : shipmentsStatus.keySet()) {
@@ -173,8 +178,12 @@ public class RESTAPIProducer {
             keyData.operation = Util.methodUPDATE;
             JSONObject singleStatus = new JSONObject();
             singleStatus.put(shipmentid, status);
-            System.out.println(Util.getJson(singleStatus));
-            publishMessage(topic, Util.getJson(keyData), Util.getJson(singleStatus));
+            // System.out.println(Util.getJson(singleStatus));
+            JSONObject messageToSend = new JSONObject();
+            messageToSend.put("operation", keyData);
+            messageToSend.put("data", singleStatus);
+            // publishMessage(topic, Util.getJson(keyData), Util.getJson(singleStatus));
+            publishMessage(topic, partitionKey, Util.getJson(messageToSend));
         }
 
         Config.getInstance().save();

@@ -61,8 +61,10 @@ public class UpdateConsumer extends Consumer {
 
     private void readRecord(ConsumerRecord record) throws Exception {
         System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
-        KeyData keyData = Util.getObjectFromJson((String) record.key(), KeyData.class);
-        Object value = Util.getObjectFromJson((String) record.value(), Object.class);
+        JSONParser jsonParserX = new JSONParser();
+        JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
+        KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
+        Object value = Util.getObjectFromJson(objectValue.get("data").toString(), Object.class);
         if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
             System.out.println("Upserting the Record");
             lastRecordToCreate.clear();
@@ -1768,8 +1770,8 @@ public class UpdateConsumer extends Consumer {
                 this.moduleDateFields.put(fieldInfo.get("name").toString(), fieldInfo.get("uitype").toString());
             }
         }
-        // System.out.println("Get Module Date Fields");
-        // System.out.println(this.moduleDateFields);
+         // System.out.println("Get Module Date Fields");
+         // System.out.println(this.moduleDateFields);
     }
 
     private Map<String, Object> getMapOfRecordToBeCreated(Map<String, String> moduleFieldInfo, String fieldname,
