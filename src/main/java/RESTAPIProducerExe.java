@@ -17,7 +17,7 @@ public class RESTAPIProducerExe {
                     e.printStackTrace();
                 }
             }
-        }, 0, 1000 * 60 * RESTAPIProducer.timeIntervalMin);
+        }, 0, 43200000);
 
     }
 }

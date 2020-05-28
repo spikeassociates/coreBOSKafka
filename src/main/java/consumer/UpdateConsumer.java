@@ -61,7 +61,7 @@ public class UpdateConsumer extends Consumer {
 
     private void readRecord(ConsumerRecord record) throws Exception {
         long startTime = System.currentTimeMillis();
-        System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
+        // System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
         KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
@@ -1285,7 +1285,7 @@ public class UpdateConsumer extends Consumer {
                              }
                              long endTimeZonaConsegna = System.currentTimeMillis();
                              long timeElapsedZonaConsegna = endTimeZonaConsegna - startTimeZonaConsegna;
-                             System.out.println("RITIRO PROCESSING Time in milliseconds for Processing : " + timeElapsedZonaConsegna);
+                             System.out.println("ZONACONSEGNA PROCESSING Time in milliseconds for Processing : " + timeElapsedZonaConsegna);
 
                              recordField.put("assigned_user_id", wsClient.getUserID());
                              recordField.put("created_user_id", wsClient.getUserID());
@@ -1399,6 +1399,7 @@ public class UpdateConsumer extends Consumer {
                             }
                         }
                     } else {
+                        long startTimeFiliali2 = System.currentTimeMillis();
                         if (startRestService()) {
                             // System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
@@ -1626,6 +1627,9 @@ public class UpdateConsumer extends Consumer {
                                 }
                             }
                         }
+                        long endTimeFiliali2 = System.currentTimeMillis();
+                        long timeElapsedFiliali2 = endTimeFiliali2 - startTimeFiliali2;
+                        System.out.println("Filiali2 EndPoint Execution Time in milliseconds for Processing : " + timeElapsedFiliali2);
                     }
                 } else {
                     // System.out.println(orgfieldName);
@@ -1735,6 +1739,7 @@ public class UpdateConsumer extends Consumer {
 
     private Map<String, Object> searchRecord(String module, String value, String fieldname, String otherCondition,
                                              boolean mustBeUpdated) throws ParseException {
+        long startTime = System.currentTimeMillis();
         Map<String, Object> result = new HashMap<>();
         // Check if value contain any Special character especially '
         // if (value == null) {
@@ -1788,6 +1793,11 @@ public class UpdateConsumer extends Consumer {
             // result.put("mustbeupdated", false);
         }
         // System.out.println(result);
+        long endTime = System.currentTimeMillis();
+
+        long timeElapsed = endTime - startTime;
+
+        System.out.println("searchRecord Method Execution Time in milliseconds for Processing : " + timeElapsed);
         return result;
     }
 
@@ -1828,6 +1838,7 @@ public class UpdateConsumer extends Consumer {
     private Map<String, Object> getMapOfRecordToBeCreated(Map<String, String> moduleFieldInfo, String fieldname,
                                                           String parentModule, Map element, String fieldToSearch,
                                                           String orgfieldName) throws Exception {
+        long startTime = System.currentTimeMillis();
         // We Have to Create the New Record and get Its CRMID
         // String modulesIdField = Objects.requireNonNull(modulesDeclared).getFieldsDoQuery(moduleFieldInfo.get(fieldname)).get(0);
         // System.out.println(moduleFieldInfo);
@@ -1869,6 +1880,7 @@ public class UpdateConsumer extends Consumer {
         // System.out.println(recordField);
         // System.out.println(element);
 
+        long startTimePrenotazioni = System.currentTimeMillis();
         if (orgfieldName.equals("prenotazioni")) {
             /*
              * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
@@ -2351,6 +2363,9 @@ public class UpdateConsumer extends Consumer {
                 }
             }
         }
+        long endTimePrenotazioni = System.currentTimeMillis();
+        long timeElapsedPrenotazioni = endTimePrenotazioni - startTimePrenotazioni;
+        System.out.println("PRENOTAZIONI ENDPOINT Key Execution Time in milliseconds for Processing : " + timeElapsedPrenotazioni);
 
         /*
         * http://phabricator.studioevolutivo.it/T10781
@@ -2358,6 +2373,7 @@ public class UpdateConsumer extends Consumer {
         * If there exists none, then make an HTTP request to GET /rest/categorieMerceologiche and retrieve the object where ID == categoryId.
         * Afterwards, create a new cbproductcategory record in CoreBOS with the following mapping:
         * */
+        long startTimeProdotti = System.currentTimeMillis();
         if (orgfieldName.equals("prodotti")) {
             // System.out.println("Processing prodotti Response Key Data");
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
@@ -2429,6 +2445,9 @@ public class UpdateConsumer extends Consumer {
                 }
             }
         }
+        long endTimeProdotti = System.currentTimeMillis();
+        long timeElapsedProdotti = endTimeProdotti - startTimeProdotti;
+        System.out.println("PRODOTTI ENDPOINT Key Execution Time in milliseconds for Processing : " + timeElapsedProdotti);
 
         recordField.put("assigned_user_id", wsClient.getUserID());
         recordMap.put("elementType", fieldname);
@@ -2441,10 +2460,16 @@ public class UpdateConsumer extends Consumer {
         String updatedfields = builderRemoveIndexLast.toString();
         recordMap.put("updatedfields", updatedfields);
         // System.out.println(recordMap);
+        long endTime = System.currentTimeMillis();
+
+        long timeElapsed = endTime - startTime;
+
+        System.out.println("getMapOfRecordToBeCreated Method Execution Time in milliseconds for Processing : " + timeElapsed);
         return recordMap;
     }
 
     private void createRecordsInMap(Map<String, String> moduleCRMID) throws ParseException {
+        long startTime = System.currentTimeMillis();
         for (Map<String, Object> record: lastRecordToCreate
              ) {
             String module = record.get("elementType").toString();
@@ -2501,9 +2526,14 @@ public class UpdateConsumer extends Consumer {
             // System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
         }
 
+        long endTime = System.currentTimeMillis();
+        long timeElapsed = endTime - startTime;
+        System.out.println("createRecordsInMap Method Execution Time in milliseconds for Processing : " + timeElapsed);
+
     }
 
     private Map<String, Object> searchByID(Object response, String id) throws ParseException {
+        long startTime = System.currentTimeMillis();
         // System.out.println(response);
         // System.out.println(id);
 
@@ -2525,6 +2555,9 @@ public class UpdateConsumer extends Consumer {
             }
         }
 
+        long endTime = System.currentTimeMillis();
+        long timeElapsed = endTime - startTime;
+        System.out.println("searchByID Method Execution Time in milliseconds for Processing : " + timeElapsed);
         return objValue;
     }
     private static String encodeValue(Object value) {
