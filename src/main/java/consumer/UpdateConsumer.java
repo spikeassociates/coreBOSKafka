@@ -60,6 +60,7 @@ public class UpdateConsumer extends Consumer {
 
 
     private void readRecord(ConsumerRecord record) throws Exception {
+        long startTime = System.currentTimeMillis();
         System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
@@ -68,7 +69,7 @@ public class UpdateConsumer extends Consumer {
         if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
             System.out.println("Upserting the Record");
             lastRecordToCreate.clear();
-            //upsertRecord(keyData.module, (Map) value);
+            // upsertRecord(keyData.module, (Map) value);
             if (!keyData.module.equals("ProcessLog")) {
                 upsertRecord(keyData.module, (Map) value);
             } else {
@@ -78,9 +79,15 @@ public class UpdateConsumer extends Consumer {
             System.out.println("Deleting the Record");
             deleteRecord(keyData.module, (String) value);
         }
+        long endTime = System.currentTimeMillis();
+
+        long timeElapsed = endTime - startTime;
+
+        System.out.println("readRecord Method Execution Time in milliseconds for Processing : " + timeElapsed + "  Module::  " + keyData.module);
     }
 
-    private void updateShipmentsStatus(String module, Map message) throws Exception{
+    private void updateShipmentsStatus(String module, Map message) throws Exception {
+        long startTime = System.currentTimeMillis();
         Map<String, Object> status = message;
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
@@ -236,8 +243,8 @@ public class UpdateConsumer extends Consumer {
                             mapToSend.put("updatedfields", updatedfields);
                             // System.out.println("Map to Send" +  mapToSend);
                             Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-                            System.out.println("Util.getJson(d) = " + Util.getJson(d));
-                            System.out.println("Updated Shipment Status");
+                            // System.out.println("Util.getJson(d) = " + Util.getJson(d));
+                            // System.out.println("Updated Shipment Status");
 
                             /*
                             * http://phabricator.studioevolutivo.it/T10534#
@@ -268,6 +275,11 @@ public class UpdateConsumer extends Consumer {
                 }
             }
         }
+        long endTime = System.currentTimeMillis();
+
+        long timeElapsed = endTime - startTime;
+
+        System.out.println("updateShipmentsStatus Method Execution Time in milliseconds for Processing : " + timeElapsed);
     }
 
     private void updateModuleRecord(String module, String searchOnField, Map<String, Object> fieldUpdate) {
@@ -282,12 +294,13 @@ public class UpdateConsumer extends Consumer {
         builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
         String updatedfields = builderRemoveIndexLast.toString();
         mapToSend.put("updatedfields", updatedfields);
-        System.out.println("Map to Send" +  mapToSend);
+        // System.out.println("Map to Send" +  mapToSend);
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-        System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        // System.out.println("Util.getJson(d) = " + Util.getJson(d));
     }
 
     private void upsertRecord(String module, Map element) throws Exception {
+        long startTime = System.currentTimeMillis();
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
 
@@ -352,10 +365,10 @@ public class UpdateConsumer extends Consumer {
             mapToSend.put("searchOn", modulesIdField);
         }
 
-        System.out.println("Map to Send" +  mapToSend);
+        // System.out.println("Map to Send" +  mapToSend);
 
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-        System.out.println("Util.getJson(d) = " + Util.getJson(d));
+        // System.out.println("Util.getJson(d) = " + Util.getJson(d));
         // We Nee to Create Other Module Record which depend on this Created Record
         Map<String, String> moduleCRMID = new HashMap<>();
         JSONParser parser = new JSONParser();
@@ -363,12 +376,18 @@ public class UpdateConsumer extends Consumer {
         moduleCRMID.put(module, createdRecord.get("id").toString());
         createRecordsInMap(moduleCRMID);
 
+        long endTime = System.currentTimeMillis();
+
+        long timeElapsed = endTime - startTime;
+
+        System.out.println("upsertRecord Method Execution Time in milliseconds for Processing : " + timeElapsed );
 
     }
 
     @SuppressWarnings("unchecked")
     private Object getFieldValue(String orgfieldName, Map element, Map<String, String> moduleFieldInfo,
                                  String parentModule, String fieldname) throws Exception {
+        long startTime = System.currentTimeMillis();
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
@@ -561,9 +580,10 @@ public class UpdateConsumer extends Consumer {
                                  }
                              }
 
-                             System.out.println("RITIRO PROCESSING START");
+                             // System.out.println("RITIRO PROCESSING START");
+                             long startTimeRitiro = System.currentTimeMillis();
                              if (orgfieldName.equals("ritiro")) {
-                                 System.out.println("RITIRO PROCESSSING ENTER");
+                                 // System.out.println("RITIRO PROCESSSING ENTER");
                                  /*
                                   * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
                                   */
@@ -571,18 +591,18 @@ public class UpdateConsumer extends Consumer {
                                          ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
                                          "branchsrcid", "", true);
 
-                                 System.out.println("RITIRO");
+                                 // System.out.println("RITIRO");
                                  if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
-                                     System.out.println("MOduleeee::" + moduleFieldInfo.get(fieldname));
-                                     System.out.println("Reference Field Company::" + referenceFields);
+                                     // System.out.println("MOduleeee::" + moduleFieldInfo.get(fieldname));
+                                     // System.out.println("Reference Field Company::" + referenceFields);
                                      for (Object key : referenceFields.keySet()) {
                                          String keyStr = (String)key;
                                         // System.out.println("Key String::" + keyStr);
                                          if (referenceFields.get(keyStr).equals("cbCompany")) {
                                              //System.out.println("value::" + searchResultCompany.get("crmid"));
                                              recordField.put(keyStr, searchResultCompany.get("crmid"));
-                                             System.out.println("Record Field::" + recordField);
+                                             // System.out.println("Record Field::" + recordField);
                                          }
                                      }
 
@@ -590,23 +610,24 @@ public class UpdateConsumer extends Consumer {
                                      /*
                                       * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
                                       */
-                                     System.out.println("CREATING RITIRO");
+                                     // System.out.println("CREATING RITIRO");
                                      //System.out.println(parser.parse(jsonValue));
+                                     long startTimeFiliale = System.currentTimeMillis();
                                      if (startRestService()) {
                                          if (parser.parse(jsonValue) != null) {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
                                              JSONObject ritiro = (JSONObject) parser.parse(jsonValue);
-                                             System.out.println(ritiro);
+                                             // System.out.println(ritiro);
                                              String id = ritiro.get("filialeId").toString();
-                                             System.out.println(id);
+                                             // System.out.println(id);
 
                                              Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
-                                             System.out.println(filialiResponse);
+                                             // System.out.println(filialiResponse);
                                              if (filialiResponse != null) {
-                                                 System.out.println("GETTING FILIALI");
+                                                 // System.out.println("GETTING FILIALI");
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
-                                                 System.out.println(filialiObject);
+                                                 // System.out.println(filialiObject);
                                                  if (!filialiObject.isEmpty()) {
                                                      Map<String, Object> recordMapFiliali = new HashMap<>();
                                                      Map<String, Object> recordFieldFiliali = new HashMap<>();
@@ -624,8 +645,8 @@ public class UpdateConsumer extends Consumer {
                                                          JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
                                                          recordFieldFiliali.put(((JSONObject)field).get("fieldname").toString(), filialiObject.get(originalFiled.get("OrgfieldName").toString()));
                                                      }
-                                                     System.out.println("RECORD FILIALI");
-                                                     System.out.println(recordFieldFiliali);
+                                                     // System.out.println("RECORD FILIALI");
+                                                     // System.out.println(recordFieldFiliali);
 
                                                      /*
                                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
@@ -636,8 +657,8 @@ public class UpdateConsumer extends Consumer {
                                                          Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                                  ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
                                                                  "geoname", "", false);
-                                                         System.out.println("MCHAWI");
-                                                         System.out.println(searchResultGeoboundary);
+                                                         // System.out.println("MCHAWI");
+                                                         // System.out.println(searchResultGeoboundary);
                                                          /*
                                                          * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
                                                          * */
@@ -677,14 +698,14 @@ public class UpdateConsumer extends Consumer {
                                                          }
                                                      }
 
-                                                     System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
+                                                     // System.out.println("MAMAMAMAMAM VVVVVVVVVVVVV");
                                                      Map<String, Object> searchResultVendorModule;
                                                      /*
                                                      * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
                                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                                      * vettoreId
                                                      * */
-                                                     System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                                                     // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                      searchResultVendorModule = searchRecord("Vendors",
                                                      ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
                                                              "suppliersrcid", "Vettore", true);
@@ -694,6 +715,7 @@ public class UpdateConsumer extends Consumer {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
                                                          // To Search in Rest Service
+                                                         long startTimeVettori = System.currentTimeMillis();
                                                          if (startRestService()) {
                                                              String vettoriEndpoint = "vettori";
                                                              String vettoriDataKey = "vettori";
@@ -742,6 +764,12 @@ public class UpdateConsumer extends Consumer {
                                                                  }
                                                              }
                                                          }
+
+                                                         long endTimeVettori = System.currentTimeMillis();
+
+                                                         long timeElapsedVettori = endTimeVettori - startTimeVettori;
+
+                                                         System.out.println("VETTORI ENDPOINT Execution Time in milliseconds for Processing : " + timeElapsedVettori);
                                                      }
 
                                                      /*
@@ -756,6 +784,7 @@ public class UpdateConsumer extends Consumer {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
                                                          // To Search in Rest Service
+                                                         long startTimeFornitore = System.currentTimeMillis();
                                                          if (startRestService()) {
                                                              String fornitoriEndpoint = "fornitori";
                                                              String fornitoriDataKey = "fornitori";
@@ -802,6 +831,11 @@ public class UpdateConsumer extends Consumer {
                                                                  }
                                                              }
                                                          }
+                                                         long endTimeFornitore = System.currentTimeMillis();
+
+                                                         long timeElapsedFornitore = endTimeFornitore - startTimeFornitore;
+
+                                                         System.out.println("FORNITORE ENDPOINT Execution Time in milliseconds for Processing : " + timeElapsedFornitore);
                                                      }
 
                                                      recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
@@ -814,7 +848,7 @@ public class UpdateConsumer extends Consumer {
                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                      recordMapFiliali.put("updatedfields", updatedfields);
-                                                     System.out.println(recordMapFiliali);
+                                                     // System.out.println(recordMapFiliali);
                                                      Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
                                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -824,6 +858,11 @@ public class UpdateConsumer extends Consumer {
                                              }
                                          }
                                      }
+                                     long endTimeFiliale = System.currentTimeMillis();
+
+                                     long timeElapsedFiliale = endTimeFiliale - startTimeFiliale;
+
+                                     System.out.println("FILIALE ENDPOINT Execution Time in milliseconds for Processing : " + timeElapsedFiliale);
                                  }
 
                                  /*
@@ -879,16 +918,20 @@ public class UpdateConsumer extends Consumer {
                                  }
 
                              }
+                             long endTimeRitiro = System.currentTimeMillis();
+                             long timeElapsedRitiro = endTimeRitiro - startTimeRitiro;
+                             System.out.println("RITIRO PROCESSING Time in milliseconds for Processing : " + timeElapsedRitiro);
 
+                             long startTimeZonaConsegna = System.currentTimeMillis();
                              if (orgfieldName.equals("zonaConsegna")) {
                                  /*
                                   * Query DeliveryAreas module in order to check whether there already exists a record where areasrcid == zonaConsegna.ID.
                                   */
-                                 System.out.println(parser.parse(jsonValue));
+                                 // System.out.println(parser.parse(jsonValue));
                                  Map<String, Object> searchResultDeliveryAreas = searchRecord("DeliveryAreas",
                                          ((JSONObject) parser.parse(jsonValue)).get("ID").toString(),
                                          "areasrcid", "", true);
-                                 System.out.println(searchResultDeliveryAreas);
+                                 // System.out.println(searchResultDeliveryAreas);
 
                                  if (((boolean) searchResultDeliveryAreas.get("status")) && !((boolean) searchResultDeliveryAreas.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
@@ -985,7 +1028,7 @@ public class UpdateConsumer extends Consumer {
                                                           * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                                           * vettoreId
                                                           * */
-                                                         System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
+                                                         // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                          searchResultVendorModule = searchRecord("Vendors",
                                                                  filialiObject.get("vettoreId").toString(),
                                                                  "suppliersrcid", "Vettore", true);
@@ -1240,6 +1283,9 @@ public class UpdateConsumer extends Consumer {
                                  }
 
                              }
+                             long endTimeZonaConsegna = System.currentTimeMillis();
+                             long timeElapsedZonaConsegna = endTimeZonaConsegna - startTimeZonaConsegna;
+                             System.out.println("RITIRO PROCESSING Time in milliseconds for Processing : " + timeElapsedZonaConsegna);
 
                              recordField.put("assigned_user_id", wsClient.getUserID());
                              recordField.put("created_user_id", wsClient.getUserID());
@@ -1255,7 +1301,7 @@ public class UpdateConsumer extends Consumer {
                              builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                              String updatedfields = builderRemoveIndexLast.toString();
                              recordMap.put("updatedfields", updatedfields);
-                             System.out.println("Record to Send:: " + recordMap);
+                             // System.out.println("Record to Send:: " + recordMap);
                              Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
                              JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                              if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
@@ -1275,7 +1321,7 @@ public class UpdateConsumer extends Consumer {
                          Map<String, Object> objValue = (Map<String, Object>) element.get(orgfieldName);
                          Map<String, Object> recordToCreate =  getMapOfRecordToBeCreated(uitype10fields, fieldname,
                                  parentModule, objValue, fieldToSearch.get(orgfieldName).toString(), orgfieldName);
-                         System.out.println("RECORD to CREATE::" + recordToCreate);
+                         // System.out.println("RECORD to CREATE::" + recordToCreate);
                          lastRecordToCreate.add(recordToCreate);
                      } else {
                          // TODO: 4/8/20 Handle for module which do not contain any reference field
@@ -1315,7 +1361,7 @@ public class UpdateConsumer extends Consumer {
                             }
                             Map<String, Object> recordToCreate =  getMapOfRecordToBeCreated(uitype10fields, fieldname,
                                     parentModule, objValue, fldsearch, orgfieldName);
-                            System.out.println("RECORD to CREATE::" + recordToCreate);
+                            // System.out.println("RECORD to CREATE::" + recordToCreate);
                             lastRecordToCreate.add(recordToCreate);
                         } else {
                             // TODO: 4/8/20 Handle for Module which do not contain any reference field
@@ -1342,7 +1388,7 @@ public class UpdateConsumer extends Consumer {
                     Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                             record.get(orgfieldName).toString(), "branchsrcid", "", true);
 
-                    System.out.println("Processing filialePartenzaId Response Key Data");
+                    // System.out.println("Processing filialePartenzaId Response Key Data");
                     if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                         Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                         for (Object key : referenceFields.keySet()) {
@@ -1354,7 +1400,7 @@ public class UpdateConsumer extends Consumer {
                         }
                     } else {
                         if (startRestService()) {
-                            System.out.println("Processing filiali Response Data");
+                            // System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
                             String objectKey = "filiali";
                             String id = record.get(orgfieldName).toString();
@@ -1449,7 +1495,7 @@ public class UpdateConsumer extends Consumer {
                                     } else {
                                         // To Search in Rest Service
                                         if (startRestService()) {
-                                            System.out.println("Processing vettori Response Data");
+                                            // System.out.println("Processing vettori Response Data");
                                             String vettoriEndpoint = "vettori";
                                             String vettoriDataKey = "vettori";
 
@@ -1512,7 +1558,7 @@ public class UpdateConsumer extends Consumer {
                                     } else {
                                         // To Search in Rest Service
                                         if (startRestService()) {
-                                            System.out.println("Processing fornitori Response Data");
+                                            // System.out.println("Processing fornitori Response Data");
                                             String fornitoriEndpoint = "fornitori";
                                             String fornitoriDataKey = "fornitori";
 
@@ -1621,6 +1667,11 @@ public class UpdateConsumer extends Consumer {
 
         rs.put("status", "notfound");
         rs.put("value",  "");
+        long endTime = System.currentTimeMillis();
+
+        long timeElapsed = endTime - startTime;
+
+        System.out.println("getFieldValue Method Execution Time in milliseconds for Processing : " + timeElapsed);
         return rs;
     }
 
@@ -1822,7 +1873,7 @@ public class UpdateConsumer extends Consumer {
             /*
              * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
              */
-            System.out.println("Processing prenotazioni Response key Data");
+            // System.out.println("Processing prenotazioni Response key Data");
             // System.out.println("PRENOTAZIONI");
             // System.out.println(element);
             JSONObject prenotazioni = (JSONObject) parser.parse(element.toString());
@@ -2041,7 +2092,7 @@ public class UpdateConsumer extends Consumer {
 
 
             if (prenotazioni.get("restAutista") instanceof JSONObject) {
-                System.out.println("Processing restAutista Response Data");
+                // System.out.println("Processing restAutista Response Data");
                 /*
                  * Query cbEmployee module in order to check whether there already exists a record where nif == restAutista.ID AND emptype == 'Autista'.
                  * If there exists none, then create a new one with the following mapping:
@@ -2088,7 +2139,7 @@ public class UpdateConsumer extends Consumer {
                      * */
                     if (startRestService()) {
                         if (parser.parse(restAutista.toString()) != null) {
-                            System.out.println("Processing filiali Response Data");
+                            // System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
                             String objectKey = "filiali";
                             String id = restAutista.get("filialeId").toString();
@@ -2308,7 +2359,7 @@ public class UpdateConsumer extends Consumer {
         * Afterwards, create a new cbproductcategory record in CoreBOS with the following mapping:
         * */
         if (orgfieldName.equals("prodotti")) {
-            System.out.println("Processing prodotti Response Key Data");
+            // System.out.println("Processing prodotti Response Key Data");
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
             if (prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
@@ -2324,7 +2375,7 @@ public class UpdateConsumer extends Consumer {
                     }
                 } else {
                     if (startRestService() && prodottiObject.get("categoryId") != null) {
-                        System.out.println("Processing categoryId Response Data");
+                        // System.out.println("Processing categoryId Response Data");
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
                         String id = prodottiObject.get("categoryId").toString();
@@ -2445,9 +2496,9 @@ public class UpdateConsumer extends Consumer {
                 }
             }
             record.put("element", Util.getJson(recordFields));
-            System.out.println("Util.getJson(d) for Child Record = " + record);
+            // System.out.println("Util.getJson(d) for Child Record = " + record);
             Object d = wsClient.doInvoke(Util.methodUPSERT, record, "POST");
-            System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
+            // System.out.println("Util.getJson(d) for Child Record = " + Util.getJson(d));
         }
 
     }
