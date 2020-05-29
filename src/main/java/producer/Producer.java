@@ -87,7 +87,7 @@ public class Producer {
             e.printStackTrace();
         }
 // Close producer connection with broker.
-//        producer.close();
+        // producer.close();
     }
 
 }

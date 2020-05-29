@@ -58,16 +58,16 @@ public class RESTAPIProducer {
     protected void publishMessage(String topic, String key, String message) {
         String runtime = new Date().toString();
         String msg = "Message Publishing Time - " + runtime + message;
-        System.out.println(msg);
+        //System.out.println(msg);
         try {
             RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, message)).get();
-            System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
-                    , key, metadata.partition(), message, runtime);
-            System.out.println("topic = " + topic);
-            System.out.println("key = " + key);
-            System.out.println("message = " + message);
-            System.out.println("metadata.partition() = " + metadata.partition());
-            System.out.println(msg);
+            //System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
+            //        , key, metadata.partition(), message, runtime);
+            //System.out.println("topic = " + topic);
+           // System.out.println("key = " + key);
+           // System.out.println("message = " + message);
+            //System.out.println("metadata.partition() = " + metadata.partition());
+            //System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -108,6 +108,8 @@ public class RESTAPIProducer {
             Config.getInstance().setTotalNumberOfPages("" + numberOfPages);
             Config.getInstance().setFirstRequest("" + "NO");
             processResponseData(response, 1);
+            if (numberOfPages == 1)
+                producer.close();
         } else {
             int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
             int savedPageNumbers = Integer.parseInt(Config.getInstance().getTotalNumberOfPages());
@@ -116,6 +118,7 @@ public class RESTAPIProducer {
                 Object response = doGet(restClient.get_servicetoken(), pageSize, page);
                 processResponseData(response, page);
             }
+            producer.close();
         }
 
     }
