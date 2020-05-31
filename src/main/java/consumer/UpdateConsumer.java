@@ -214,12 +214,16 @@ public class UpdateConsumer extends Consumer {
                                 queryCondition.toString(), false);
                         if (!((boolean) searchProcessLog.get("status"))) {
                             // System.out.println("NDANIIIIIIIIIII" + processedMessageData);
-                            String mapName = "REST2" + module;
+                            StringBuilder mapName, condition, queryMap;
+                            mapName = new StringBuilder("REST2").append(module);
+                            //String mapName = "REST2" + module;
                             String mapModule = "cbMap";
-                            String condition = "mapname" + "='" + mapName + "'";
-                            String queryMap = "select * from " + mapModule + " where " + condition;
+                            condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
+                            queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
+                            // String condition = "mapname" + "='" + mapName + "'";
+                            // String queryMap = "select * from " + mapModule + " where " + condition;
 
-                            JSONArray mapdata = wsClient.doQuery(queryMap);
+                            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
                             JSONParser parser = new JSONParser();
                             JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
                             JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
@@ -321,13 +325,18 @@ public class UpdateConsumer extends Consumer {
                     }
                 }
             }
+            StringBuilder mapName, mapModule, condition, queryMap;
+            mapName = new StringBuilder("REST2").append(module);
+            mapModule = new StringBuilder("cbMap");
+            condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
+            queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
 
-            String mapName = "REST2" + module;
-            String mapModule = "cbMap";
-            String condition = "mapname" + "='" + mapName + "'";
-            String queryMap = "select * from " + mapModule + " where " + condition;
+            // String mapName = "REST2" + module;
+            // String mapModule = "cbMap";
+            // String condition = "mapname" + "='" + mapName + "'";
+            // String queryMap = "select * from " + mapModule + " where " + condition;
 
-            JSONArray mapdata = wsClient.doQuery(queryMap);
+            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
             JSONParser parser = new JSONParser();
             JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
             JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
@@ -461,15 +470,20 @@ public class UpdateConsumer extends Consumer {
                                          return rs;
                                      }
                                      Map<String, Object> fonitoriObject = searchByID(fonitoriResponse, id);
+                                     StringBuilder mapName, mapModule, condition, queryMap;
+                                     mapName = new StringBuilder(orgfieldName).append("2").append(fieldname);
+                                     mapModule = new StringBuilder("cbMap");
+                                     condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
+                                     queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
 
                                      // Map to Create the Record
                                      Map<String, Object> recordMap = new HashMap<>();
                                      Map<String, Object> recordField = new HashMap<>();
-                                     String mapName = orgfieldName + "2" + fieldname;
-                                     String mapModule = "cbMap";
-                                     String condition = "mapname" + "='" + mapName + "'";
-                                     String queryMap = "select * from " + mapModule + " where " + condition;
-                                     JSONArray mapdata = wsClient.doQuery(queryMap);
+                                     // String mapName = orgfieldName + "2" + fieldname;
+                                     // String mapModule = "cbMap";
+                                     // String condition = "mapname" + "='" + mapName + "'";
+                                     // String queryMap = "select * from " + mapModule + " where " + condition;
+                                     JSONArray mapdata = wsClient.doQuery(queryMap.toString());
                                      JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
                                      JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
                                      JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
@@ -517,13 +531,18 @@ public class UpdateConsumer extends Consumer {
                              Map<String, Object> recordMap = new HashMap<>();
                              Map<String, Object> recordField = new HashMap<>();
                              // 1. Get Map for Adding that Module from Rest API
-                             String mapName = orgfieldName + "2" + moduleFieldInfo.get(fieldname);
+                             StringBuilder mapName, mapModule, condition, queryMap;
+                             mapName = new StringBuilder(orgfieldName).append("2").append(moduleFieldInfo.get(fieldname));
+                             mapModule = new StringBuilder("cbMap");
+                             condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
+                             queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
+                             // String mapName = orgfieldName + "2" + moduleFieldInfo.get(fieldname);
                              // System.out.println(mapName);
-                             String mapModule = "cbMap";
-                             String condition = "mapname" + "='" + mapName + "'";
-                             String queryMap = "select * from " + mapModule + " where " + condition;
+                             // String mapModule = "cbMap";
+                             // String condition = "mapname" + "='" + mapName + "'";
+                             // String queryMap = "select * from " + mapModule + " where " + condition;
 
-                             JSONArray mapdata = wsClient.doQuery(queryMap);
+                             JSONArray mapdata = wsClient.doQuery(queryMap.toString());
                              JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
                              JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
                              JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
@@ -631,11 +650,14 @@ public class UpdateConsumer extends Consumer {
                                                  if (!filialiObject.isEmpty()) {
                                                      Map<String, Object> recordMapFiliali = new HashMap<>();
                                                      Map<String, Object> recordFieldFiliali = new HashMap<>();
+                                                     StringBuilder conditionFiliali, queryMapFiliali;
                                                      String mapNameFiliali = "filialeId2cbCompany";
                                                      String mapModuleFiliali = "cbMap";
-                                                     String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
-                                                     String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
-                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                                                     conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
+                                                     queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
+                                                     // String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                                                     // String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
                                                      JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                                      JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                                      JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -721,20 +743,23 @@ public class UpdateConsumer extends Consumer {
                                                              String vettoriDataKey = "vettori";
 
                                                              Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
-                                                             //System.out.println(vettoriResponse);
-                                                             //System.out.println(filialiResponse);
+                                                             // System.out.println(vettoriResponse);
+                                                             // System.out.println(filialiResponse);
                                                              if (vettoriResponse != null) {
                                                                  Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                                          ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                                  if (!vettoriObject.isEmpty()) {
                                                                      Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                                      Map<String, Object> vettoriRecordField = new HashMap<>();
-                                                                     //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                                     // String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                                     StringBuilder vettoriCondition, vettoriQueryMap;
                                                                      String vettoriMapName = "vettoreId2Vendors";
                                                                      String vettoriMapModule = "cbMap";
-                                                                     String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
-                                                                     String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
-                                                                     JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                                                     vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
+                                                                     vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
+                                                                     // String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                                                     // String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                                                     JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
                                                                      JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                                      JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                                      JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -796,12 +821,15 @@ public class UpdateConsumer extends Consumer {
                                                                  if (!fornitoriObject.isEmpty()) {
                                                                      Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                                      Map<String, Object> fornitoriRecordField = new HashMap<>();
-                                                                     //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                                     // String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                                     StringBuilder fornitoriCondition, fornitoriQueryMap;
                                                                      String fornitoriMapName = "fornitoreId2Vendors";
                                                                      String fornitoriMapModule = "cbMap";
-                                                                     String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
-                                                                     String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
-                                                                     JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                                                     fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
+                                                                     fornitoriQueryMap = new StringBuilder("select * from ").append("'").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
+                                                                     // String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                                                     // String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                                                     JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
                                                                      JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                                      JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                                      JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -956,17 +984,20 @@ public class UpdateConsumer extends Consumer {
                                              String id = zonaConsegna.get("filialeId").toString();
 
                                              Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
-                                             //System.out.println(filialiResponse);
+                                             // System.out.println(filialiResponse);
                                              if (filialiResponse != null) {
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                                  if (!filialiObject.isEmpty()) {
                                                      Map<String, Object> recordMapFiliali = new HashMap<>();
                                                      Map<String, Object> recordFieldFiliali = new HashMap<>();
+                                                     StringBuilder conditionFiliali, queryMapFiliali;
                                                      String mapNameFiliali = "filialeId2cbCompany";
                                                      String mapModuleFiliali = "cbMap";
-                                                     String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
-                                                     String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
-                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                                                     conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
+                                                     queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
+                                                     // String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                                                     // String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
                                                      JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                                      JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                                      JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -1050,11 +1081,14 @@ public class UpdateConsumer extends Consumer {
                                                                          Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                                          Map<String, Object> vettoriRecordField = new HashMap<>();
                                                                          //String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                                         StringBuilder vettoriCondition, vettoriQueryMap;
                                                                          String vettoriMapName = "vettoreId2Vendors";
                                                                          String vettoriMapModule = "cbMap";
-                                                                         String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
-                                                                         String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
-                                                                         JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                                                         vettoriCondition =new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
+                                                                         vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
+                                                                         // String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                                                         // String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                                                         JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
                                                                          JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                                          JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                                          JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -1112,11 +1146,14 @@ public class UpdateConsumer extends Consumer {
                                                                          Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                                          Map<String, Object> fornitoriRecordField = new HashMap<>();
                                                                          //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                                         StringBuilder fornitoriCondition, fornitoriQueryMap;
                                                                          String fornitoriMapName = "fornitoreId2Vendors";
                                                                          String fornitoriMapModule = "cbMap";
-                                                                         String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
-                                                                         String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
-                                                                         JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                                                         fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
+                                                                         fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
+                                                                         // String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                                                         // String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                                                         JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
                                                                          JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                                          JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                                          JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -1202,11 +1239,14 @@ public class UpdateConsumer extends Consumer {
                                                      JSONObject indirizzoObject = (JSONObject) tecniciObject.get("indirizzo");
                                                      Map<String, Object> recordMapTecnici = new HashMap<>();
                                                      Map<String, Object> recordFieldTecnici = new HashMap<>();
+                                                     StringBuilder conditionTecnici, queryMapTecnici;
                                                      String mapNameTecnici = "tecnicoId2Technicians";
                                                      String mapModuleTecnici = "cbMap";
-                                                     String conditionTecnici = "mapname" + "='" + mapNameTecnici + "'";
-                                                     String queryMapTecnici = "select * from " + mapModuleTecnici + " where " + conditionTecnici;
-                                                     JSONArray mapdataTecnici = wsClient.doQuery(queryMapTecnici);
+                                                     conditionTecnici = new StringBuilder("mapname").append("='").append(mapNameTecnici).append("'");
+                                                     queryMapTecnici = new StringBuilder("select * from ").append(mapModuleTecnici).append(" where ").append(conditionTecnici);
+                                                     // String conditionTecnici = "mapname" + "='" + mapNameTecnici + "'";
+                                                     // String queryMapTecnici = "select * from " + mapModuleTecnici + " where " + conditionTecnici;
+                                                     JSONArray mapdataTecnici = wsClient.doQuery(queryMapTecnici.toString());
                                                      JSONObject resultTecnici = (JSONObject)parser.parse(mapdataTecnici.get(0).toString());
                                                      JSONObject contentjsonTecnici = (JSONObject)parser.parse(resultTecnici.get("contentjson").toString());
                                                      JSONObject fieldsTecnici = (JSONObject)parser.parse(contentjsonTecnici.get("fields").toString());
@@ -1415,11 +1455,14 @@ public class UpdateConsumer extends Consumer {
                                 if (!filialiObject.isEmpty()) {
                                     Map<String, Object> recordMapFiliali = new HashMap<>();
                                     Map<String, Object> recordFieldFiliali = new HashMap<>();
+                                    StringBuilder conditionFiliali, queryMapFiliali;
                                     String mapNameFiliali = "filialeId2cbCompany";
                                     String mapModuleFiliali = "cbMap";
-                                    String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
-                                    String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
-                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                                    conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
+                                    queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
+                                    // String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                                    // String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
                                     JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                     JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                     JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -1510,11 +1553,14 @@ public class UpdateConsumer extends Consumer {
                                                     Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                     Map<String, Object> vettoriRecordField = new HashMap<>();
                                                     // String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                    StringBuilder vettoriCondition, vettoriQueryMap;
                                                     String vettoriMapName = "vettoreId2Vendors";
                                                     String vettoriMapModule = "cbMap";
-                                                    String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
-                                                    String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
-                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                                    vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
+                                                    vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
+                                                    // String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                                    // String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
                                                     JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                     JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                     JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -1571,11 +1617,14 @@ public class UpdateConsumer extends Consumer {
                                                     Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                     Map<String, Object> fornitoriRecordField = new HashMap<>();
                                                     //String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                    StringBuilder fornitoriCondition, fornitoriQueryMap;
                                                     String fornitoriMapName = "fornitoreId2Vendors";
                                                     String fornitoriMapModule = "cbMap";
-                                                    String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
-                                                    String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
-                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                                    fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
+                                                    fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
+                                                    // String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                                    // String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
                                                     JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                     JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                     JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -1710,11 +1759,15 @@ public class UpdateConsumer extends Consumer {
     private Map<String, Object> getSearchField(String parentModule) throws ParseException {
         JSONParser parser = new JSONParser();
         Map<String, Object> fieldmap= new HashMap<>();
-        String mapName = "RESTSEARCH2" + parentModule;
+        StringBuilder mapName, condition, queryMap;
+        mapName = new StringBuilder("RESTSEARCH2").append(parentModule);
+        // String mapName = "RESTSEARCH2" + parentModule;
         String objectModule = "cbMap";
-        String condition = "mapname" + "='" + mapName + "'";
-        String queryMap = "select *from " + objectModule + " where " + condition;
-        JSONArray mapdata = wsClient.doQuery(queryMap);
+        condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
+        queryMap = new StringBuilder("select *from ").append(objectModule).append(" where ").append(condition);
+        // String condition = "mapname" + "='" + mapName + "'";
+        // String queryMap = "select *from " + objectModule + " where " + condition;
+        JSONArray mapdata = wsClient.doQuery(queryMap.toString());
         if (mapdata.size() == 0) {
             return fieldmap;
         } else {
@@ -1754,24 +1807,31 @@ public class UpdateConsumer extends Consumer {
             StringBuffer stringBuffer= new StringBuffer(value);
             value = stringBuffer.insert(specialCharPosition, "'").toString();
         }
-        String condition;
+        // String condition;
+        StringBuilder condition;
         if (module.equals("Vendors")) {
             if  (otherCondition.isEmpty()) {
-                condition = fieldname + "='" + value + "'"  + "AND type ='Fornitore'";
+                condition = new StringBuilder(fieldname).append("='").append(value).append("'").append("AND type ='Fornitore'");
+                // condition = fieldname + "='" + value + "'"  + "AND type ='Fornitore'";
             } else {
-                condition = fieldname + "='" + value + "'"  + "AND type ='" + otherCondition + "'";
+                condition = new StringBuilder(fieldname).append("='").append(value).append("='").append("AND type ='").append(otherCondition).append("'");
+                // condition = fieldname + "='" + value + "'"  + "AND type ='" + otherCondition + "'";
             }
 
         } else if (module.equals("cbEmployee")) {
-            condition = fieldname + "='" + value + "'"  + "AND emptype ='" + otherCondition + "'";
+            condition = new StringBuilder(fieldname).append("'").append(value).append("'").append("AND emptype ='").append(otherCondition).append("'");
+            // condition = fieldname + "='" + value + "'"  + "AND emptype ='" + otherCondition + "'";
         } else if (module.equals("ProcessLog")) {
-            condition = otherCondition;
+            condition = new StringBuilder(otherCondition);
+            // condition = otherCondition;
         } else {
-            condition = fieldname + "='" + value + "'";
+            condition = new StringBuilder(fieldname).append("='").append(value).append("'");
+            // condition = fieldname + "='" + value + "'";
         }
-        String queryMap = "select * from " + module + " where " + condition;
+        StringBuilder queryMap = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
+        // String queryMap = "select * from " + module + " where " + condition;
         // System.out.println(queryMap);
-        JSONArray mapdata = wsClient.doQuery(queryMap);
+        JSONArray mapdata = wsClient.doQuery(queryMap.toString());
         // System.out.println(mapdata);
         if (mapdata.size() == 0) {
             result.put("status", false);
@@ -1852,13 +1912,17 @@ public class UpdateConsumer extends Consumer {
         Map<String, Object> recordField = new HashMap<>();
         JSONParser parser = new JSONParser();
         // Get Map for Adding that Module from Rest API
-        String mapName = orgfieldName + "2" + fieldname;
+        StringBuilder mapName, condition, queryMap;
+        mapName = new StringBuilder(orgfieldName).append("2").append(fieldname);
+        // String mapName = orgfieldName + "2" + fieldname;
         // System.out.println(mapName);
         String mapModule = "cbMap";
-        String condition = "mapname" + "='" + mapName + "'";
-        String queryMap = "select * from " + mapModule + " where " + condition;
+        condition = new StringBuilder(mapName).append("='").append(mapName).append("'");
+        queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
+        // String condition = "mapname" + "='" + mapName + "'";
+        // String queryMap = "select * from " + mapModule + " where " + condition;
         // System.out.println(queryMap);
-        JSONArray mapdata = wsClient.doQuery(queryMap);
+        JSONArray mapdata = wsClient.doQuery(queryMap.toString());
         JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
         JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
         JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
@@ -1917,11 +1981,14 @@ public class UpdateConsumer extends Consumer {
                         if (!filialiObject.isEmpty()) {
                             Map<String, Object> recordMapFiliali = new HashMap<>();
                             Map<String, Object> recordFieldFiliali = new HashMap<>();
+                            StringBuilder conditionFiliali, queryMapFiliali;
                             String mapNameFiliali = "filialeId2cbCompany";
                             String mapModuleFiliali = "cbMap";
-                            String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
-                            String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
-                            JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                            conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
+                            queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
+                            // String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                            // String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                            JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
                             JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                             JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                             JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -1985,11 +2052,14 @@ public class UpdateConsumer extends Consumer {
                                             Map<String, Object> vettoriRecordMap = new HashMap<>();
                                             Map<String, Object> vettoriRecordField = new HashMap<>();
                                             // String vettoriMapName = orgfieldName + "2" + fieldname;
+                                            StringBuilder vettoriCondition, vettoriQueryMap;
                                             String vettoriMapName = "vettoreId2Vendors";
                                             String vettoriMapModule = "cbMap";
-                                            String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
-                                            String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
-                                            JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                            vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
+                                            vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
+                                            // String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                            // String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                            JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
                                             JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                             JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                             JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -2045,11 +2115,14 @@ public class UpdateConsumer extends Consumer {
                                             Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                             Map<String, Object> fornitoriRecordField = new HashMap<>();
                                             // String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                            StringBuilder fornitoriCondition, fornitoriQueryMap;
                                             String fornitoriMapName = "fornitoreId2Vendors";
                                             String fornitoriMapModule = "cbMap";
-                                            String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
-                                            String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
-                                            JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                            fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
+                                            fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
+                                            // String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                            // String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                            JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
                                             JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                             JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                             JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -2129,11 +2202,14 @@ public class UpdateConsumer extends Consumer {
                      */
                     Map<String, Object> recordMapRestAutista = new HashMap<>();
                     Map<String, Object> recordFieldRestAutista = new HashMap<>();
+                    StringBuilder conditionRestAutista, queryMapRestAutista;
                     String mapNameRestAutista = "restAutista2cbEmployee";
                     String mapModuleRestAutista = "cbMap";
-                    String conditionRestAutista = "mapname" + "='" + mapNameRestAutista + "'";
-                    String queryMapRestAutista = "select * from " + mapModuleRestAutista + " where " + conditionRestAutista;
-                    JSONArray mapdataRestAutista = wsClient.doQuery(queryMapRestAutista);
+                    conditionRestAutista = new StringBuilder("mapname").append("='").append(mapNameRestAutista).append("'");
+                    queryMapRestAutista = new StringBuilder("select * from ").append(mapModuleRestAutista).append(" where ").append(conditionRestAutista);
+                    // String conditionRestAutista = "mapname" + "='" + mapNameRestAutista + "'";
+                    // String queryMapRestAutista = "select * from " + mapModuleRestAutista + " where " + conditionRestAutista;
+                    JSONArray mapdataRestAutista = wsClient.doQuery(queryMapRestAutista.toString());
                     JSONObject resultRestAutista = (JSONObject)parser.parse(mapdataRestAutista.get(0).toString());
                     JSONObject contentjsonRestAutista = (JSONObject)parser.parse(resultRestAutista.get("contentjson").toString());
                     JSONObject fieldsRestAutista = (JSONObject)parser.parse(contentjsonRestAutista.get("fields").toString());
@@ -2161,11 +2237,14 @@ public class UpdateConsumer extends Consumer {
                                 if (!filialiObject.isEmpty()) {
                                     Map<String, Object> recordMapFiliali = new HashMap<>();
                                     Map<String, Object> recordFieldFiliali = new HashMap<>();
+                                    StringBuilder conditionFiliali, queryMapFiliali;
                                     String mapNameFiliali = "filialeId2cbCompany";
                                     String mapModuleFiliali = "cbMap";
-                                    String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
-                                    String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
-                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali);
+                                    conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
+                                    queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
+                                    // String conditionFiliali = "mapname" + "='" + mapNameFiliali + "'";
+                                    // String queryMapFiliali = "select * from " + mapModuleFiliali + " where " + conditionFiliali;
+                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
                                     JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                     JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                     JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -2228,11 +2307,14 @@ public class UpdateConsumer extends Consumer {
                                                     Map<String, Object> vettoriRecordMap = new HashMap<>();
                                                     Map<String, Object> vettoriRecordField = new HashMap<>();
                                                     // String vettoriMapName = orgfieldName + "2" + fieldname;
+                                                    StringBuilder vettoriCondition, vettoriQueryMap;
                                                     String vettoriMapName = "vettoreId2Vendors";
                                                     String vettoriMapModule = "cbMap";
-                                                    String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
-                                                    String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
-                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap);
+                                                    vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
+                                                    vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
+                                                    // String vettoriCondition = "mapname" + "='" + vettoriMapName + "'";
+                                                    // String vettoriQueryMap = "select * from " + vettoriMapModule + " where " + vettoriCondition;
+                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
                                                     JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                     JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                     JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -2288,11 +2370,14 @@ public class UpdateConsumer extends Consumer {
                                                     Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                     Map<String, Object> fornitoriRecordField = new HashMap<>();
                                                     // String fornitoriMapName = orgfieldName + "2" + fieldname;
+                                                    StringBuilder fornitoriCondition, fornitoriQueryMap;
                                                     String fornitoriMapName = "fornitoreId2Vendors";
                                                     String fornitoriMapModule = "cbMap";
-                                                    String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
-                                                    String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
-                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap);
+                                                    fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
+                                                    fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
+                                                    // String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
+                                                    // String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
+                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
                                                     JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                     JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                     JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -2406,11 +2491,14 @@ public class UpdateConsumer extends Consumer {
                             if (!categorieMerceologicheObject.isEmpty()) {
                                 Map<String, Object> recordMapCategoryId = new HashMap<>();
                                 Map<String, Object> recordFieldCategoryId = new HashMap<>();
+                                StringBuilder conditionCategoryId, queryMapCategoryId;
                                 String mapNameCategoryId = "categoryId2cbproductcategory";
                                 String mapModuleCategoryId = "cbMap";
-                                String conditionCategoryId = "mapname" + "='" + mapNameCategoryId + "'";
-                                String queryMapCategoryId = "select * from " + mapModuleCategoryId + " where " + conditionCategoryId;
-                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId);
+                                conditionCategoryId = new StringBuilder("mapname").append("='").append(mapNameCategoryId).append("'");
+                                queryMapCategoryId = new StringBuilder("select * from ").append(mapModuleCategoryId).append(" where ").append(conditionCategoryId);
+                                // String conditionCategoryId = "mapname" + "='" + mapNameCategoryId + "'";
+                                // String queryMapCategoryId = "select * from " + mapModuleCategoryId + " where " + conditionCategoryId;
+                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId.toString());
                                 JSONObject resultCategoryId = (JSONObject)parser.parse(mapdataCategoryId.get(0).toString());
                                 JSONObject contentjsonCategoryId = (JSONObject)parser.parse(resultCategoryId.get("contentjson").toString());
                                 JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonCategoryId.get("fields").toString());
