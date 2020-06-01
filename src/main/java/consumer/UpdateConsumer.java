@@ -482,6 +482,7 @@ public class UpdateConsumer extends Consumer {
                                      mapModule = new StringBuilder("cbMap");
                                      condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
                                      queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
+                                     System.out.println(queryMap);
 
                                      // Map to Create the Record
                                      Map<String, Object> recordMap = new HashMap<>();
@@ -538,13 +539,13 @@ public class UpdateConsumer extends Consumer {
                              Map<String, Object> recordMap = new HashMap<>();
                              Map<String, Object> recordField = new HashMap<>();
                              // 1. Get Map for Adding that Module from Rest API
-                             StringBuilder mapName, mapModule, condition, queryMap;
+                             StringBuilder mapName, condition, queryMap;
                              mapName = new StringBuilder(orgfieldName).append("2").append(moduleFieldInfo.get(fieldname));
-                             mapModule = new StringBuilder("cbMap");
+                             String mapModule = "cbMap";
                              condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
                              queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
                              // String mapName = orgfieldName + "2" + moduleFieldInfo.get(fieldname);
-                             // System.out.println(mapName);
+                              System.out.println(queryMap);
                              // String mapModule = "cbMap";
                              // String condition = "mapname" + "='" + mapName + "'";
                              // String queryMap = "select * from " + mapModule + " where " + condition;
