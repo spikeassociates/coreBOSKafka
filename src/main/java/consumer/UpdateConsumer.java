@@ -1428,7 +1428,7 @@ public class UpdateConsumer extends Consumer {
                 * */
                 if (orgfieldName.equals("filialePartenzaId")) {
 
-                    if (Integer.parseInt(record.get(orgfieldName).toString()) == 0) {
+                    if (Integer.parseInt(record.get(orgfieldName).toString()) == 0 || record.get(orgfieldName) != null) {
                         rs.put("status", "notfound");
                         rs.put("value",  "");
                         return rs;
