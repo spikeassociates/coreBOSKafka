@@ -1395,21 +1395,21 @@ public class UpdateConsumer extends Consumer {
                         // System.out.println(objRecord);
                         if (!uitype10fields.isEmpty()) {
                             Map<String, Object> objValue = (Map<String, Object>) objRecord;
-                            // System.out.println(objValue);
-                            // System.out.println("TESSSSS");
-                            // System.out.println(uitype10fields);
-                            // System.out.println(fieldname);
-                            // System.out.println(parentModule);
-                            // System.out.println(objValue);
-                            // System.out.println(fieldToSearch.get(orgfieldName).toString());
-                            // System.out.println(orgfieldName);
+                             // System.out.println(objValue);
+                             // System.out.println("TESSSSS");
+                             // System.out.println(uitype10fields);
+                             // System.out.println(fieldname);
+                             // System.out.println(parentModule);
+                             // System.out.println(objValue);
+                             // System.out.println(fieldToSearch.get(orgfieldName).toString());
+                             // System.out.println(orgfieldName);
                             String fldsearch = "";
                             if (fieldToSearch.containsKey(orgfieldName)) {
                                 fldsearch = fieldToSearch.get(orgfieldName).toString();
                             }
                             Map<String, Object> recordToCreate =  getMapOfRecordToBeCreated(uitype10fields, fieldname,
                                     parentModule, objValue, fldsearch, orgfieldName);
-                            // System.out.println("RECORD to CREATE::" + recordToCreate);
+                             // System.out.println("RECORD to CREATE::" + recordToCreate);
                             lastRecordToCreate.add(recordToCreate);
                         } else {
                             // TODO: 4/8/20 Handle for Module which do not contain any reference field
@@ -1925,7 +1925,7 @@ public class UpdateConsumer extends Consumer {
         // String mapName = orgfieldName + "2" + fieldname;
         // System.out.println(mapName);
         String mapModule = "cbMap";
-        condition = new StringBuilder("mapName").append("='").append(mapName).append("'");
+        condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
         queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
         // String condition = "mapname" + "='" + mapName + "'";
         // String queryMap = "select * from " + mapModule + " where " + condition;
