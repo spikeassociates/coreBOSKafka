@@ -439,9 +439,16 @@ public class UpdateConsumer extends Consumer {
                      } else {
                          searchID = ((JSONObject) parser.parse(jsonValue)).get("ID").toString();
                      }
-                     //System.out.println(searchID);
-                     Map<String, Object> searchResult = searchRecord(moduleFieldInfo.get(fieldname),
-                             searchID, fieldToSearch.get(orgfieldName).toString(), "", true);
+                     // System.out.println(searchID);
+                     // Map<String, Object> searchResult = searchRecord(moduleFieldInfo.get(fieldname), searchID, fieldToSearch.get(orgfieldName).toString(), "", true);
+                     Map<String, Object> searchResult;
+                     if (moduleFieldInfo.get(fieldname).equals("Services")) {
+                         searchResult = searchRecord(moduleFieldInfo.get(fieldname),
+                                 searchID, fieldToSearch.get(orgfieldName).toString(), "", false);
+                     } else {
+                        searchResult = searchRecord(moduleFieldInfo.get(fieldname),
+                                 searchID, fieldToSearch.get(orgfieldName).toString(), "", true);
+                     }
                      if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
                          rs.put("status", "found");
                          rs.put("value",  searchResult.get("crmid"));
@@ -608,7 +615,7 @@ public class UpdateConsumer extends Consumer {
                                   */
                                  Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                                          ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
-                                         "branchsrcid", "", true);
+                                         "branchsrcid", "", false);
 
                                  // System.out.println("RITIRO");
                                  if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
@@ -730,7 +737,7 @@ public class UpdateConsumer extends Consumer {
                                                      // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                      searchResultVendorModule = searchRecord("Vendors",
                                                      ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                                             "suppliersrcid", "Vettore", true);
+                                                             "suppliersrcid", "Vettore", false);
 
                                                      //System.out.println(searchResultGeoboundary);
                                                      if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
@@ -804,7 +811,7 @@ public class UpdateConsumer extends Consumer {
                                                       * */
                                                      searchResultVendorModule = searchRecord("Vendors",
                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                                             "suppliersrcid", "Fornitore", true);
+                                                             "suppliersrcid", "Fornitore", false);
                                                      if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
@@ -958,7 +965,7 @@ public class UpdateConsumer extends Consumer {
                                  // System.out.println(parser.parse(jsonValue));
                                  Map<String, Object> searchResultDeliveryAreas = searchRecord("DeliveryAreas",
                                          ((JSONObject) parser.parse(jsonValue)).get("ID").toString(),
-                                         "areasrcid", "", true);
+                                         "areasrcid", "", false);
                                  // System.out.println(searchResultDeliveryAreas);
 
                                  if (((boolean) searchResultDeliveryAreas.get("status")) && !((boolean) searchResultDeliveryAreas.get("mustbeupdated"))) {
@@ -1062,7 +1069,7 @@ public class UpdateConsumer extends Consumer {
                                                          // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                                          searchResultVendorModule = searchRecord("Vendors",
                                                                  filialiObject.get("vettoreId").toString(),
-                                                                 "suppliersrcid", "Vettore", true);
+                                                                 "suppliersrcid", "Vettore", false);
 
                                                          if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
@@ -1129,7 +1136,7 @@ public class UpdateConsumer extends Consumer {
                                                           * */
                                                          searchResultVendorModule = searchRecord("Vendors",
                                                                  filialiObject.get("fornitoreId").toString(),
-                                                                 "suppliersrcid", "Fornitore", true);
+                                                                 "suppliersrcid", "Fornitore", false);
                                                          if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                          } else {
@@ -1426,7 +1433,7 @@ public class UpdateConsumer extends Consumer {
                         return rs;
                     }
                     Map<String, Object> searchResultCompany = searchRecord("cbCompany",
-                            record.get(orgfieldName).toString(), "branchsrcid", "", true);
+                            record.get(orgfieldName).toString(), "branchsrcid", "", false);
 
                     // System.out.println("Processing filialePartenzaId Response Key Data");
                     if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
@@ -1531,7 +1538,7 @@ public class UpdateConsumer extends Consumer {
                                     System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                            "suppliersrcid", "Vettore", true);
+                                            "suppliersrcid", "Vettore", false);
 
                                     // System.out.println(searchResultGeoboundary);
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
@@ -1599,7 +1606,7 @@ public class UpdateConsumer extends Consumer {
                                      * */
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                            "suppliersrcid", "Fornitore", true);
+                                            "suppliersrcid", "Fornitore", false);
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
@@ -1958,7 +1965,7 @@ public class UpdateConsumer extends Consumer {
                 JSONObject restFiliale = (JSONObject) prenotazioni.get("restFiliale");
                 // System.out.println(restFiliale);
                 Map<String, Object> searchResultCompany = searchRecord("cbCompany",
-                        restFiliale.get("ID").toString(), "branchsrcid", "", true);
+                        restFiliale.get("ID").toString(), "branchsrcid", "", false);
 
                 // System.out.println("PRENOTAZIONI");
 
@@ -2032,7 +2039,7 @@ public class UpdateConsumer extends Consumer {
                             // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                             searchResultVendorModule = searchRecord("Vendors",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                    "suppliersrcid", "Vettore", true);
+                                    "suppliersrcid", "Vettore", false);
 
                             // System.out.println(searchResultGeoboundary);
                             if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
@@ -2098,7 +2105,7 @@ public class UpdateConsumer extends Consumer {
                              * */
                             searchResultVendorModule = searchRecord("Vendors",
                                     ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                    "suppliersrcid", "Fornitore", true);
+                                    "suppliersrcid", "Fornitore", false);
                             if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
@@ -2287,7 +2294,7 @@ public class UpdateConsumer extends Consumer {
                                     // System.out.println(((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                            "suppliersrcid", "Vettore", true);
+                                            "suppliersrcid", "Vettore", false);
 
                                     // System.out.println(searchResultGeoboundary);
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
@@ -2353,7 +2360,7 @@ public class UpdateConsumer extends Consumer {
                                      * */
                                     searchResultVendorModule = searchRecord("Vendors",
                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                            "suppliersrcid", "Fornitore", true);
+                                            "suppliersrcid", "Fornitore", false);
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
@@ -2464,7 +2471,7 @@ public class UpdateConsumer extends Consumer {
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
             if (prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
-                        prodottiObject.get("categoryId").toString(), "categorysrcid", "", true);
+                        prodottiObject.get("categoryId").toString(), "categorysrcid", "", false);
 
                 if (((boolean) searchResultCbproductcategory.get("status")) && !((boolean) searchResultCbproductcategory.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
