@@ -400,8 +400,8 @@ public class UpdateConsumer extends Consumer {
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
-        // System.out.println(orgfieldName);
-        // System.out.println(fieldname);
+         System.out.println(orgfieldName);
+         System.out.println(fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
             /*
