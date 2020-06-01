@@ -482,7 +482,7 @@ public class UpdateConsumer extends Consumer {
                                      mapModule = new StringBuilder("cbMap");
                                      condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
                                      queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
-                                     System.out.println(queryMap);
+                                     // System.out.println(queryMap);
 
                                      // Map to Create the Record
                                      Map<String, Object> recordMap = new HashMap<>();
@@ -1925,7 +1925,7 @@ public class UpdateConsumer extends Consumer {
         // String mapName = orgfieldName + "2" + fieldname;
         // System.out.println(mapName);
         String mapModule = "cbMap";
-        condition = new StringBuilder(mapName).append("='").append(mapName).append("'");
+        condition = new StringBuilder("mapName").append("='").append(mapName).append("'");
         queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
         // String condition = "mapname" + "='" + mapName + "'";
         // String queryMap = "select * from " + mapModule + " where " + condition;
