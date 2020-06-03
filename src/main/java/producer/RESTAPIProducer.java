@@ -169,7 +169,7 @@ public class RESTAPIProducer {
             mapToSend.put("dataRegistrazioneEsitoDal", startDateTime);
             mapToSend.put("dataRegistrazioneEsitoAl", endDateTime);
         } else {
-            mapToSend.put("dataRegistrazioneEsitoDal", currentDateTime);
+            // mapToSend.put("dataRegistrazioneEsitoDal", currentDateTime);
         }
 
         Header[] headersArray = new Header[2];
