@@ -15,8 +15,12 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import service.RESTClient;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+
+import static java.lang.System.exit;
 
 public class RESTAPIProducer {
     public static final int timeIntervalMin = Integer.parseInt(Util.getProperty(
@@ -37,9 +41,10 @@ public class RESTAPIProducer {
 
     protected RESTClient restClient;
     private final String pagesize = Util.getProperty("corebos.restproducer.pagesize");
+
     public RESTAPIProducer() throws Exception {
         restClient = new RESTClient(rest_api_url);
-        String auth_credentials = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
+        String auth_credentials = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
         System.out.println(auth_credentials);
         if (!restClient.doAuthorization(auth_credentials, auth_endpoint)) {
             throw new Exception("Authorization Error");
@@ -64,8 +69,8 @@ public class RESTAPIProducer {
             //System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
             //        , key, metadata.partition(), message, runtime);
             //System.out.println("topic = " + topic);
-           // System.out.println("key = " + key);
-           // System.out.println("message = " + message);
+            // System.out.println("key = " + key);
+            // System.out.println("message = " + message);
             //System.out.println("metadata.partition() = " + metadata.partition());
             //System.out.println(msg);
         } catch (InterruptedException e) {
@@ -78,67 +83,95 @@ public class RESTAPIProducer {
     public void init() throws ParseException {
 
         /*
-        * We send the first request with filter in which will act as the first round
-        * pageSize=100
-        * pageNr=1
-        * */
+         * We send the first request with filter in which will act as the first round
+         * pageSize=100
+         * pageNr=1
+         * */
 
         String isFirstRequest = Config.getInstance().isFirstRequest();
+        String startDateTime = "", endDateTime = "";
+
+
         if (isFirstRequest.isEmpty() || isFirstRequest.equals("YES")) {
             int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
             // int pageSize = 25; //to Delete After Testing
             int pageNr = 1;
 
-            Object response = doGet(restClient.get_servicetoken(), pageSize, pageNr);
+            Object response = doGet(restClient.get_servicetoken(), pageSize, pageNr, startDateTime, endDateTime, getTodayDate());
 
             if (response == null)
                 return;
 
-            JSONParser  jsonParser = new JSONParser();
+            JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
             int totalNumberOfRecords = Integer.parseInt(jsonObject.get("nSpedizioniAccordingFilters").toString());
             // int totalNumberOfRecords = 100;//to Delete After Testing
             int numberOfPages;
-            if ((totalNumberOfRecords % pageSize) == 0 ) {
+            if ((totalNumberOfRecords % pageSize) == 0) {
                 numberOfPages = totalNumberOfRecords / pageSize;
             } else {
                 numberOfPages = totalNumberOfRecords / pageSize;
                 numberOfPages = numberOfPages + 1;
             }
-            Config.getInstance().setTotalNumberOfPages("" + numberOfPages);
-            Config.getInstance().setFirstRequest("" + "NO");
-            processResponseData(response, 1);
-            if (numberOfPages == 1)
-                producer.close();
+            if (numberOfPages != 0) {
+                Config.getInstance().setTotalNumberOfPages("" + numberOfPages);
+                Config.getInstance().setFirstRequest("" + "NO");
+                processResponseData(response, 1);
+                Config.getInstance().setCurrentPartition("1");
+                if (numberOfPages == 1) {
+                    Config.getInstance().setFirstRequest("" + "YES");
+                    producer.close();
+                    // exit(0);
+                } else {
+                    init();
+                }
+            }
+
         } else {
             int pageSize = Integer.parseInt(Objects.requireNonNull(pagesize));
             int savedPageNumbers = Integer.parseInt(Config.getInstance().getTotalNumberOfPages());
             Config.getInstance().setFirstRequest("" + "YES");
             for (int page = 2; page <= savedPageNumbers; page++) {
-                Object response = doGet(restClient.get_servicetoken(), pageSize, page);
-                processResponseData(response, page);
+                Object response = doGet(restClient.get_servicetoken(), pageSize, page, startDateTime, endDateTime, getTodayDate());
+                if (Integer.parseInt(Config.getInstance().getCurrentPartition()) % 10 == 0) {
+                    processResponseData(response, 1);
+                    Config.getInstance().setCurrentPartition("1"); // reset partition
+                } else {
+                    // processResponseData(response, page);
+                    processResponseData(response, Integer.parseInt(Config.getInstance().getCurrentPartition()) + 1);
+                    Config.getInstance().setCurrentPartition(String.valueOf((Integer.parseInt(Config.getInstance().getCurrentPartition()) + 1)));
+                }
+
             }
             producer.close();
+            // exit(0);
         }
 
     }
 
     private JSONObject getShipmentStatus(Object response) throws ParseException {
-        JSONParser  jsonParser = new JSONParser();
+        JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
         return (JSONObject) jsonObject.get("mappaEsitiPerSpedizione");
     }
 
     private List getShipmentsData(Object response) throws ParseException {
-        JSONParser  jsonParser = new JSONParser();
+        JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
         return (List) jsonObject.get("listaSpedizioni");
     }
 
-    private Object doGet(String token, int pageSize, int pageNumber) {
+    private Object doGet(String token, int pageSize, int pageNumber, String startDateTime, String endDateTime, String currentDateTime) {
         Map<String, String> mapToSend = new HashMap<>();
         mapToSend.put("pageSize", String.valueOf(pageSize));
         mapToSend.put("pageNr", String.valueOf(pageNumber));
+        if (!startDateTime.isEmpty() && !endDateTime.isEmpty()) {
+            mapToSend.put("dataRegistrazioneEsitoDal", startDateTime);
+            mapToSend.put("dataRegistrazioneEsitoAl", endDateTime);
+        } else {
+            mapToSend.put("dataRegistrazioneEsitoDal", currentDateTime);
+        }
+
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
         headersArray[1] = new BasicHeader("Authorization", token);
@@ -149,6 +182,13 @@ public class RESTAPIProducer {
         long currentTime = new Date().getTime() / 1000;
         Config.getInstance().setLastTimeStampToSync("" + currentTime);
         return response;
+    }
+
+    private String getTodayDate() {
+        // DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime currentDate = LocalDateTime.now();
+        return dateTimeFormatter.format(currentDate);
     }
 
     private void processResponseData(Object response, int currentPage) throws ParseException {
@@ -173,7 +213,7 @@ public class RESTAPIProducer {
         }
 
         for (Object key : shipmentsStatus.keySet()) {
-            String shipmentid = (String)key;
+            String shipmentid = (String) key;
             Object status = shipmentsStatus.get(shipmentid);
             String module = "ProcessLog";
             KeyData keyData = new KeyData();

@@ -7,6 +7,7 @@ public class Config {
     private String lastTimeStampToSync = "";
     private String totalNumberOfPages = "";
     private String isFirstRequest = "";
+    private String currentPartition = "";
 
 
     private static Config config;
@@ -54,5 +55,13 @@ public class Config {
 
     public void setFirstRequest(String firstRequest) {
         this.isFirstRequest = firstRequest;
+    }
+
+    public String getCurrentPartition() {
+        return currentPartition;
+    }
+
+    public void setCurrentPartition(String currentPartition) {
+        this.currentPartition = currentPartition;
     }
 }
