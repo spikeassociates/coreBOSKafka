@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 public class RESTAPIProducerExe {
 
-    public static void main(String[] args) {
+        /**public static void main(String[] args) {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -13,11 +13,19 @@ public class RESTAPIProducerExe {
                 try {
                     new RESTAPIProducer().init();
                 } catch (Exception e) {
+                    timer.cancel();
                     System.out.println(e);
                     e.printStackTrace();
                 }
             }
         }, 0, 1000 * 60 * RESTAPIProducer.timeIntervalMin);
 
+        }**/
+    public static void main(String[] args) {
+        try {
+            new RESTAPIProducer().init();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
