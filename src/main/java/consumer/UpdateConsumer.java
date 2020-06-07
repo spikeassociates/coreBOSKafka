@@ -61,7 +61,7 @@ public class UpdateConsumer extends Consumer {
 
     private void readRecord(ConsumerRecord record) throws Exception {
         long startTime = System.currentTimeMillis();
-        // System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
+        System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
         KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
