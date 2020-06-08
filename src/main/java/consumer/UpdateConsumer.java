@@ -37,6 +37,7 @@ public class UpdateConsumer extends Consumer {
         topics.add(topic);
         // rebalanceListner = new RebalanceListner(kafkaConsumer);
         // kafkaConsumer.subscribe(topics, rebalanceListner);
+        kafkaConsumer.subscribe(topics);
     }
 
     public void init() {
