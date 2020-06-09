@@ -133,7 +133,7 @@ public class RESTAPIProducer {
             Config.getInstance().setFirstRequest("" + "YES");
             for (int page = 2; page <= savedPageNumbers; page++) {
                 Object response = doGet(restClient.get_servicetoken(), pageSize, page, startDateTime, endDateTime, getTodayDate());
-                if (Integer.parseInt(Config.getInstance().getCurrentPartition()) % 10 == 0) {
+                if (Integer.parseInt(Config.getInstance().getCurrentPartition()) % 13 == 0) {
                     processResponseData(response, 1);
                     Config.getInstance().setCurrentPartition("1"); // reset partition
                 } else {
