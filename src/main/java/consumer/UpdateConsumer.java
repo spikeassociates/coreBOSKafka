@@ -92,7 +92,7 @@ public class UpdateConsumer extends Consumer {
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
         JSONObject processedMessageData = new JSONObject();
-        StringBuilder queryCondition = new StringBuilder();
+        // StringBuilder queryCondition = new StringBuilder();
         if (!status.keySet().isEmpty() && (!status.values().isEmpty())) {
             for (Map.Entry<String, Object> entry : status.entrySet()) {
                 String k = entry.getKey();
@@ -117,7 +117,7 @@ public class UpdateConsumer extends Consumer {
                         Map<String, Object> searchShipment = searchRecord("Shipments", k,
                                 "pckslip_code", "", false);
                         if (((boolean) searchShipment.get("status"))) {
-                            queryCondition.setLength(0);
+                            // queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
                             // queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
                         }
@@ -131,7 +131,7 @@ public class UpdateConsumer extends Consumer {
                         if (((boolean) searchPackages.get("status"))) {
                             processedMessageData.put("linktopackages", searchPackages.get("crmid"));
                             // queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
-                            queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                            // queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
                         }
 
 
@@ -143,11 +143,11 @@ public class UpdateConsumer extends Consumer {
                                 "statussrcid", "", false);
                         if (((boolean) searchcbStatus.get("status"))) {
                             processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
-                            if (queryCondition.length() > 0) {
-                                queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
-                            } else {
-                                queryCondition.append("linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
-                            }
+//                            if (queryCondition.length() > 0) {
+//                                queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+//                            } else {
+//                                queryCondition.append("linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+//                            }
 
                         }
 
@@ -156,11 +156,11 @@ public class UpdateConsumer extends Consumer {
                          * dtime
                          * */
                         processedMessageData.put("dtime", currentStatusArray[2]);
-                        if (queryCondition.length() > 0) {
-                            queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
-                        } else {
-                            queryCondition.append("dtime ='").append(processedMessageData.get("dtime")).append("'");
-                        }
+//                        if (queryCondition.length() > 0) {
+//                            queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
+//                        } else {
+//                            queryCondition.append("dtime ='").append(processedMessageData.get("dtime")).append("'");
+//                        }
                         if (statusLatestDate.isEmpty()) {
                             statusLatestDate = processedMessageData.get("dtime").toString();
                             latestStatus = statusChanges;
@@ -210,9 +210,8 @@ public class UpdateConsumer extends Consumer {
                                 processedMessageData.get("linktomainbranch") + "'" + " AND linktodestbranch ='" +
                                 processedMessageData.get("linktodestbranch") + "'";*/
 
-                        Map<String, Object> searchProcessLog = searchRecord(module, "", "",
-                                queryCondition.toString(), false);
-                        if (!((boolean) searchProcessLog.get("status"))) {
+                        //Map<String, Object> searchProcessLog = searchRecord(module, "", "", queryCondition.toString(), false);
+                       // if (!((boolean) searchProcessLog.get("status"))) {
                             StringBuilder mapName, condition, queryMap;
                             mapName = new StringBuilder("REST2").append(module);
                             // String mapName = "REST2" + module;
@@ -245,7 +244,7 @@ public class UpdateConsumer extends Consumer {
                             String updatedfields = builderRemoveIndexLast.toString();
                             mapToSend.put("updatedfields", updatedfields);
                             Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-                        }
+                        //}
                     }
                 }
             }
