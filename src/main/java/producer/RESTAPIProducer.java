@@ -60,19 +60,19 @@ public class RESTAPIProducer {
         producer = new KafkaProducer(props);
     }
 
-    protected void publishMessage(String topic, String key, String message) {
+    protected void publishMessage(String topic, String key, String message, int partition) {
         String runtime = new Date().toString();
         String msg = "Message Publishing Time - " + runtime + message;
         //System.out.println(msg);
         try {
-            RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, message)).get();
-            //System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
-            //        , key, metadata.partition(), message, runtime);
-            //System.out.println("topic = " + topic);
-            // System.out.println("key = " + key);
+            RecordMetadata metadata = (RecordMetadata) producer.send(new ProducerRecord(topic, partition, key, message)).get();
+            // System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
+            //         , key, metadata.partition(), message, runtime);
+            // System.out.println("topic = " + topic);
+            System.out.println("key = " + key);
             // System.out.println("message = " + message);
-            //System.out.println("metadata.partition() = " + metadata.partition());
-            //System.out.println(msg);
+            System.out.println("metadata.partition() = " + metadata.partition());
+            // System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -209,7 +209,8 @@ public class RESTAPIProducer {
             messageToSend.put("operation", keyData);
             messageToSend.put("data", shipment);
             // publishMessage(topic, Util.getJson(keyData), Util.getJson(shipment));
-            publishMessage(topic, partitionKey, Util.getJson(messageToSend));
+            int partition = currentPage - 1;
+            publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
         }
 
         for (Object key : shipmentsStatus.keySet()) {
@@ -226,7 +227,8 @@ public class RESTAPIProducer {
             messageToSend.put("operation", keyData);
             messageToSend.put("data", singleStatus);
             // publishMessage(topic, Util.getJson(keyData), Util.getJson(singleStatus));
-            publishMessage(topic, partitionKey, Util.getJson(messageToSend));
+            int partition = currentPage - 1;
+            publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
         }
 
         Config.getInstance().save();
