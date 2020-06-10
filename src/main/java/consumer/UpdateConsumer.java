@@ -1888,6 +1888,7 @@ public class UpdateConsumer extends Consumer {
         if (!mustBeUpdated) {
             result.put("status", false);
             result.put("crmid", "");
+            result.put("mustbeupdated", mustBeUpdated);
         } else {
             // Implement Memory Cache Here
             if (value.contains("'")) {
