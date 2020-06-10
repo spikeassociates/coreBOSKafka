@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -63,16 +64,16 @@ public class RESTAPIProducer {
     protected void publishMessage(String topic, String key, String message, int partition) {
         String runtime = new Date().toString();
         String msg = "Message Publishing Time - " + runtime + message;
-        //System.out.println(msg);
+        // System.out.println(msg);
         try {
             RecordMetadata metadata = (RecordMetadata) producer.send(new ProducerRecord(topic, partition, key, message)).get();
             // System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
             //         , key, metadata.partition(), message, runtime);
             // System.out.println("topic = " + topic);
-            System.out.println("key = " + key);
-            // System.out.println("message = " + message);
-            System.out.println("metadata.partition() = " + metadata.partition());
-            // System.out.println(msg);
+            //System.out.println("key = " + key);
+             System.out.println("message = " + message);
+            //System.out.println("metadata.partition() = " + metadata.partition());
+             // System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -155,10 +156,10 @@ public class RESTAPIProducer {
         return (JSONObject) jsonObject.get("mappaEsitiPerSpedizione");
     }
 
-    private List getShipmentsData(Object response) throws ParseException {
+    private JSONArray getShipmentsData(Object response) throws ParseException {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
-        return (List) jsonObject.get("listaSpedizioni");
+        return (JSONArray) jsonObject.get("listaSpedizioni");
     }
 
     private Object doGet(String token, int pageSize, int pageNumber, String startDateTime, String endDateTime, String currentDateTime) {
@@ -195,41 +196,50 @@ public class RESTAPIProducer {
         System.out.println("Waiting for Result");
         if (response == null)
             return;
-        List shipmentsData = getShipmentsData(response);
+        JSONArray shipmentsData = getShipmentsData(response);
         JSONObject shipmentsStatus = getShipmentStatus(response);
 
         String partitionKey = "partition-" + currentPage;
         for (Object shipment : shipmentsData) {
-            String module = "Shipments";
-            KeyData keyData = new KeyData();
-            keyData.module = module;
-            keyData.operation = Util.methodUPDATE;
-            // System.out.println(Util.getJson(shipment));
+            // String module = "Shipments";
+            // KeyData keyData = new KeyData();
+            // keyData.module = module;
+            // keyData.operation = Util.methodUPDATE;
+            //System.out.println(Util.getJson(shipment));
             JSONObject messageToSend = new JSONObject();
-            messageToSend.put("operation", keyData);
-            messageToSend.put("data", shipment);
+            messageToSend.put("operation", Util.methodUPDATE);
+            messageToSend.put("shipment", shipment);
+
+            // Get the Shipment Status
+            JSONParser parser = new JSONParser();
+            JSONObject currentShipment = (JSONObject) parser.parse(shipment.toString());
+            String currentShipmentID = String.valueOf(currentShipment.get("ID"));
+            JSONObject status = new JSONObject();
+            status.put(currentShipment.get("ID").toString() , shipmentsStatus.get(currentShipmentID));
+            messageToSend.put("status", status);
+
             // publishMessage(topic, Util.getJson(keyData), Util.getJson(shipment));
             int partition = currentPage - 1;
             publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
         }
 
-        for (Object key : shipmentsStatus.keySet()) {
-            String shipmentid = (String) key;
-            Object status = shipmentsStatus.get(shipmentid);
-            String module = "ProcessLog";
-            KeyData keyData = new KeyData();
-            keyData.module = module;
-            keyData.operation = Util.methodUPDATE;
-            JSONObject singleStatus = new JSONObject();
-            singleStatus.put(shipmentid, status);
-            // System.out.println(Util.getJson(singleStatus));
-            JSONObject messageToSend = new JSONObject();
-            messageToSend.put("operation", keyData);
-            messageToSend.put("data", singleStatus);
-            // publishMessage(topic, Util.getJson(keyData), Util.getJson(singleStatus));
-            int partition = currentPage - 1;
-            publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
-        }
+//        for (Object key : shipmentsStatus.keySet()) {
+//            String shipmentid = (String) key;
+//            Object status = shipmentsStatus.get(shipmentid);
+//            String module = "ProcessLog";
+//            KeyData keyData = new KeyData();
+//            keyData.module = module;
+//            keyData.operation = Util.methodUPDATE;
+//            JSONObject singleStatus = new JSONObject();
+//            singleStatus.put(shipmentid, status);
+//            // System.out.println(Util.getJson(singleStatus));
+//            JSONObject messageToSend = new JSONObject();
+//            messageToSend.put("operation", keyData);
+//            messageToSend.put("data", singleStatus);
+//            // publishMessage(topic, Util.getJson(keyData), Util.getJson(singleStatus));
+//            int partition = currentPage - 1;
+//            publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
+//        }
 
         Config.getInstance().save();
     }

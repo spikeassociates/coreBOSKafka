@@ -1,7 +1,9 @@
 package consumer;
 
+import com.google.common.base.Splitter;
 import helper.Util;
 import model.KeyData;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -64,26 +66,32 @@ public class UpdateConsumer extends Consumer {
         System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
-        KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
-        Object value = Util.getObjectFromJson(objectValue.get("data").toString(), Object.class);
-        if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
+        // KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
+        String operation = objectValue.get("operation").toString();
+        Object shipment = Util.getObjectFromJson(objectValue.get("shipment").toString(), Object.class);
+        Object shipmentStatus = Util.getObjectFromJson(objectValue.get("status").toString(), Object.class);
+        if (operation.equals(Util.methodUPDATE)) {
             System.out.println("Upserting the Record");
             lastRecordToCreate.clear();
+            upsertRecord("Shipments", (Map) shipment, (Map) shipmentStatus);
+
             // upsertRecord(keyData.module, (Map) value);
-            if (!keyData.module.equals("ProcessLog")) {
-                upsertRecord(keyData.module, (Map) value);
-            } else {
-                updateShipmentsStatus(keyData.module, (Map) value);
-            }
-        } else if (keyData.operation.equals(Util.methodDELETE)) {
-            System.out.println("Deleting the Record");
-            deleteRecord(keyData.module, (String) value);
+            //if (!keyData.module.equals("ProcessLog")) {
+            //    upsertRecord(keyData.module, (Map) value, (Map) value);
+            //}
+            //else {
+                //updateShipmentsStatus(keyData.module, (Map) value);
+            //}
         }
+        //else if (keyData.operation.equals(Util.methodDELETE)) {
+        //    System.out.println("Deleting the Record");
+        //    deleteRecord(keyData.module, (String) value);
+        //}
         long endTime = System.currentTimeMillis();
 
         long timeElapsed = endTime - startTime;
 
-        System.out.println("readRecord Method Execution Time in milliseconds for Processing : " + timeElapsed + "  Module::  " + keyData.module);
+        System.out.println("readRecord Method Execution Time in milliseconds for Processing : " + timeElapsed + "  Module::  Shipments");
     }
 
     private void updateShipmentsStatus(String module, Map message) throws Exception {
@@ -92,7 +100,8 @@ public class UpdateConsumer extends Consumer {
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
         JSONObject processedMessageData = new JSONObject();
-        // StringBuilder queryCondition = new StringBuilder();
+        StringBuilder queryCondition = new StringBuilder();
+        Splitter splitter = Splitter.on('!');
         if (!status.keySet().isEmpty() && (!status.values().isEmpty())) {
             for (Map.Entry<String, Object> entry : status.entrySet()) {
                 String k = entry.getKey();
@@ -100,118 +109,220 @@ public class UpdateConsumer extends Consumer {
                     /*
                     * The script should query ProcessLog module with the following conditions:
                     * */
-
                     String v = entry.getValue().toString();
-                    String[] statusArray = v.split("#");
+                    // We have to Use StringUtils
+                    // https://dzone.com/articles/guava-splitter-vs-stringutils
+                    // String[] statusArray = v.split("#");
+                    String[] statusArray = StringUtils.split(v, "#");
                     String statusLatestDate = "";
                     String latestStatus = "";
                     String linkToStatusCRMID = "";
                     String latestStatusShipmentKey = "";
-                    for (String statusChanges:statusArray) {
-                        String[] currentStatusArray = statusChanges.split("!");
+                    for (String statusChanges : statusArray) {
+                        // We have to Use Google guava
+                        // https://dzone.com/articles/guava-splitter-vs-stringutils
+                        // String[] currentStatusArray = statusChanges.split("!");
 
+                        // String[] currentStatusArray = statusChanges.split("!");
+
+                        Iterable<String> statusValues = splitter.split(statusChanges);
                         /*
                          *   query Shipments module in order to find the record where pckslip_code == key. Connect ProcessLog to that
                          *   Shipment by filling linktoshipments with shipmentsid of the found record.
                          * */
                         Map<String, Object> searchShipment = searchRecord("Shipments", k,
-                                "pckslip_code", "", false);
+                                "pckslip_code", "", true);
                         if (((boolean) searchShipment.get("status"))) {
-                            // queryCondition.setLength(0);
+                            queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
                             // queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
                         }
+                        int statusIndex = 0;
+                        for(String singleStatus : statusValues) {
+                            if (statusIndex == 0) {
+                                /*
+                                 * query Packages module in order to find the record where packagesrcid == 1st param value. Connect ProcessLog
+                                 * to that Package by filling linktopackages with packagesid of the found record.
+                                 * */
+                                Map<String, Object> searchPackages = searchRecord("Packages", singleStatus,
+                                        "packagesrcid", "", true);
+                                if (((boolean) searchPackages.get("status"))) {
+                                    processedMessageData.put("linktopackages", searchPackages.get("crmid"));
+                                    // queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                                    queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                                }
 
-                        /*
-                         * query Packages module in order to find the record where packagesrcid == 1st param value. Connect ProcessLog
-                         * to that Package by filling linktopackages with packagesid of the found record.
-                         * */
-                        Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0],
-                                "packagesrcid", "", false);
-                        if (((boolean) searchPackages.get("status"))) {
-                            processedMessageData.put("linktopackages", searchPackages.get("crmid"));
-                            // queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
-                            // queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+                            } else if (statusIndex == 2) {
+                                /*
+                                 * dtime
+                                 * */
+                                processedMessageData.put("dtime", singleStatus);
+                                if (queryCondition.length() > 0) {
+                                    queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
+                                } else {
+                                    queryCondition.append("dtime ='").append(processedMessageData.get("dtime")).append("'");
+                                }
+                                if (statusLatestDate.isEmpty()) {
+                                    statusLatestDate = processedMessageData.get("dtime").toString();
+                                    latestStatus = statusChanges;
+                                    linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
+                                    latestStatusShipmentKey = k;
+                                } else {
+                                    // we need to compare the dates
+                                    SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                                    Date dtLatest = sdformat.parse(statusLatestDate);
+                                    Date dtToCompare= sdformat.parse(processedMessageData.get("dtime").toString());
+
+                                    if (dtLatest.compareTo(dtToCompare) < 0) {
+                                        statusLatestDate = processedMessageData.get("dtime").toString();
+                                        latestStatus = statusChanges;
+                                        linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
+                                        latestStatusShipmentKey = k;
+                                    }
+                                }
+
+                            } else if(statusIndex == 3) {
+                                /*
+                                 * query cbStatus module in order to find the record where statussrcid == 4th param value.
+                                 * Connect ProcessLog to that cbStatus by filling its linktostatus with statusid of the found record
+                                 * */
+                                Map<String, Object> searchcbStatus = searchRecord("cbStatus", singleStatus,
+                                        "statussrcid", "", true);
+                                if (((boolean) searchcbStatus.get("status"))) {
+                                    processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
+                                    if (queryCondition.length() > 0) {
+                                        queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                                    } else {
+                                        queryCondition.append("linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
+                                    }
+
+                                }
+                            } else if (statusIndex == 4) {
+                                /*
+                                 * query cbCompany module in order to find the record where branchcode == 5th param value.
+                                 * Connect ProcessLog to that cbCompany by filling its linktomainbranch with cbcompanyid of the found record.
+                                 * */
+                                Map<String, Object> searchcbCompany;
+                                searchcbCompany = searchRecord("cbCompany", singleStatus,
+                                        "branchcode", "", true);
+                                if (((boolean) searchcbCompany.get("status"))) {
+                                    processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
+                                    // queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
+                                }
+
+                            } else if (statusIndex == 5) {
+                                /*
+                                 * query cbCompany module in order to find the record where branchcode == 6th param value.
+                                 * Connect ProcessLog to that cbCompany by filling its linktodestbranch with cbcompanyid of the found record.
+                                 * */
+                                Map<String, Object> searchcbCompany;
+                                searchcbCompany = searchRecord("cbCompany", singleStatus,
+                                        "branchcode", "", true);
+                                if (((boolean) searchcbCompany.get("status"))) {
+                                    processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
+                                    // queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
+                                }
+                            }
+
+                            statusIndex++;
                         }
 
-
-                        /*
-                         * query cbStatus module in order to find the record where statussrcid == 4th param value.
-                         * Connect ProcessLog to that cbStatus by filling its linktostatus with statusid of the found record
-                         * */
-                        Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3],
-                                "statussrcid", "", false);
-                        if (((boolean) searchcbStatus.get("status"))) {
-                            processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
+//                        /*
+//                         *   query Shipments module in order to find the record where pckslip_code == key. Connect ProcessLog to that
+//                         *   Shipment by filling linktoshipments with shipmentsid of the found record.
+//                         * */
+//                        Map<String, Object> searchShipment = searchRecord("Shipments", k,
+//                                "pckslip_code", "", true);
+//                        if (((boolean) searchShipment.get("status"))) {
+//                            queryCondition.setLength(0);
+//                            processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
+//                            // queryCondition.append("linktoshipments ='").append(processedMessageData.get("linktoshipments")).append("'");
+//                        }
+//
+//                        /*
+//                         * query Packages module in order to find the record where packagesrcid == 1st param value. Connect ProcessLog
+//                         * to that Package by filling linktopackages with packagesid of the found record.
+//                         * */
+//                        Map<String, Object> searchPackages = searchRecord("Packages", currentStatusArray[0],
+//                                "packagesrcid", "", true);
+//                        if (((boolean) searchPackages.get("status"))) {
+//                            processedMessageData.put("linktopackages", searchPackages.get("crmid"));
+//                            // queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+//                            queryCondition.append("linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
+//                        }
+//
+//
+//                        /*
+//                         * query cbStatus module in order to find the record where statussrcid == 4th param value.
+//                         * Connect ProcessLog to that cbStatus by filling its linktostatus with statusid of the found record
+//                         * */
+//                        Map<String, Object> searchcbStatus = searchRecord("cbStatus", currentStatusArray[3],
+//                                "statussrcid", "", true);
+//                        if (((boolean) searchcbStatus.get("status"))) {
+//                            processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
 //                            if (queryCondition.length() > 0) {
 //                                queryCondition.append(" AND linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
 //                            } else {
 //                                queryCondition.append("linktostatus ='").append(processedMessageData.get("linktostatus")).append("'");
 //                            }
-
-                        }
-
-
-                        /*
-                         * dtime
-                         * */
-                        processedMessageData.put("dtime", currentStatusArray[2]);
+//
+//                        }
+//
+//
+//                        /*
+//                         * dtime
+//                         * */
+//                        processedMessageData.put("dtime", currentStatusArray[2]);
 //                        if (queryCondition.length() > 0) {
 //                            queryCondition.append(" AND dtime ='").append(processedMessageData.get("dtime")).append("'");
 //                        } else {
 //                            queryCondition.append("dtime ='").append(processedMessageData.get("dtime")).append("'");
 //                        }
-                        if (statusLatestDate.isEmpty()) {
-                            statusLatestDate = processedMessageData.get("dtime").toString();
-                            latestStatus = statusChanges;
-                            linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
-                            latestStatusShipmentKey = k;
-                        } else {
-                            // we need to compare the dates
-                            SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                            Date dtLatest = sdformat.parse(statusLatestDate);
-                            Date dtToCompare= sdformat.parse(processedMessageData.get("dtime").toString());
+//                        if (statusLatestDate.isEmpty()) {
+//                            statusLatestDate = processedMessageData.get("dtime").toString();
+//                            latestStatus = statusChanges;
+//                            linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
+//                            latestStatusShipmentKey = k;
+//                        } else {
+//                            // we need to compare the dates
+//                            SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//                            Date dtLatest = sdformat.parse(statusLatestDate);
+//                            Date dtToCompare= sdformat.parse(processedMessageData.get("dtime").toString());
+//
+//                            if (dtLatest.compareTo(dtToCompare) < 0) {
+//                                statusLatestDate = processedMessageData.get("dtime").toString();
+//                                latestStatus = statusChanges;
+//                                linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
+//                                latestStatusShipmentKey = k;
+//                            }
+//                        }
+//
+//                        /*
+//                         * query cbCompany module in order to find the record where branchcode == 5th param value.
+//                         * Connect ProcessLog to that cbCompany by filling its linktomainbranch with cbcompanyid of the found record.
+//                         * */
+//                        Map<String, Object> searchcbCompany;
+//                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[4],
+//                                "branchcode", "", true);
+//                        if (((boolean) searchcbCompany.get("status"))) {
+//                            processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
+//                            // queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
+//                        }
+//
+//                        /*
+//                         * query cbCompany module in order to find the record where branchcode == 6th param value.
+//                         * Connect ProcessLog to that cbCompany by filling its linktodestbranch with cbcompanyid of the found record.
+//                         * */
+//                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[5],
+//                                "branchcode", "", true);
+//                        if (((boolean) searchcbCompany.get("status"))) {
+//                            processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
+//                            // queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
+//                        }
 
-                            if (dtLatest.compareTo(dtToCompare) < 0) {
-                                statusLatestDate = processedMessageData.get("dtime").toString();
-                                latestStatus = statusChanges;
-                                linkToStatusCRMID = processedMessageData.get("linktostatus").toString();
-                                latestStatusShipmentKey = k;
-                            }
-                        }
-
-                        /*
-                         * query cbCompany module in order to find the record where branchcode == 5th param value.
-                         * Connect ProcessLog to that cbCompany by filling its linktomainbranch with cbcompanyid of the found record.
-                         * */
-                        Map<String, Object> searchcbCompany;
-                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[4],
-                                "branchcode", "", false);
-                        if (((boolean) searchcbCompany.get("status"))) {
-                            processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
-                            // queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
-                        }
-
-                        /*
-                         * query cbCompany module in order to find the record where branchcode == 6th param value.
-                         * Connect ProcessLog to that cbCompany by filling its linktodestbranch with cbcompanyid of the found record.
-                         * */
-                        searchcbCompany = searchRecord("cbCompany", currentStatusArray[5],
-                                "branchcode", "", false);
-                        if (((boolean) searchcbCompany.get("status"))) {
-                            processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
-                            // queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
-                        }
-
-                        /*String queryCondition = "linktoshipments ='" + processedMessageData.get("linktoshipments") + "'" +
-                                " AND linktopackages ='" + processedMessageData.get("linktopackages") + "'" + " AND dtime ='" +
-                                processedMessageData.get("dtime") + "'" + " AND linktostatus ='" +
-                                processedMessageData.get("linktostatus") + "'" + " AND linktomainbranch ='" +
-                                processedMessageData.get("linktomainbranch") + "'" + " AND linktodestbranch ='" +
-                                processedMessageData.get("linktodestbranch") + "'";*/
-
-                        //Map<String, Object> searchProcessLog = searchRecord(module, "", "", queryCondition.toString(), false);
-                       // if (!((boolean) searchProcessLog.get("status"))) {
+                        Map<String, Object> searchProcessLog = searchRecord(module, "", "",
+                                queryCondition.toString(), true);
+                        if (!((boolean) searchProcessLog.get("status"))) {
                             StringBuilder mapName, condition, queryMap;
                             mapName = new StringBuilder("REST2").append(module);
                             // String mapName = "REST2" + module;
@@ -244,7 +355,7 @@ public class UpdateConsumer extends Consumer {
                             String updatedfields = builderRemoveIndexLast.toString();
                             mapToSend.put("updatedfields", updatedfields);
                             Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-                        //}
+                        }
                     }
                 }
             }
@@ -273,7 +384,7 @@ public class UpdateConsumer extends Consumer {
         // System.out.println("Util.getJson(d) = " + Util.getJson(d));
     }
 
-    private void upsertRecord(String module, Map element) throws Exception {
+    private void upsertRecord(String module, Map element, Map shipmentStatus) throws Exception {
         long startTime = System.currentTimeMillis();
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
@@ -354,6 +465,7 @@ public class UpdateConsumer extends Consumer {
         JSONObject createdRecord = (JSONObject)parser.parse(Util.getJson(d));
         moduleCRMID.put(module, createdRecord.get("id").toString());
         createRecordsInMap(moduleCRMID);
+        updateShipmentsStatus("ProcessLog", shipmentStatus);
 
         long endTime = System.currentTimeMillis();
 
@@ -1772,65 +1884,51 @@ public class UpdateConsumer extends Consumer {
                                              boolean mustBeUpdated) throws ParseException {
         long startTime = System.currentTimeMillis();
         Map<String, Object> result = new HashMap<>();
-        // Check if value contain any Special character especially '
-        // if (value == null) {
-            // result.put("status", false);
-            // result.put("crmid", "");
-            // return result;
-        // }
 
-
-        if (value.contains("'")) {
-            int specialCharPosition = value.indexOf("'") + 1;
-            StringBuffer stringBuffer= new StringBuffer(value);
-            value = stringBuffer.insert(specialCharPosition, "'").toString();
-        }
-        // String condition;
-        StringBuilder condition;
-        if (module.equals("Vendors")) {
-            if  (otherCondition.isEmpty()) {
-                condition = new StringBuilder(fieldname).append("='").append(value).append("'").append("AND type ='Fornitore'");
-                // condition = fieldname + "='" + value + "'"  + "AND type ='Fornitore'";
-            } else {
-                condition = new StringBuilder(fieldname).append("='").append(value).append("='").append("AND type ='").append(otherCondition).append("'");
-                // condition = fieldname + "='" + value + "'"  + "AND type ='" + otherCondition + "'";
-            }
-
-        } else if (module.equals("cbEmployee")) {
-            condition = new StringBuilder(fieldname).append("'").append(value).append("'").append("AND emptype ='").append(otherCondition).append("'");
-            // condition = fieldname + "='" + value + "'"  + "AND emptype ='" + otherCondition + "'";
-        } else if (module.equals("ProcessLog")) {
-            condition = new StringBuilder(otherCondition);
-            // condition = otherCondition;
-        } else {
-            condition = new StringBuilder(fieldname).append("='").append(value).append("'");
-            // condition = fieldname + "='" + value + "'";
-        }
-        StringBuilder queryMap = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
-        // String queryMap = "select * from " + module + " where " + condition;
-        // System.out.println(queryMap);
-        JSONArray mapdata = wsClient.doQuery(queryMap.toString());
-        // System.out.println(mapdata);
-        if (mapdata.size() == 0) {
+        if (!mustBeUpdated) {
             result.put("status", false);
             result.put("crmid", "");
         } else {
-            JSONParser parser = new JSONParser();
-            JSONObject queryResult = (JSONObject)parser.parse(mapdata.get(0).toString());
-            // System.out.println(queryResult);
-            // System.out.println(queryResult.get("id").toString());
-            String crmid = queryResult.get("id").toString();
-            // System.out.println(crmid);
-            if (!crmid.isEmpty()) {
-                result.put("status", true);
-            } else {
-                result.put("status", false);
+            // Implement Memory Cache Here
+            if (value.contains("'")) {
+                int specialCharPosition = value.indexOf("'") + 1;
+                StringBuffer stringBuffer= new StringBuffer(value);
+                value = stringBuffer.insert(specialCharPosition, "'").toString();
             }
-            result.put("crmid", crmid);
-            result.put("mustbeupdated", mustBeUpdated);
-            // result.put("mustbeupdated", false);
+            StringBuilder condition;
+            if (module.equals("Vendors")) {
+                if  (otherCondition.isEmpty()) {
+                    condition = new StringBuilder(fieldname).append("='").append(value).append("'").append("AND type ='Fornitore'");
+                } else {
+                    condition = new StringBuilder(fieldname).append("='").append(value).append("='").append("AND type ='").append(otherCondition).append("'");
+                }
+
+            } else if (module.equals("cbEmployee")) {
+                condition = new StringBuilder(fieldname).append("'").append(value).append("'").append("AND emptype ='").append(otherCondition).append("'");
+            } else if (module.equals("ProcessLog")) {
+                condition = new StringBuilder(otherCondition);
+            } else {
+                condition = new StringBuilder(fieldname).append("='").append(value).append("'");
+            }
+            StringBuilder queryMap = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
+            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
+            if (mapdata.size() == 0) {
+                result.put("status", false);
+                result.put("crmid", "");
+            } else {
+                JSONParser parser = new JSONParser();
+                JSONObject queryResult = (JSONObject)parser.parse(mapdata.get(0).toString());
+                String crmid = queryResult.get("id").toString();
+                if (!crmid.isEmpty()) {
+                    result.put("status", true);
+                } else {
+                    result.put("status", false);
+                }
+                result.put("crmid", crmid);
+                result.put("mustbeupdated", mustBeUpdated);
+            }
         }
-        // System.out.println(result);
+
         long endTime = System.currentTimeMillis();
 
         long timeElapsed = endTime - startTime;
