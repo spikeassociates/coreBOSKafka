@@ -131,7 +131,7 @@ public class UpdateConsumer extends Consumer {
                          *   Shipment by filling linktoshipments with shipmentsid of the found record.
                          * */
                         Map<String, Object> searchShipment = searchRecord("Shipments", k,
-                                "pckslip_code", "", true);
+                                "pckslip_code", "", false);
                         if (((boolean) searchShipment.get("status"))) {
                             queryCondition.setLength(0);
                             processedMessageData.put("linktoshipments", searchShipment.get("crmid"));
@@ -145,7 +145,7 @@ public class UpdateConsumer extends Consumer {
                                  * to that Package by filling linktopackages with packagesid of the found record.
                                  * */
                                 Map<String, Object> searchPackages = searchRecord("Packages", singleStatus,
-                                        "packagesrcid", "", true);
+                                        "packagesrcid", "", false);
                                 if (((boolean) searchPackages.get("status"))) {
                                     processedMessageData.put("linktopackages", searchPackages.get("crmid"));
                                     // queryCondition.append(" AND linktopackages ='").append(processedMessageData.get("linktopackages")).append("'");
@@ -187,7 +187,7 @@ public class UpdateConsumer extends Consumer {
                                  * Connect ProcessLog to that cbStatus by filling its linktostatus with statusid of the found record
                                  * */
                                 Map<String, Object> searchcbStatus = searchRecord("cbStatus", singleStatus,
-                                        "statussrcid", "", true);
+                                        "statussrcid", "", false);
                                 if (((boolean) searchcbStatus.get("status"))) {
                                     processedMessageData.put("linktostatus", searchcbStatus.get("crmid"));
                                     if (queryCondition.length() > 0) {
@@ -204,7 +204,7 @@ public class UpdateConsumer extends Consumer {
                                  * */
                                 Map<String, Object> searchcbCompany;
                                 searchcbCompany = searchRecord("cbCompany", singleStatus,
-                                        "branchcode", "", true);
+                                        "branchcode", "", false);
                                 if (((boolean) searchcbCompany.get("status"))) {
                                     processedMessageData.put("linktomainbranch", searchcbCompany.get("crmid"));
                                     // queryCondition.append(" AND linktomainbranch ='").append(processedMessageData.get("linktomainbranch")).append("'");
@@ -217,7 +217,7 @@ public class UpdateConsumer extends Consumer {
                                  * */
                                 Map<String, Object> searchcbCompany;
                                 searchcbCompany = searchRecord("cbCompany", singleStatus,
-                                        "branchcode", "", true);
+                                        "branchcode", "", false);
                                 if (((boolean) searchcbCompany.get("status"))) {
                                     processedMessageData.put("linktodestbranch", searchcbCompany.get("crmid"));
                                     // queryCondition.append(" AND linktodestbranch ='").append(processedMessageData.get("linktodestbranch")).append("'");
@@ -321,7 +321,7 @@ public class UpdateConsumer extends Consumer {
 //                        }
 
                         Map<String, Object> searchProcessLog = searchRecord(module, "", "",
-                                queryCondition.toString(), true);
+                                queryCondition.toString(), false);
                         if (!((boolean) searchProcessLog.get("status"))) {
                             StringBuilder mapName, condition, queryMap;
                             mapName = new StringBuilder("REST2").append(module);
@@ -465,7 +465,7 @@ public class UpdateConsumer extends Consumer {
         JSONObject createdRecord = (JSONObject)parser.parse(Util.getJson(d));
         moduleCRMID.put(module, createdRecord.get("id").toString());
         createRecordsInMap(moduleCRMID);
-        updateShipmentsStatus("ProcessLog", shipmentStatus);
+        //updateShipmentsStatus("ProcessLog", shipmentStatus);
 
         long endTime = System.currentTimeMillis();
 
@@ -1885,7 +1885,7 @@ public class UpdateConsumer extends Consumer {
         long startTime = System.currentTimeMillis();
         Map<String, Object> result = new HashMap<>();
 
-        if (!mustBeUpdated) {
+        if (mustBeUpdated) {
             result.put("status", false);
             result.put("crmid", "");
             result.put("mustbeupdated", mustBeUpdated);
@@ -2678,7 +2678,7 @@ public class UpdateConsumer extends Consumer {
                             Map<String, Object> searchResult = searchRecord(uitype10fields.get(keyStr),
                                     String.valueOf(recordFields.get(keyStr)), fieldToSearch.get(keyStr).toString(),
                                     "", false);
-                            if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
+                            if (((boolean) searchResult.get("status"))) {
                                 recordFields.put(keyStr, searchResult.get("crmid"));
                             }
                         }

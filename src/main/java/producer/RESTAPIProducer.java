@@ -58,6 +58,7 @@ public class RESTAPIProducer {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put("request.required.acks", "1");
+        //props.put("metadata.fetch.timeout.ms", "1000");
         producer = new KafkaProducer(props);
     }
 
@@ -71,7 +72,7 @@ public class RESTAPIProducer {
             //         , key, metadata.partition(), message, runtime);
             // System.out.println("topic = " + topic);
             //System.out.println("key = " + key);
-             System.out.println("message = " + message);
+            //System.out.println("message = " + message);
             //System.out.println("metadata.partition() = " + metadata.partition());
              // System.out.println(msg);
         } catch (InterruptedException e) {
