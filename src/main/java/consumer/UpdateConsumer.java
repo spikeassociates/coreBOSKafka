@@ -126,6 +126,7 @@ public class UpdateConsumer extends Consumer {
                         // String[] currentStatusArray = statusChanges.split("!");
 
                         Iterable<String> statusValues = splitter.split(statusChanges);
+                        System.out.println(statusValues);
                         /*
                          *   query Shipments module in order to find the record where pckslip_code == key. Connect ProcessLog to that
                          *   Shipment by filling linktoshipments with shipmentsid of the found record.
@@ -455,7 +456,7 @@ public class UpdateConsumer extends Consumer {
             mapToSend.put("searchOn", modulesIdField);
         }
 
-        // System.out.println("Map to Send" +  mapToSend);
+        // SystemsearchRecord Method Execution Time in milliseconds for Processing.out.println("Map to Send" +  mapToSend);
 
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
         // System.out.println("Util.getJson(d) = " + Util.getJson(d));
