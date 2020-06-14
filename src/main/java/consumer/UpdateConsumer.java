@@ -12,6 +12,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import redis.clients.jedis.Jedis;
 import service.RESTClient;
 
 import java.io.UnsupportedEncodingException;
@@ -33,12 +34,15 @@ public class UpdateConsumer extends Consumer {
     private Map<String, String> moduleDateFields = new HashMap<>();
     protected RESTClient restClient;
     RebalanceListner rebalanceListner;
+    private Jedis memoryCacheDB;
 
     public UpdateConsumer() throws Exception {
         List topics = new ArrayList();
         topics.add(topic);
         rebalanceListner = new RebalanceListner(kafkaConsumer);
         kafkaConsumer.subscribe(topics, rebalanceListner);
+        // 127.0.0.1:6379
+        memoryCacheDB = new Jedis("localhost");
     }
 
     public void init() {
@@ -1897,6 +1901,18 @@ public class UpdateConsumer extends Consumer {
                 StringBuffer stringBuffer= new StringBuffer(value);
                 value = stringBuffer.insert(specialCharPosition, "'").toString();
             }
+            // Search on redis for Memory Cache
+            // We use Hash Set Data type
+            // If value found we return
+            StringBuilder memoryCacheKey = new StringBuilder();
+            String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
+                    append(otherCondition).toString());
+            if (!cachedCRMID.isEmpty()) {
+                result.put("status", true);
+                result.put("crmid", cachedCRMID);
+                result.put("mustbeupdated", mustBeUpdated);
+                return result;
+            }
             StringBuilder condition;
             if (module.equals("Vendors")) {
                 if  (otherCondition.isEmpty()) {
@@ -1928,6 +1944,8 @@ public class UpdateConsumer extends Consumer {
                 }
                 result.put("crmid", crmid);
                 result.put("mustbeupdated", mustBeUpdated);
+                addValueToMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
+                        append(otherCondition).toString(), result.get("crmid").toString());
             }
         }
 
@@ -2777,5 +2795,14 @@ public class UpdateConsumer extends Consumer {
             throw new Exception("Authorization Error");
         }
         return true;
+    }
+
+    private String getValueFromMemoryCache(String key) {
+        return memoryCacheDB.hget(key, "crmid");
+    }
+
+    // Value to Save String module, String value, String fieldname, String otherCondition
+    private void addValueToMemoryCache(String key, String value) {
+        memoryCacheDB.hset(key, "crmid", value);
     }
 }
