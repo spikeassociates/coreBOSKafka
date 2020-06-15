@@ -1905,6 +1905,7 @@ public class UpdateConsumer extends Consumer {
             // Search on redis for Memory Cache
             // We use Hash Set Data type
             // If value found we return
+            System.out.println("ENTER MEMORYCACHE");
             StringBuilder memoryCacheKey = new StringBuilder();
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
                     append(otherCondition).toString());
@@ -1914,6 +1915,7 @@ public class UpdateConsumer extends Consumer {
                 result.put("mustbeupdated", mustBeUpdated);
                 return result;
             }
+            System.out.println("LEAVE MEMORYCACHE");
             StringBuilder condition;
             if (module.equals("Vendors")) {
                 if  (otherCondition.isEmpty()) {
@@ -1944,9 +1946,11 @@ public class UpdateConsumer extends Consumer {
                     result.put("status", false);
                 }
                 result.put("crmid", crmid);
+                System.out.println("ENTER MEMORYCACHE ADD");
                 result.put("mustbeupdated", mustBeUpdated);
                 addValueToMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
                         append(otherCondition).toString(), result.get("crmid").toString());
+                System.out.println("CLOSE MEMORYCACHE ADD");
             }
         }
 
