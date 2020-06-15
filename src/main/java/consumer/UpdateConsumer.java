@@ -1908,12 +1908,12 @@ public class UpdateConsumer extends Consumer {
             System.out.println("ENTER MEMORYCACHE");
             StringBuilder memoryCacheKey = new StringBuilder();
             System.out.println("key::" + memoryCacheKey.append(module).append(value).append(fieldname).
-                    append(otherCondition).toString());
+                    append(otherCondition).toString().toLowerCase());
             System.out.println("Datavase ::" + memoryCacheDB);
             System.out.println("Get Client::" + memoryCacheDB.getClient().toString());
             System.out.println("Get Value::" + memoryCacheDB.hget(memoryCacheKey.toString(), "crmid"));
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
-                    append(otherCondition).toString());
+                    append(otherCondition).toString().toLowerCase());
             System.out.println("crmid::" + cachedCRMID);
             if (!cachedCRMID.isEmpty()) {
                 result.put("status", true);
@@ -1954,8 +1954,9 @@ public class UpdateConsumer extends Consumer {
                 result.put("crmid", crmid);
                 System.out.println("ENTER MEMORYCACHE ADD");
                 result.put("mustbeupdated", mustBeUpdated);
+                memoryCacheKey.setLength(0);
                 addValueToMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
-                        append(otherCondition).toString(), result.get("crmid").toString());
+                        append(otherCondition).toString().toLowerCase(), result.get("crmid").toString());
                 System.out.println("CLOSE MEMORYCACHE ADD");
             }
         }
