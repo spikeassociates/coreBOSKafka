@@ -1911,6 +1911,7 @@ public class UpdateConsumer extends Consumer {
                     append(otherCondition).toString());
             System.out.println("Datavase ::" + memoryCacheDB);
             System.out.println("Get Client::" + memoryCacheDB.getClient().toString());
+            System.out.println("Get Value::" + memoryCacheDB.hget(memoryCacheKey.toString(), "crmid"));
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
                     append(otherCondition).toString());
             System.out.println("crmid::" + cachedCRMID);
