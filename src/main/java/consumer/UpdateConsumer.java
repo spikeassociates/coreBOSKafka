@@ -2809,7 +2809,12 @@ public class UpdateConsumer extends Consumer {
     }
 
     private String getValueFromMemoryCache(String key) {
-        return memoryCacheDB.hget(key, "crmid").toString();
+        Object cacheValue = memoryCacheDB.hget(key, "crmid");
+        if (cacheValue == null) {
+            return "";
+        } else {
+            return cacheValue.toString();
+        }
     }
 
     // Value to Save String module, String value, String fieldname, String otherCondition
