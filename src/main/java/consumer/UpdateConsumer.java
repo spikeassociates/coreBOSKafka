@@ -39,10 +39,11 @@ public class UpdateConsumer extends Consumer {
     public UpdateConsumer() throws Exception {
         List topics = new ArrayList();
         topics.add(topic);
-        rebalanceListner = new RebalanceListner(kafkaConsumer);
-        kafkaConsumer.subscribe(topics, rebalanceListner);
         // 127.0.0.1:6379
         memoryCacheDB = new Jedis("localhost");
+        System.out.println(memoryCacheDB);
+        rebalanceListner = new RebalanceListner(kafkaConsumer);
+        kafkaConsumer.subscribe(topics, rebalanceListner);
     }
 
     public void init() {
@@ -2798,7 +2799,7 @@ public class UpdateConsumer extends Consumer {
     }
 
     private String getValueFromMemoryCache(String key) {
-        return memoryCacheDB.hget(key, "crmid");
+        return memoryCacheDB.hget(key, "crmid").toString();
     }
 
     // Value to Save String module, String value, String fieldname, String otherCondition
