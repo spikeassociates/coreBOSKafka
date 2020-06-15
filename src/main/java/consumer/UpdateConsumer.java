@@ -1907,8 +1907,11 @@ public class UpdateConsumer extends Consumer {
             // If value found we return
             System.out.println("ENTER MEMORYCACHE");
             StringBuilder memoryCacheKey = new StringBuilder();
+            System.out.println("key::" + memoryCacheKey.append(module).append(value).append(fieldname).
+                    append(otherCondition).toString());
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
                     append(otherCondition).toString());
+            System.out.println("crmid::" + cachedCRMID);
             if (!cachedCRMID.isEmpty()) {
                 result.put("status", true);
                 result.put("crmid", cachedCRMID);
