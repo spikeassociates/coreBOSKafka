@@ -1909,6 +1909,8 @@ public class UpdateConsumer extends Consumer {
             StringBuilder memoryCacheKey = new StringBuilder();
             System.out.println("key::" + memoryCacheKey.append(module).append(value).append(fieldname).
                     append(otherCondition).toString());
+            System.out.println("Datavase ::" + memoryCacheDB);
+            System.out.println("Get Client::" + memoryCacheDB.getClient().toString());
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).
                     append(otherCondition).toString());
             System.out.println("crmid::" + cachedCRMID);
