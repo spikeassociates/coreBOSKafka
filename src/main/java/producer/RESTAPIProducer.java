@@ -33,9 +33,10 @@ public class RESTAPIProducer {
     private final String auth_endpoint = Util.getProperty("corebos.restproducer.authendpoint");
     private final String _endpoint = Util.getProperty("corebos.restproducer.endpoint");
     private final String key = Util.getProperty("corebos.restproducer.key");
+    public final String restAPIKey = Util.getProperty("corebos.restproducer.restapikey");
 
-    protected static final String username = Util.getProperty("corebos.restproducer.username");
-    protected static final String password = Util.getProperty("corebos.restproducer.password");
+    //protected static final String username = Util.getProperty("corebos.restproducer.username");
+    //protected static final String password = Util.getProperty("corebos.restproducer.password");
 
     protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
     protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
@@ -45,11 +46,11 @@ public class RESTAPIProducer {
 
     public RESTAPIProducer() throws Exception {
         restClient = new RESTClient(rest_api_url);
-        String auth_credentials = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
-        System.out.println(auth_credentials);
-        if (!restClient.doAuthorization(auth_credentials, auth_endpoint)) {
-            throw new Exception("Authorization Error");
-        }
+//        String auth_credentials = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
+//        System.out.println(auth_credentials);
+//        if (!restClient.doAuthorization(auth_credentials, auth_endpoint)) {
+//            throw new Exception("Authorization Error");
+//        }
 
         Properties props = new Properties();
         props.put("metadata.broker.list", KAFKA_URL);
@@ -58,6 +59,7 @@ public class RESTAPIProducer {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put("request.required.acks", "1");
+        props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 0);
         //props.put("metadata.fetch.timeout.ms", "1000");
         producer = new KafkaProducer(props);
     }
@@ -74,7 +76,7 @@ public class RESTAPIProducer {
             //System.out.println("key = " + key);
             //System.out.println("message = " + message);
             //System.out.println("metadata.partition() = " + metadata.partition());
-             // System.out.println(msg);
+              System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -99,7 +101,7 @@ public class RESTAPIProducer {
             // int pageSize = 25; //to Delete After Testing
             int pageNr = 1;
 
-            Object response = doGet(restClient.get_servicetoken(), pageSize, pageNr, startDateTime, endDateTime, getTodayDate());
+            Object response = doGet(restAPIKey, pageSize, pageNr, startDateTime, endDateTime, getTodayDate());
 
             if (response == null)
                 return;
@@ -134,7 +136,7 @@ public class RESTAPIProducer {
             int savedPageNumbers = Integer.parseInt(Config.getInstance().getTotalNumberOfPages());
             Config.getInstance().setFirstRequest("" + "YES");
             for (int page = 2; page <= savedPageNumbers; page++) {
-                Object response = doGet(restClient.get_servicetoken(), pageSize, page, startDateTime, endDateTime, getTodayDate());
+                Object response = doGet(restAPIKey, pageSize, page, startDateTime, endDateTime, getTodayDate());
                 if (Integer.parseInt(Config.getInstance().getCurrentPartition()) % 13 == 0) {
                     processResponseData(response, 1);
                     Config.getInstance().setCurrentPartition("1"); // reset partition
@@ -163,7 +165,7 @@ public class RESTAPIProducer {
         return (JSONArray) jsonObject.get("listaSpedizioni");
     }
 
-    private Object doGet(String token, int pageSize, int pageNumber, String startDateTime, String endDateTime, String currentDateTime) {
+    private Object doGet(String apiKey, int pageSize, int pageNumber, String startDateTime, String endDateTime, String currentDateTime) {
         Map<String, String> mapToSend = new HashMap<>();
         mapToSend.put("pageSize", String.valueOf(pageSize));
         mapToSend.put("pageNr", String.valueOf(pageNumber));
@@ -176,7 +178,7 @@ public class RESTAPIProducer {
 
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
-        headersArray[1] = new BasicHeader("Authorization", token);
+        headersArray[1] = new BasicHeader("OPERATOR-API-KEY", apiKey);
         // System.out.println(Arrays.toString(headersArray));
         Object response = restClient.doGet(_endpoint, mapToSend, headersArray);
         if (response == null)

@@ -74,13 +74,13 @@ public class Producer {
 // Publish the message
         try {
             RecordMetadata metadata = producer.send(new ProducerRecord<String, String>(topic, key, message)).get();
-            System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
-                    , key, metadata.partition(), message, runtime);
-            System.out.println("topic = " + topic);
-            System.out.println("key = " + key);
-            System.out.println("message = " + message);
-            System.out.println("metadata.partition() = " + metadata.partition());
-            System.out.println(msg);
+//            System.out.printf("Record sent with key %s to partition %d with offset " + metadata.offset() + " with value %s Time %s"
+//                    , key, metadata.partition(), message, runtime);
+//            System.out.println("topic = " + topic);
+//            System.out.println("key = " + key);
+//            System.out.println("message = " + message);
+//            System.out.println("metadata.partition() = " + metadata.partition());
+//            System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {

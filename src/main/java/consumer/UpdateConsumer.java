@@ -29,6 +29,7 @@ public class UpdateConsumer extends Consumer {
     protected static final String username = Util.getProperty("corebos.restproducer.username");
     protected static final String password = Util.getProperty("corebos.restproducer.password");
     private final String auth_endpoint = Util.getProperty("corebos.restproducer.authendpoint");
+    public final String restAPIKey = Util.getProperty("corebos.restproducer.restapikey");
     private ArrayList<Map<String, Object>> lastRecordToCreate = new ArrayList<>();
     private Map<String, String> uitype10fields = new HashMap<>();
     private Map<String, String> moduleDateFields = new HashMap<>();
@@ -447,7 +448,7 @@ public class UpdateConsumer extends Consumer {
                      } else {
                          // for Special field key distribuzioneFornitore Id, raeeFornitoreId
                          if (orgfieldName.equals("distribuzioneFornitoreId") || orgfieldName.equals("raeeFornitoreId")) {
-                             if (startRestService()) {
+                             //if (startRestService()) {
                                  if (((JSONObject) parser.parse(jsonValue)).get("importoSpedizione") != null) {
                                      String endpoint = "fornitori";
                                      String objectKey = "fornitori";
@@ -462,7 +463,7 @@ public class UpdateConsumer extends Consumer {
                                          //endpoint = endpoint + "/" + id;
                                      }
 
-                                     Object fonitoriResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                                     Object fonitoriResponse = doGet(restAPIKey, endpoint, objectKey);
                                      if (fonitoriResponse == null) {
                                          rs.put("status", "notfound");
                                          rs.put("value",  "");
@@ -525,7 +526,7 @@ public class UpdateConsumer extends Consumer {
                                      rs.put("status", "notfound");
                                      rs.put("value",  "");
                                  }
-                             }
+                             //}
                          } else {
                              // We Have to Create the New Record and get Its CRMID
                              Map<String, Object> recordMap = new HashMap<>();
@@ -632,7 +633,7 @@ public class UpdateConsumer extends Consumer {
                                      // System.out.println("CREATING RITIRO");
                                      //System.out.println(parser.parse(jsonValue));
                                      long startTimeFiliale = System.currentTimeMillis();
-                                     if (startRestService()) {
+                                     //if (startRestService()) {
                                          if (parser.parse(jsonValue) != null) {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
@@ -641,7 +642,7 @@ public class UpdateConsumer extends Consumer {
                                              String id = ritiro.get("filialeId").toString();
                                              // System.out.println(id);
 
-                                             Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                                             Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
                                              // System.out.println(filialiResponse);
                                              if (filialiResponse != null) {
                                                  // System.out.println("GETTING FILIALI");
@@ -738,11 +739,11 @@ public class UpdateConsumer extends Consumer {
                                                      } else {
                                                          // To Search in Rest Service
                                                          long startTimeVettori = System.currentTimeMillis();
-                                                         if (startRestService()) {
+                                                         //if (startRestService()) {
                                                              String vettoriEndpoint = "vettori";
                                                              String vettoriDataKey = "vettori";
 
-                                                             Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                                             Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                                              // System.out.println(vettoriResponse);
                                                              // System.out.println(filialiResponse);
                                                              if (vettoriResponse != null) {
@@ -788,7 +789,7 @@ public class UpdateConsumer extends Consumer {
                                                                      }
                                                                  }
                                                              }
-                                                         }
+                                                         //}
 
                                                          long endTimeVettori = System.currentTimeMillis();
 
@@ -810,11 +811,11 @@ public class UpdateConsumer extends Consumer {
                                                      } else {
                                                          // To Search in Rest Service
                                                          long startTimeFornitore = System.currentTimeMillis();
-                                                         if (startRestService()) {
+                                                         //if (startRestService()) {
                                                              String fornitoriEndpoint = "fornitori";
                                                              String fornitoriDataKey = "fornitori";
 
-                                                             Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                                             Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
                                                              if (fornitoriResponse != null) {
                                                                  Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                                          ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -858,7 +859,7 @@ public class UpdateConsumer extends Consumer {
                                                                      }
                                                                  }
                                                              }
-                                                         }
+                                                         //}
                                                          long endTimeFornitore = System.currentTimeMillis();
 
                                                          long timeElapsedFornitore = endTimeFornitore - startTimeFornitore;
@@ -885,7 +886,7 @@ public class UpdateConsumer extends Consumer {
                                                  }
                                              }
                                          }
-                                     }
+                                     //}
                                      long endTimeFiliale = System.currentTimeMillis();
 
                                      long timeElapsedFiliale = endTimeFiliale - startTimeFiliale;
@@ -974,7 +975,7 @@ public class UpdateConsumer extends Consumer {
                                      /*
                                       * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
                                       */
-                                     if (startRestService()) {
+                                     //if (startRestService()) {
                                          if (parser.parse(jsonValue) != null) {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
@@ -983,7 +984,7 @@ public class UpdateConsumer extends Consumer {
                                              JSONObject zonaConsegna = (JSONObject) parser.parse(jsonValue);
                                              String id = zonaConsegna.get("filialeId").toString();
 
-                                             Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                                             Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
                                              // System.out.println(filialiResponse);
                                              if (filialiResponse != null) {
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
@@ -1068,11 +1069,11 @@ public class UpdateConsumer extends Consumer {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                          } else {
                                                              // To Search in Rest Service
-                                                             if (startRestService()) {
+                                                             //if (startRestService()) {
                                                                  String vettoriEndpoint = "vettori";
                                                                  String vettoriDataKey = "vettori";
 
-                                                                 Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                                                 Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                                                  // System.out.println(vettoriResponse);
                                                                  if (vettoriResponse != null) {
                                                                      Map<String, Object> vettoriObject = searchByID(vettoriResponse,
@@ -1117,7 +1118,7 @@ public class UpdateConsumer extends Consumer {
                                                                          }
                                                                      }
                                                                  }
-                                                             }
+                                                             //}
                                                          }
                                                      }
 
@@ -1134,11 +1135,11 @@ public class UpdateConsumer extends Consumer {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                          } else {
                                                              // To Search in Rest Service
-                                                             if (startRestService()) {
+                                                             //if (startRestService()) {
                                                                  String fornitoriEndpoint = "fornitori";
                                                                  String fornitoriDataKey = "fornitori";
 
-                                                                 Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                                                 Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
                                                                  if (fornitoriResponse != null) {
                                                                      Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -1182,7 +1183,7 @@ public class UpdateConsumer extends Consumer {
                                                                          }
                                                                      }
                                                                  }
-                                                             }
+                                                             //}
                                                          }
                                                      }
 
@@ -1205,7 +1206,7 @@ public class UpdateConsumer extends Consumer {
                                                  }
                                              }
                                          }
-                                     }
+                                     //}
 
                                      /* In zonaConsegna, there is an API parameter, called tecnicoId.
                                         Query Technicians module in order to check whether there already exists a record where techniciansrcid == zonaConsegna.tecnicoId. If there exists none, then make an HTTP request to GET /tecnici/{id} where id should be the value of zonaConsegna.tecnicoId.
@@ -1226,13 +1227,12 @@ public class UpdateConsumer extends Consumer {
                                              }
 
                                          } else {
-                                             if (startRestService()) {
+                                             //if (startRestService()) {
                                                  String endpoint = "tecnici";
                                                  String objectKey = "tecnico";
                                                  JSONObject zonaConsegna = (JSONObject) parser.parse(jsonValue);
                                                  String id = zonaConsegna.get("tecnicoId").toString();
-                                                 Object tecniciResponse = doGet(restClient.get_servicetoken(),
-                                                         endpoint+"/" + id, objectKey);
+                                                 Object tecniciResponse = doGet(restAPIKey, endpoint+"/" + id, objectKey);
 
                                                  if (tecniciResponse != null) {
                                                      JSONObject tecniciObject = (JSONObject) parser.parse(tecniciResponse.toString());
@@ -1316,7 +1316,7 @@ public class UpdateConsumer extends Consumer {
                                                          recordField.put("linktotechnician", obj.get("id").toString());
                                                      }
                                                  }
-                                             }
+                                             //}
                                          }
                                      }
 
@@ -1440,13 +1440,13 @@ public class UpdateConsumer extends Consumer {
                         }
                     } else {
                         long startTimeFiliali2 = System.currentTimeMillis();
-                        if (startRestService()) {
+                        //if (startRestService()) {
                             // System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
                             String objectKey = "filiali";
                             String id = record.get(orgfieldName).toString();
 
-                            Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                            Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
                             // System.out.println(filialiResponse);
                             if (filialiResponse != null) {
                                 // System.out.println("GETTING FILIALI");
@@ -1538,12 +1538,12 @@ public class UpdateConsumer extends Consumer {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
-                                        if (startRestService()) {
+                                        //if (startRestService()) {
                                             // System.out.println("Processing vettori Response Data");
                                             String vettoriEndpoint = "vettori";
                                             String vettoriDataKey = "vettori";
 
-                                            Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                            Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                             // System.out.println(vettoriResponse);
                                             // System.out.println(filialiResponse);
                                             if (vettoriResponse != null) {
@@ -1589,7 +1589,7 @@ public class UpdateConsumer extends Consumer {
                                                     }
                                                 }
                                             }
-                                        }
+                                        //}
                                     }
 
                                     /*
@@ -1604,12 +1604,12 @@ public class UpdateConsumer extends Consumer {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
-                                        if (startRestService()) {
+                                        //if (startRestService()) {
                                             // System.out.println("Processing fornitori Response Data");
                                             String fornitoriEndpoint = "fornitori";
                                             String fornitoriDataKey = "fornitori";
 
-                                            Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                            Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
                                             if (fornitoriResponse != null) {
                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -1653,7 +1653,7 @@ public class UpdateConsumer extends Consumer {
                                                     }
                                                 }
                                             }
-                                        }
+                                        //}
                                     }
 
                                     recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
@@ -1675,7 +1675,7 @@ public class UpdateConsumer extends Consumer {
                                     }
                                 }
                             }
-                        }
+                        //}
                         long endTimeFiliali2 = System.currentTimeMillis();
                         long timeElapsedFiliali2 = endTimeFiliali2 - startTimeFiliali2;
                         System.out.println("Filiali2 EndPoint Execution Time in milliseconds for Processing : " + timeElapsedFiliali2);
@@ -2057,11 +2057,11 @@ public class UpdateConsumer extends Consumer {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
                                 // To Search in Rest Service
-                                if (startRestService()) {
+                                //if (startRestService()) {
                                     String vettoriEndpoint = "vettori";
                                     String vettoriDataKey = "vettori";
 
-                                    Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                    Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                     // System.out.println(vettoriResponse);
                                     if (vettoriResponse != null) {
                                         Map<String, Object> vettoriObject = searchByID(vettoriResponse,
@@ -2106,7 +2106,7 @@ public class UpdateConsumer extends Consumer {
                                             }
                                         }
                                     }
-                                }
+                                //}
                             }
 
                             /*
@@ -2121,11 +2121,11 @@ public class UpdateConsumer extends Consumer {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
                                 // To Search in Rest Service
-                                if (startRestService()) {
+                                //if (startRestService()) {
                                     String fornitoriEndpoint = "fornitori";
                                     String fornitoriDataKey = "fornitori";
 
-                                    Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                    Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
                                     if (fornitoriResponse != null) {
                                         Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -2169,7 +2169,7 @@ public class UpdateConsumer extends Consumer {
                                             }
                                         }
                                     }
-                                }
+                                //}
                             }
 
                             recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
@@ -2243,13 +2243,13 @@ public class UpdateConsumer extends Consumer {
                      * As regards filialeId, process it in the same way as desribed in the filialeId section above, and fill
                      * the linktobranch field of cbEmployee with cbcompanyid of the cbCompany module.
                      * */
-                    if (startRestService()) {
+                    //if (startRestService()) {
                         if (parser.parse(restAutista.toString()) != null) {
                             // System.out.println("Processing filiali Response Data");
                             String endpoint = "filiali";
                             String objectKey = "filiali";
                             String id = restAutista.get("filialeId").toString();
-                            Object filialiResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                            Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
                             if (filialiResponse != null) {
                                 Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                 if (!filialiObject.isEmpty()) {
@@ -2312,11 +2312,11 @@ public class UpdateConsumer extends Consumer {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
-                                        if (startRestService()) {
+                                        //if (startRestService()) {
                                             String vettoriEndpoint = "vettori";
                                             String vettoriDataKey = "vettori";
 
-                                            Object vettoriResponse = doGet(restClient.get_servicetoken(), vettoriEndpoint, vettoriDataKey);
+                                            Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                             // System.out.println(vettoriResponse);
                                             if (vettoriResponse != null) {
                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
@@ -2361,7 +2361,7 @@ public class UpdateConsumer extends Consumer {
                                                     }
                                                 }
                                             }
-                                        }
+                                        //}
                                     }
 
                                     /*
@@ -2376,11 +2376,11 @@ public class UpdateConsumer extends Consumer {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
                                         // To Search in Rest Service
-                                        if (startRestService()) {
+                                        //if (startRestService()) {
                                             String fornitoriEndpoint = "fornitori";
                                             String fornitoriDataKey = "fornitori";
 
-                                            Object fornitoriResponse = doGet(restClient.get_servicetoken(), fornitoriEndpoint, fornitoriDataKey);
+                                            Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
                                             if (fornitoriResponse != null) {
                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -2424,7 +2424,7 @@ public class UpdateConsumer extends Consumer {
                                                     }
                                                 }
                                             }
-                                        }
+                                        //}
                                     }
 
                                     recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
@@ -2446,7 +2446,7 @@ public class UpdateConsumer extends Consumer {
                                 }
                             }
                         }
-                    }
+                    //}
 
                     recordFieldRestAutista.put("assigned_user_id", wsClient.getUserID());
                     recordMapRestAutista.put("elementType", "cbEmployee");
@@ -2493,14 +2493,14 @@ public class UpdateConsumer extends Consumer {
                         }
                     }
                 } else {
-                    if (startRestService() && prodottiObject.get("categoryId") != null) {
+                    //if (startRestService() && prodottiObject.get("categoryId") != null) {
                         // System.out.println("Processing categoryId Response Data");
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
                         String id = prodottiObject.get("categoryId").toString();
 
                         // System.out.println("CATEGORY PRDUCT :: "+ id);
-                        Object categorieMerceologicheResponse = doGet(restClient.get_servicetoken(), endpoint, objectKey);
+                        Object categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
                         // System.out.println(categorieMerceologicheResponse);
                         if (categorieMerceologicheResponse != null) {
                             // System.out.println("GETTING FILIALI");
@@ -2547,7 +2547,7 @@ public class UpdateConsumer extends Consumer {
                                 }
                             }
                         }
-                    }
+                    //}
                 }
             }
         }
@@ -2674,11 +2674,11 @@ public class UpdateConsumer extends Consumer {
         }
     }
 
-    private Object doGet(String token, String _endpoint, String key) {
+    private Object doGet(String apiKey, String _endpoint, String key) {
         Map<String, String> mapToSend = new HashMap<>();
         Header[] headersArray = new Header[2];
         headersArray[0] = new BasicHeader("Content-type", "application/json");
-        headersArray[1] = new BasicHeader("Authorization", token);
+        headersArray[1] = new BasicHeader("OPERATOR-API-KEY", apiKey);
         // System.out.println(Arrays.toString(headersArray));
         Object response = restClient.doGet(_endpoint, mapToSend, headersArray,key);
         if (response == null)
@@ -2709,15 +2709,16 @@ public class UpdateConsumer extends Consumer {
         return response;
     }
 
-    private boolean startRestService() throws Exception {
-        // Starting Rest Service
-        this.restClient = new RESTClient(rest_api_url);
-        String auth_credentials = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
-        if (!restClient.doAuthorization(auth_credentials, auth_endpoint)) {
-            throw new Exception("Authorization Error");
-        }
-        return true;
-    }
+//    private boolean startRestService() throws Exception {
+//        // Starting Rest Service
+//        this.restClient = new RESTClient(rest_api_url);
+//        String auth_credentials = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
+//        if (!restClient.doAuthorization(auth_credentials, auth_endpoint)) {
+//            throw new Exception("Authorization Error");
+//        }
+//        return true;
+//    }
+
 
     private String getValueFromMemoryCache(String key) {
         Object cacheValue = memoryCacheDB.hget(key, "crmid");

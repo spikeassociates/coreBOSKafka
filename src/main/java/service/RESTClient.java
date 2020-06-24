@@ -78,48 +78,48 @@ public class RESTClient {
         return this._lasterror;
     }
 
-    public boolean doAuthorization(String auth_credentials, String auth_endpoint) {
-        String urlToCall = this._servicebaseurl + auth_endpoint;
-        this._client = new HTTP_Client(urlToCall);
-        Object response = this._client.doPost(auth_credentials, true);
-        System.out.println(response);
-        /*{
-            "status": {
-            "code": 200,
-                    "message": "Success"
-        },
-            "token": "ff032afadc042091ca576a9ae8a9f0a2"
-        }*/
-        if (this.hasError(response)) {
-            // First Retry for network Connection
-            response = this._client.doPost(auth_credentials, true);
-            if (!this.hasError(response)) {
-                this._servicetoken = (String)((JSONObject) response).get("token");
-                return true;
-            } else {
-                // Second Retry for Network Connection
-                response = this._client.doPost(auth_credentials, true);
-                if (!this.hasError(response)) {
-                    this._servicetoken = (String)((JSONObject) response).get("token");
-                    return true;
-                } else {
-                    // Third Retry for Network Connection
-                    response = this._client.doPost(auth_credentials, true);
-                    if (!this.hasError(response)) {
-                        this._servicetoken = (String)((JSONObject) response).get("token");
-                        return true;
-                    } {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            this._servicetoken = (String)((JSONObject) response).get("token");
-            return true;
-        }
-    }
+//    public boolean doAuthorization(String auth_credentials, String auth_endpoint) {
+//        String urlToCall = this._servicebaseurl + auth_endpoint;
+//        this._client = new HTTP_Client(urlToCall);
+//        Object response = this._client.doPost(auth_credentials, true);
+//        System.out.println(response);
+//        /*{
+//            "status": {
+//            "code": 200,
+//                    "message": "Success"
+//        },
+//            "token": "ff032afadc042091ca576a9ae8a9f0a2"
+//        }*/
+//        if (this.hasError(response)) {
+//            // First Retry for network Connection
+//            response = this._client.doPost(auth_credentials, true);
+//            if (!this.hasError(response)) {
+//                this._servicetoken = (String)((JSONObject) response).get("token");
+//                return true;
+//            } else {
+//                // Second Retry for Network Connection
+//                response = this._client.doPost(auth_credentials, true);
+//                if (!this.hasError(response)) {
+//                    this._servicetoken = (String)((JSONObject) response).get("token");
+//                    return true;
+//                } else {
+//                    // Third Retry for Network Connection
+//                    response = this._client.doPost(auth_credentials, true);
+//                    if (!this.hasError(response)) {
+//                        this._servicetoken = (String)((JSONObject) response).get("token");
+//                        return true;
+//                    } {
+//                        return false;
+//                    }
+//                }
+//            }
+//        } else {
+//            this._servicetoken = (String)((JSONObject) response).get("token");
+//            return true;
+//        }
+//    }
 
-    public String get_servicetoken() {
-        return _servicetoken;
-    }
+//    public String get_servicetoken() {
+//        return _servicetoken;
+//    }
 }
