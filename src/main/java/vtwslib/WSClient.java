@@ -182,19 +182,9 @@ public class WSClient {
         getdata.put("query", query);
         Object response = this._client.doGet(getdata, true);
         if (this.hasError(response)) {
-            long endTime = System.currentTimeMillis();
-
-            long timeElapsed = endTime - startTime;
-
-            System.out.println("***************TIME TAKEN TO MAKE NETWORK REQUEST*************  : " + timeElapsed);
             return null;
         } else {
             JSONArray result = (JSONArray) ((JSONObject) response).get("result");
-            long endTime = System.currentTimeMillis();
-
-            long timeElapsed = endTime - startTime;
-
-            System.out.println("***************TIME TAKEN TO MAKE NETWORK REQUEST************* : " + timeElapsed);
             return result;
         }
 
