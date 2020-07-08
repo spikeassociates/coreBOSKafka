@@ -1581,9 +1581,7 @@ public class UpdateConsumer extends Consumer {
                 condition = new StringBuilder(fieldname).append("='").append(value).append("'");
             }
             StringBuilder queryString = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
-            System.out.println(queryString);
             JSONArray queryFormWebserviceResult = wsClient.doQuery(queryString.toString());
-            System.out.println(queryFormWebserviceResult);
             if (queryFormWebserviceResult == null ||  queryFormWebserviceResult.size() == 0) {
                 result.put("status", false);
                 result.put("crmid", "");
@@ -2131,12 +2129,10 @@ public class UpdateConsumer extends Consumer {
 
         if (orgfieldName.equals("prodotti")) {
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
-            System.out.println(prodottiObject);
             if (prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
                         prodottiObject.get("categoryId").toString(), "categorysrcid", "", false);
 
-                System.out.println(searchResultCbproductcategory);
                 if (((boolean) searchResultCbproductcategory.get("status")) && !((boolean) searchResultCbproductcategory.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
                     for (Object key : referenceFields.keySet()) {
@@ -2149,13 +2145,10 @@ public class UpdateConsumer extends Consumer {
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
                         String id = prodottiObject.get("categoryId").toString();
-                        System.out.println(id);
 
                         Object categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
-                        System.out.println(categorieMerceologicheResponse);
                         if (categorieMerceologicheResponse != null) {
                             Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
-                            System.out.println(categorieMerceologicheObject);
                             if (!categorieMerceologicheObject.isEmpty()) {
                                 Map<String, Object> recordMapCategoryId = new HashMap<>();
                                 Map<String, Object> recordFieldCategoryId = new HashMap<>();
@@ -2186,9 +2179,7 @@ public class UpdateConsumer extends Consumer {
                                 builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                 String updatedfields = builderRemoveIndexLast.toString();
                                 recordMapCategoryId.put("updatedfields", updatedfields);
-                                System.out.println(recordMapCategoryId);
                                 Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST");
-                                System.out.println(newRecord);
                                 JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                 if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                     recordField.put("linktocategory", obj.get("id").toString());

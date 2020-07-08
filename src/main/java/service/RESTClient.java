@@ -21,7 +21,6 @@ public class RESTClient {
 
     public JSONArray doGet(String endPoint, Map<String, String> queryParameters, Header[] headerParameters, String key) {
         String urlToCall = this._servicebaseurl + endPoint;
-        System.out.println(urlToCall);
         this._client = new HTTP_Client(urlToCall);
         System.out.println(urlToCall);
         // queryParameters.put("codiceClienteOrdinante", "EPRICE");
