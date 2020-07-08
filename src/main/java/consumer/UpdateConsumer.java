@@ -2126,67 +2126,67 @@ public class UpdateConsumer extends Consumer {
         * Afterwards, create a new cbproductcategory record in CoreBOS with the following mapping:
         * */
 
-        if (orgfieldName.equals("prodotti")) {
-            JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
-            if (prodottiObject.get("categoryId") != null) {
-                Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
-                        prodottiObject.get("categoryId").toString(), "categorysrcid", "", false);
-
-                if (((boolean) searchResultCbproductcategory.get("status")) && !((boolean) searchResultCbproductcategory.get("mustbeupdated"))) {
-                    Map<String, String> referenceFields = getUIType10Field(fieldname);
-                    for (Object key : referenceFields.keySet()) {
-                        String keyStr = (String)key;
-                        if (referenceFields.get(keyStr).equals("cbproductcategory")) {
-                            recordField.put(keyStr, searchResultCbproductcategory.get("crmid"));
-                        }
-                    }
-                } else {
-                        String endpoint = "categorieMerceologiche";
-                        String objectKey = "categorieMerceologiche";
-                        String id = prodottiObject.get("categoryId").toString();
-
-                        Object categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
-                        if (categorieMerceologicheResponse != null) {
-                            Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
-                            if (!categorieMerceologicheObject.isEmpty()) {
-                                Map<String, Object> recordMapCategoryId = new HashMap<>();
-                                Map<String, Object> recordFieldCategoryId = new HashMap<>();
-                                StringBuilder conditionCategoryId, queryMapCategoryId;
-                                String mapNameCategoryId = "categoryId2cbproductcategory";
-                                String mapModuleCategoryId = "cbMap";
-                                conditionCategoryId = new StringBuilder("mapname").append("='").append(mapNameCategoryId).append("'");
-                                queryMapCategoryId = new StringBuilder("select * from ").append(mapModuleCategoryId).append(" where ").append(conditionCategoryId);
-                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId.toString());
-                                JSONObject resultCategoryId = (JSONObject)parser.parse(mapdataCategoryId.get(0).toString());
-                                JSONObject contentjsonCategoryId = (JSONObject)parser.parse(resultCategoryId.get("contentjson").toString());
-                                JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonCategoryId.get("fields").toString());
-                                JSONArray fields_arrayFiliali = (JSONArray) fieldsFiliali.get("field");
-                                for (Object field: fields_arrayFiliali) {
-                                    JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
-                                    JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
-                                    recordFieldCategoryId.put(((JSONObject)field).get("fieldname").toString(), categorieMerceologicheObject.get(originalFiled.get("OrgfieldName").toString()));
-                                }
-
-                                recordFieldCategoryId.put("assigned_user_id", wsClient.getUserID());
-                                recordMapCategoryId.put("elementType", "cbproductcategory");
-                                recordMapCategoryId.put("element", Util.getJson(recordFieldCategoryId));
-                                recordMapCategoryId.put("searchOn", "categorysrcid");
-                                StringBuilder builderRemoveIndexZero = new StringBuilder(recordFieldCategoryId.keySet().toString());
-                                builderRemoveIndexZero.deleteCharAt(0);
-                                StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
-                                builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
-                                String updatedfields = builderRemoveIndexLast.toString();
-                                recordMapCategoryId.put("updatedfields", updatedfields);
-                                Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST");
-                                JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
-                                if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
-                                    recordField.put("linktocategory", obj.get("id").toString());
-                                }
-                            }
-                        }
-                }
-            }
-        }
+//        if (orgfieldName.equals("prodotti")) {
+//            JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
+//            if (prodottiObject.get("categoryId") != null) {
+//                Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
+//                        prodottiObject.get("categoryId").toString(), "categorysrcid", "", false);
+//
+//                if (((boolean) searchResultCbproductcategory.get("status")) && !((boolean) searchResultCbproductcategory.get("mustbeupdated"))) {
+//                    Map<String, String> referenceFields = getUIType10Field(fieldname);
+//                    for (Object key : referenceFields.keySet()) {
+//                        String keyStr = (String)key;
+//                        if (referenceFields.get(keyStr).equals("cbproductcategory")) {
+//                            recordField.put(keyStr, searchResultCbproductcategory.get("crmid"));
+//                        }
+//                    }
+//                } else {
+//                        String endpoint = "categorieMerceologiche";
+//                        String objectKey = "categorieMerceologiche";
+//                        String id = prodottiObject.get("categoryId").toString();
+//
+//                        Object categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
+//                        if (categorieMerceologicheResponse != null) {
+//                            Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
+//                            if (!categorieMerceologicheObject.isEmpty()) {
+//                                Map<String, Object> recordMapCategoryId = new HashMap<>();
+//                                Map<String, Object> recordFieldCategoryId = new HashMap<>();
+//                                StringBuilder conditionCategoryId, queryMapCategoryId;
+//                                String mapNameCategoryId = "categoryId2cbproductcategory";
+//                                String mapModuleCategoryId = "cbMap";
+//                                conditionCategoryId = new StringBuilder("mapname").append("='").append(mapNameCategoryId).append("'");
+//                                queryMapCategoryId = new StringBuilder("select * from ").append(mapModuleCategoryId).append(" where ").append(conditionCategoryId);
+//                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId.toString());
+//                                JSONObject resultCategoryId = (JSONObject)parser.parse(mapdataCategoryId.get(0).toString());
+//                                JSONObject contentjsonCategoryId = (JSONObject)parser.parse(resultCategoryId.get("contentjson").toString());
+//                                JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonCategoryId.get("fields").toString());
+//                                JSONArray fields_arrayFiliali = (JSONArray) fieldsFiliali.get("field");
+//                                for (Object field: fields_arrayFiliali) {
+//                                    JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+//                                    JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+//                                    recordFieldCategoryId.put(((JSONObject)field).get("fieldname").toString(), categorieMerceologicheObject.get(originalFiled.get("OrgfieldName").toString()));
+//                                }
+//
+//                                recordFieldCategoryId.put("assigned_user_id", wsClient.getUserID());
+//                                recordMapCategoryId.put("elementType", "cbproductcategory");
+//                                recordMapCategoryId.put("element", Util.getJson(recordFieldCategoryId));
+//                                recordMapCategoryId.put("searchOn", "categorysrcid");
+//                                StringBuilder builderRemoveIndexZero = new StringBuilder(recordFieldCategoryId.keySet().toString());
+//                                builderRemoveIndexZero.deleteCharAt(0);
+//                                StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+//                                builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+//                                String updatedfields = builderRemoveIndexLast.toString();
+//                                recordMapCategoryId.put("updatedfields", updatedfields);
+//                                Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST");
+//                                JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
+//                                if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
+//                                    recordField.put("linktocategory", obj.get("id").toString());
+//                                }
+//                            }
+//                        }
+//                }
+//            }
+//        }
 
         recordField.put("assigned_user_id", wsClient.getUserID());
         recordMap.put("elementType", fieldname);
