@@ -1553,7 +1553,7 @@ public class UpdateConsumer extends Consumer {
             // Search on redis for Memory Cache
             // We use Hash Set Data type
             // If value found we return
-            System.out.println("ENTER MEMORYCACHE");
+            System.out.println("ENTER MEMORYCACHE KEY SEARCH");
             StringBuilder memoryCacheKey = new StringBuilder();
             memoryCacheKey.setLength(0);
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).append(otherCondition).toString().toLowerCase());
@@ -1563,7 +1563,7 @@ public class UpdateConsumer extends Consumer {
                 result.put("mustbeupdated", mustBeUpdated);
                 return result;
             }
-            System.out.println("LEAVE MEMORYCACHE");
+            System.out.println("LEAVE MEMORYCACHE KEY NOT FOUND");
             StringBuilder condition;
             if (module.equals("Vendors")) {
                 if  (otherCondition.isEmpty()) {
@@ -1579,15 +1579,17 @@ public class UpdateConsumer extends Consumer {
             } else {
                 condition = new StringBuilder(fieldname).append("='").append(value).append("'");
             }
-            StringBuilder queryMap = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
-            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
-            if (mapdata == null ||  mapdata.size() == 0) {
+            StringBuilder queryString = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
+            System.out.println(queryString);
+            JSONArray queryFormWebserviceResult = wsClient.doQuery(queryString.toString());
+            System.out.println(queryFormWebserviceResult);
+            if (queryFormWebserviceResult == null ||  queryFormWebserviceResult.size() == 0) {
                 result.put("status", false);
                 result.put("crmid", "");
                 result.put("mustbeupdated", mustBeUpdated);
             } else {
                 JSONParser parser = new JSONParser();
-                JSONObject queryResult = (JSONObject)parser.parse(mapdata.get(0).toString());
+                JSONObject queryResult = (JSONObject)parser.parse(queryFormWebserviceResult.get(0).toString());
                 String crmid = queryResult.get("id").toString();
                 if (!crmid.isEmpty()) {
                     result.put("status", true);
@@ -2128,10 +2130,12 @@ public class UpdateConsumer extends Consumer {
 
         if (orgfieldName.equals("prodotti")) {
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
+            System.out.println(prodottiObject);
             if (prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
                         prodottiObject.get("categoryId").toString(), "categorysrcid", "", false);
 
+                System.out.println(searchResultCbproductcategory);
                 if (((boolean) searchResultCbproductcategory.get("status")) && !((boolean) searchResultCbproductcategory.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
                     for (Object key : referenceFields.keySet()) {
@@ -2144,10 +2148,13 @@ public class UpdateConsumer extends Consumer {
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
                         String id = prodottiObject.get("categoryId").toString();
+                        System.out.println(id);
 
                         Object categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
+                        System.out.println(categorieMerceologicheResponse);
                         if (categorieMerceologicheResponse != null) {
                             Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
+                            System.out.println(categorieMerceologicheObject);
                             if (!categorieMerceologicheObject.isEmpty()) {
                                 Map<String, Object> recordMapCategoryId = new HashMap<>();
                                 Map<String, Object> recordFieldCategoryId = new HashMap<>();
