@@ -38,8 +38,8 @@ public class Consumer {
         properties.put("max.poll.records", 100000);
         properties.put("enable.auto.commit", false);
         properties.put("max.poll.interval.ms", Integer.MAX_VALUE);
-        properties.put("session.timeout.ms", 2147483647);
-        properties.put("heartbeat.interval.ms", 2140000000);
+        properties.put("session.timeout.ms", 125000);
+        properties.put("heartbeat.interval.ms", 120000);
         kafkaConsumer = new KafkaConsumer(properties);
     }
 }
