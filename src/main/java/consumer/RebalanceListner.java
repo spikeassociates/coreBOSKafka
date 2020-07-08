@@ -30,6 +30,8 @@ public class RebalanceListner implements ConsumerRebalanceListener {
         System.out.println("Following Partitions Assigned ...");
         for (TopicPartition partition: partitions)
             System.out.println(partition.partition() + ",");
+        kafkaConsumer.commitSync(currentOffsets);
+        currentOffsets.clear();
     }
 
     @Override
@@ -38,7 +40,7 @@ public class RebalanceListner implements ConsumerRebalanceListener {
         for (TopicPartition partition: partitions)
             System.out.println(partition.partition() + ",");
 
-        kafkaConsumer.commitSync(currentOffsets);
-        currentOffsets.clear();
+        //kafkaConsumer.commitSync(currentOffsets);
+        //currentOffsets.clear();
     }
 }
