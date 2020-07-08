@@ -40,6 +40,7 @@ public class UpdateConsumer extends Consumer {
         List topics = new ArrayList();
         topics.add(topic);
         // 127.0.0.1:6379
+        restClient =new RESTClient(rest_api_url);
         memoryCacheDB = new Jedis("localhost");
         rebalanceListner = new RebalanceListner(kafkaConsumer);
         kafkaConsumer.subscribe(topics, rebalanceListner);
