@@ -36,6 +36,8 @@ public class RESTAPIProducer {
     public String dateToFilterRecords = Util.getProperty("corebos.restproducer.date");
     protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
     private final String pagesize = Util.getProperty("corebos.restproducer.pagesize");
+    private String startDateTime = Util.getProperty("corebos.restproducer.startdate");
+    private String endDateTime = Util.getProperty("corebos.restproducer.enddate");
 
     protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
     protected RESTClient restClient;
@@ -81,7 +83,6 @@ public class RESTAPIProducer {
          * */
 
         String isFirstRequest = Config.getInstance().isFirstRequest();
-        String startDateTime = "", endDateTime = "";
 
 
         if (isFirstRequest.isEmpty() || isFirstRequest.equals("YES")) {
