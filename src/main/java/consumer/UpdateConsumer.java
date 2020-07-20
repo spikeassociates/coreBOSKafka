@@ -1457,7 +1457,13 @@ public class UpdateConsumer extends Consumer {
                         String dateValue = record.get(orgfieldName).toString().replace("T", " ");
                         rs.put("value",  dateValue);
                     } else {
-                        rs.put("value",  record.get(orgfieldName));
+                        if (record.containsKey(orgfieldName)) {
+                            rs.put("value",  record.get(orgfieldName));
+                        } else {
+                            rs.put("status", "notfound");
+                            rs.put("value",  "");
+                        }
+
                     }
                 }
             }
