@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 
+@SuppressWarnings("ALL")
 public class UpdateConsumer extends Consumer {
 
     private final String topic = Util.getProperty("corebos.consumer.topic");
@@ -60,8 +61,6 @@ public class UpdateConsumer extends Consumer {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-        } finally {
-            // kafkaConsumer.close();
         }
     }
 
@@ -337,10 +336,19 @@ public class UpdateConsumer extends Consumer {
             2. If is Object or JSON Array check if it exit in Module field search and is one of the module field
             3. if the above statement if false means the JSONArray or JSONObject record depend on the Main Module Record which is about to be created
             */
-            String jsonValue = Util.getJson(record.get(orgfieldName));
+
+            String jsonValue = "";
+            if (orgfieldName.equals("distribuzioneFornitoreId") || orgfieldName.equals("raeeFornitoreId")) {
+                jsonValue = "{}";
+            } else {
+                jsonValue = Util.getJson(record.get(orgfieldName));
+            }
+
+            //System.out.println("Key Value:: " + jsonValue);
             JSONParser parser = new JSONParser();
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
                     orgfieldName.equals("raeeFornitoreId")) {
+                //System.out.println("Key Value:: Waleteeeeeeeeeeee");
                 // Get the Search fields
                  Map<String, String> fieldToSearch = getSearchField(parentModule);
                  if (!fieldToSearch.isEmpty() && moduleFieldInfo.containsKey(fieldname)) {
