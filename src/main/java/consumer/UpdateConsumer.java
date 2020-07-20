@@ -316,6 +316,12 @@ public class UpdateConsumer extends Consumer {
         createRecordsInMap(moduleCRMID);
     }
 
+    public static boolean isNullOrEmpty(String str) {
+        if(str != null && !str.isEmpty())
+            return false;
+        return true;
+    }
+
     @SuppressWarnings("unchecked")
     private Object getFieldValue(String orgfieldName, Map element, Map<String, String> moduleFieldInfo,
                                  String parentModule, String fieldname) throws Exception {
@@ -338,18 +344,33 @@ public class UpdateConsumer extends Consumer {
                 // Get the Search fields
                  Map<String, String> fieldToSearch = getSearchField(parentModule);
                  if (!fieldToSearch.isEmpty() && moduleFieldInfo.containsKey(fieldname)) {
-                     String searchID;
+                     String searchID = "";
                      if (orgfieldName.equals("distribuzioneFornitoreId") || orgfieldName.equals("raeeFornitoreId")) {
-                         JSONObject importoSpedizione = (JSONObject) parser.parse(Util.getJson(record.get("importoSpedizione")));
+                         JSONObject importoSpedizione = null;
+                         if (record.containsKey("importoSpedizione")) {
+                             importoSpedizione = (JSONObject) parser.parse(Util.getJson(record.get("importoSpedizione")));
+                         }
+
                          if (importoSpedizione == null) {
                              rs.put("status", "notfound");
                              rs.put("value",  "");
                              return rs;
                          }
                          if (orgfieldName.equals("distribuzioneFornitoreId")) {
-                            searchID = importoSpedizione.get("distribuzioneFornitoreId").toString();
+                             if (importoSpedizione.containsKey("distribuzioneFornitoreId")) {
+                                 searchID = importoSpedizione.get("distribuzioneFornitoreId").toString();
+                             }
+
                          } else {
-                             searchID = importoSpedizione.get("raeeFornitoreId").toString();
+                             if (importoSpedizione.containsKey("raeeFornitoreId")) {
+                                 searchID = importoSpedizione.get("raeeFornitoreId").toString();
+                             }
+                         }
+
+                         if (isNullOrEmpty(searchID)) {
+                             rs.put("status", "notfound");
+                             rs.put("value",  "");
+                             return rs;
                          }
                      } else {
                          searchID = ((JSONObject) parser.parse(jsonValue)).get("ID").toString();
