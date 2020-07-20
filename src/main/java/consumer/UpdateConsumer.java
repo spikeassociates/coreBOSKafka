@@ -347,7 +347,7 @@ public class UpdateConsumer extends Consumer {
                      String searchID = "";
                      if (orgfieldName.equals("distribuzioneFornitoreId") || orgfieldName.equals("raeeFornitoreId")) {
                          JSONObject importoSpedizione = null;
-                         if (record.containsKey("importoSpedizione")) {
+                         if (record.containsKey("importoSpedizione") && record.get("importoSpedizione") != null) {
                              importoSpedizione = (JSONObject) parser.parse(Util.getJson(record.get("importoSpedizione")));
                          }
 
