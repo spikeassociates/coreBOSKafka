@@ -7,18 +7,14 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import vtwslib.WSClient;
 
 import java.util.Properties;
-
+@SuppressWarnings("ALL")
 public class Consumer {
 
-    protected static final String COREBOS_URL = Util.getProperty("corebos.consumer.url");
-    protected static final String USERNAME = Util.getProperty("corebos.consumer.username");
-    protected static final String ACCESS_KEY = Util.getProperty("corebos.consumer.access_key");
-    protected static final String GROUP_ID = Util.getProperty("corebos.consumer.group_id");
-    protected static final String KAFKA_URL = Util.getProperty("corebos.kafka.url");
-    protected static final Modules modulesDeclared = Util.getObjectFromJson(Util.getProperty("corebos.consumer.modules"), Modules.class);
-
-    protected static final String useFieldMapping = Util.getProperty("corebos.consumer.useFieldMapping");
-    protected static final String fieldsDoQuery = Util.getProperty("corebos.consumer.fieldsDoQuery");
+    protected static final String COREBOS_URL = (Util.getProperty("corebos.consumer.url") == null) ? System.getenv("COREBOS_BASE_URL") : Util.getProperty("corebos.consumer.url");
+    protected static final String USERNAME = (Util.getProperty("corebos.consumer.username") == null) ? System.getenv("COREBOS_USER") : Util.getProperty("corebos.consumer.username");
+    protected static final String ACCESS_KEY = (Util.getProperty("corebos.consumer.access_key") == null) ? System.getenv("COREBOS_ACCESSKEY") : Util.getProperty("corebos.consumer.access_key");
+    protected static final String GROUP_ID = (Util.getProperty("corebos.consumer.group_id") == null) ? System.getenv("CONSUMER_GROUP_ID") : Util.getProperty("corebos.consumer.group_id");
+    protected static final String KAFKA_URL = (Util.getProperty("corebos.kafka.url") == null) ? System.getenv("KAFKA_HOST") : Util.getProperty("corebos.kafka.url");
 
     protected Properties properties = new Properties();
     protected KafkaConsumer kafkaConsumer;

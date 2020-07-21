@@ -21,15 +21,14 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 
-@SuppressWarnings("ALL")
 public class UpdateConsumer extends Consumer {
 
-    private final String topic = Util.getProperty("corebos.consumer.topic");
-    private final String rest_api_url = Util.getProperty("corebos.restproducer.url");
-    protected static final String username = Util.getProperty("corebos.restproducer.username");
-    protected static final String password = Util.getProperty("corebos.restproducer.password");
-    private final String auth_endpoint = Util.getProperty("corebos.restproducer.authendpoint");
-    public final String restAPIKey = Util.getProperty("corebos.restproducer.restapikey");
+    private final String topic = (Util.getProperty("corebos.consumer.topic") == null) ? System.getenv("TOPIC_NAME") : Util.getProperty("corebos.consumer.topic");
+    private final String rest_api_url = (Util.getProperty("corebos.restproducer.url") == null) ? System.getenv("API_BASE_URL") : Util.getProperty("corebos.restproducer.url");
+    public final String restAPIKey = (Util.getProperty("corebos.restproducer.restapikey") == null) ? System.getenv("API_KEY") : Util.getProperty("corebos.restproducer.restapikey");
+    protected static final String useFieldMapping = (Util.getProperty("corebos.consumer.useFieldMapping") == null) ? System.getenv("USE_MAPPING_FLAG") : Util.getProperty("corebos.consumer.useFieldMapping");
+    protected static final String fieldsDoQuery = (Util.getProperty("corebos.consumer.fieldsDoQuery") == null) ? System.getenv("FIELD_DO_QUERY") : Util.getProperty("corebos.consumer.fieldsDoQuery");
+
     private ArrayList<Map<String, Object>> lastRecordToCreate = new ArrayList<>();
     private Map<String, String> uitype10fields = new HashMap<>();
     private Map<String, String> moduleDateFields = new HashMap<>();
@@ -40,7 +39,6 @@ public class UpdateConsumer extends Consumer {
     public UpdateConsumer() throws Exception {
         List topics = new ArrayList();
         topics.add(topic);
-        // 127.0.0.1:6379
         restClient =new RESTClient(rest_api_url);
         memoryCacheDB = new Jedis("localhost");
         rebalanceListner = new RebalanceListner(kafkaConsumer);
@@ -48,6 +46,7 @@ public class UpdateConsumer extends Consumer {
     }
 
     public void init() {
+
 
         try {
             while (true) {
@@ -79,9 +78,6 @@ public class UpdateConsumer extends Consumer {
             } else {
                 updateShipmentsStatus(keyData.module, (Map) value);
             }
-        } else if (keyData.operation.equals(Util.methodDELETE)) {
-            System.out.println("Deleting the Record");
-            deleteRecord(keyData.module, (String) value);
         }
     }
 
@@ -293,21 +289,12 @@ public class UpdateConsumer extends Consumer {
             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
             String updatedfields = builderRemoveIndexLast.toString();
             mapToSend.put("updatedfields", updatedfields);
-        } else {
-            String modulesIdField = Objects.requireNonNull(modulesDeclared).getFieldsDoQuery(module).get(0);
-            for (String filedl : modulesDeclared.getFieldsConsiderate(module))
-                fieldUpdate.put(filedl, element.get(filedl));
-            fieldUpdate.put("assigned_user_id", wsClient.getUserID());
-            fieldUpdate.put(modulesIdField, element.get("id"));
-
-            mapToSend.put("elementType", module);
-            mapToSend.put("element", Util.getJson(fieldUpdate));
-            mapToSend.put("searchOn", modulesIdField);
         }
 
-
         Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-        // We Nee to Create Other Module Record which depend on this Created Record
+        /**
+         * We Nee to Create Other Module Record which depend on this Created Record
+         * **/
         Map<String, String> moduleCRMID = new HashMap<>();
         JSONParser parser = new JSONParser();
         JSONObject createdRecord = (JSONObject)parser.parse(Util.getJson(d));
@@ -344,11 +331,9 @@ public class UpdateConsumer extends Consumer {
                 jsonValue = Util.getJson(record.get(orgfieldName));
             }
 
-            //System.out.println("Key Value:: " + jsonValue);
             JSONParser parser = new JSONParser();
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
                     orgfieldName.equals("raeeFornitoreId")) {
-                //System.out.println("Key Value:: Waleteeeeeeeeeeee");
                 // Get the Search fields
                  Map<String, String> fieldToSearch = getSearchField(parentModule);
                  if (!fieldToSearch.isEmpty() && moduleFieldInfo.containsKey(fieldname)) {
@@ -365,20 +350,22 @@ public class UpdateConsumer extends Consumer {
                              return rs;
                          }
                          if (orgfieldName.equals("distribuzioneFornitoreId")) {
-                             if (importoSpedizione.containsKey("distribuzioneFornitoreId")) {
+                             if (importoSpedizione.containsKey("distribuzioneFornitoreId") && importoSpedizione.get("distribuzioneFornitoreId") != null) {
                                  searchID = importoSpedizione.get("distribuzioneFornitoreId").toString();
+                             } else {
+                                 rs.put("status", "notfound");
+                                 rs.put("value",  "");
+                                 return rs;
                              }
 
                          } else {
-                             if (importoSpedizione.containsKey("raeeFornitoreId")) {
+                             if (importoSpedizione.containsKey("raeeFornitoreId") && importoSpedizione.get("raeeFornitoreId") != null) {
                                  searchID = importoSpedizione.get("raeeFornitoreId").toString();
+                             } else {
+                                 rs.put("status", "notfound");
+                                 rs.put("value",  "");
+                                 return rs;
                              }
-                         }
-
-                         if (isNullOrEmpty(searchID)) {
-                             rs.put("status", "notfound");
-                             rs.put("value",  "");
-                             return rs;
                          }
                      } else {
                          searchID = ((JSONObject) parser.parse(jsonValue)).get("ID").toString();
@@ -401,15 +388,12 @@ public class UpdateConsumer extends Consumer {
                                  if (((JSONObject) parser.parse(jsonValue)).get("importoSpedizione") != null) {
                                      String endpoint = "fornitori";
                                      String objectKey = "fornitori";
-                                     String id = "";
+                                     String id = null;
                                      JSONObject importoSpedizione = (JSONObject) parser.parse(Util.getJson(record.get("importoSpedizione")));
-                                     if (orgfieldName.equals("distribuzioneFornitoreId")) {
-                                         // Search in Rest Api
+                                     if (orgfieldName.equals("distribuzioneFornitoreId") && importoSpedizione.get("distribuzioneFornitoreId") != null) {
                                          id = importoSpedizione.get("distribuzioneFornitoreId").toString();
-                                         //endpoint = endpoint + "/" + id;
-                                     } else if(fieldname.equals("raeeFornitoreId")) {
+                                     } else if(fieldname.equals("raeeFornitoreId") && importoSpedizione.get("raeeFornitoreId") != null) {
                                          id = importoSpedizione.get("raeeFornitoreId").toString();
-                                         //endpoint = endpoint + "/" + id;
                                      }
 
                                      Object fonitoriResponse = doGet(restAPIKey, endpoint, objectKey);
@@ -2275,6 +2259,9 @@ public class UpdateConsumer extends Consumer {
 
     private Map<String, Object> searchByID(Object response, String id) throws ParseException {
         Map<String, Object> objValue = new HashMap<>();
+        if (id == null || id.isEmpty() || id.equals("null")) {
+            return objValue;
+        }
         JSONParser parser = new JSONParser();
         JSONArray resArray = (JSONArray) parser.parse(response.toString());
         for (Object object: resArray
@@ -2287,6 +2274,7 @@ public class UpdateConsumer extends Consumer {
         }
         return objValue;
     }
+
     private static String encodeValue(Object value) {
         try {
             return URLEncoder.encode(String.valueOf(value), StandardCharsets.UTF_8.toString());
@@ -2306,28 +2294,6 @@ public class UpdateConsumer extends Consumer {
         return response;
     }
 
-    private void deleteRecord(String module, String value) {
-        Object response = getRecord(module, value);
-        if (response == null || ((List) response).size() == 0) {
-            return;
-        }
-        Map element = ((Map) ((List) response).get(0));
-        Map<String, Object> mapToSend = new HashMap<>();
-
-        mapToSend.put("elementType", module);
-        mapToSend.put("id", element.get("id"));
-
-        Object d = wsClient.doInvoke(Util.methodDELETE, mapToSend, "POST");
-    }
-
-    private Object getRecord(String module, String object) {
-        String modulesIdField = modulesDeclared.getFieldsDoQuery(module).get(0);
-        String condition = modulesIdField + "='" + object + "'";
-        String query = "Select * from " + module + " where " + condition;
-        Object response = wsClient.doQuery(query);
-        return response;
-    }
-
     private String getValueFromMemoryCache(String key) {
         Object cacheValue = memoryCacheDB.hget(key, "crmid");
         if (cacheValue == null) {
@@ -2337,7 +2303,9 @@ public class UpdateConsumer extends Consumer {
         }
     }
 
-    // Value to Save String module, String value, String fieldname, String otherCondition
+    /**
+     * Value to Save String module, String value, String fieldname, String otherCondition
+     */
     private void addValueToMemoryCache(String key, String value) {
         memoryCacheDB.hset(key, "crmid", value);
     }
