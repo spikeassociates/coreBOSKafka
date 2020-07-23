@@ -22,16 +22,16 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class RESTAPIProducer {
-    private final String topic = (Util.getProperty("corebos.restproducer.topic") == null) ? System.getenv("TOPIC_NAME") : Util.getProperty("corebos.restproducer.topic");
-    private final String rest_api_url = (Util.getProperty("corebos.restproducer.url") == null) ? System.getenv("API_BASE_URL") : Util.getProperty("corebos.restproducer.url");
-    private final String _endpoint = (Util.getProperty("corebos.restproducer.endpoint") == null) ? System.getenv("END_POINT") : Util.getProperty("corebos.restproducer.endpoint");
-    public final String restAPIKey = (Util.getProperty("corebos.restproducer.restapikey") == null) ? System.getenv("API_KEY") : Util.getProperty("corebos.restproducer.restapikey");
-    public String filterByCurrentDate = (Util.getProperty("corebos.restproducer.filterbycurrentdate") == null) ? System.getenv("FILTER_BY_CURRENT_DATE_FLAG") : Util.getProperty("corebos.restproducer.filterbycurrentdate");
-    public String dateToFilterRecords = (Util.getProperty("corebos.restproducer.date") == null) ? System.getenv("FILTER_BY_THIS_DATE") : Util.getProperty("corebos.restproducer.date");
-    protected static final String KAFKA_URL = (Util.getProperty("corebos.kafka.url") == null) ? System.getenv("KAFKA_HOST") : Util.getProperty("corebos.kafka.url");
-    private final String pagesize = (Util.getProperty("corebos.restproducer.pagesize") == null) ? System.getenv("PAGE_SIZE") : Util.getProperty("corebos.restproducer.pagesize");
-    private String startDateTime = (Util.getProperty("corebos.restproducer.startdate") == null) ? System.getenv("FILTER_START_DATE") : Util.getProperty("corebos.restproducer.startdate");
-    private String endDateTime = (Util.getProperty("corebos.restproducer.enddate") == null) ? System.getenv("FILTER_END_DATE") : Util.getProperty("corebos.restproducer.enddate");
+    private final String topic = (Util.getProperty("corebos.restproducer.topic").isEmpty()) ? System.getenv("TOPIC_NAME") : Util.getProperty("corebos.restproducer.topic");
+    private final String rest_api_url = (Util.getProperty("corebos.restproducer.url").isEmpty()) ? System.getenv("API_BASE_URL") : Util.getProperty("corebos.restproducer.url");
+    private final String _endpoint = (Util.getProperty("corebos.restproducer.endpoint").isEmpty()) ? System.getenv("END_POINT") : Util.getProperty("corebos.restproducer.endpoint");
+    public final String restAPIKey = (Util.getProperty("corebos.restproducer.restapikey").isEmpty()) ? System.getenv("API_KEY") : Util.getProperty("corebos.restproducer.restapikey");
+    public String filterByCurrentDate = (Util.getProperty("corebos.restproducer.filterbycurrentdate").isEmpty()) ? System.getenv("FILTER_BY_CURRENT_DATE_FLAG") : Util.getProperty("corebos.restproducer.filterbycurrentdate");
+    public String dateToFilterRecords = (Util.getProperty("corebos.restproducer.date").isEmpty()) ? System.getenv("FILTER_BY_THIS_DATE") : Util.getProperty("corebos.restproducer.date");
+    protected static final String KAFKA_URL = (Util.getProperty("corebos.kafka.url").isEmpty()) ? System.getenv("KAFKA_HOST") : Util.getProperty("corebos.kafka.url");
+    private final String pagesize = (Util.getProperty("corebos.restproducer.pagesize").isEmpty()) ? System.getenv("PAGE_SIZE") : Util.getProperty("corebos.restproducer.pagesize");
+    private String startDateTime = (Util.getProperty("corebos.restproducer.startdate").isEmpty()) ? System.getenv("FILTER_START_DATE") : Util.getProperty("corebos.restproducer.startdate");
+    private String endDateTime = (Util.getProperty("corebos.restproducer.enddate").isEmpty()) ? System.getenv("FILTER_END_DATE") : Util.getProperty("corebos.restproducer.enddate");
 
     protected static org.apache.kafka.clients.producer.Producer<String, String> producer;
     protected RESTClient restClient;

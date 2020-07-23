@@ -22,12 +22,11 @@ import java.time.Duration;
 import java.util.*;
 
 public class UpdateConsumer extends Consumer {
-
-    private final String topic = (Util.getProperty("corebos.consumer.topic") == null) ? System.getenv("TOPIC_NAME") : Util.getProperty("corebos.consumer.topic");
-    private final String rest_api_url = (Util.getProperty("corebos.restproducer.url") == null) ? System.getenv("API_BASE_URL") : Util.getProperty("corebos.restproducer.url");
-    public final String restAPIKey = (Util.getProperty("corebos.restproducer.restapikey") == null) ? System.getenv("API_KEY") : Util.getProperty("corebos.restproducer.restapikey");
-    protected static final String useFieldMapping = (Util.getProperty("corebos.consumer.useFieldMapping") == null) ? System.getenv("USE_MAPPING_FLAG") : Util.getProperty("corebos.consumer.useFieldMapping");
-    protected static final String fieldsDoQuery = (Util.getProperty("corebos.consumer.fieldsDoQuery") == null) ? System.getenv("FIELD_DO_QUERY") : Util.getProperty("corebos.consumer.fieldsDoQuery");
+    private final String topic = (Util.getProperty("corebos.consumer.topic").isEmpty()) ? System.getenv("TOPIC_NAME") : Util.getProperty("corebos.consumer.topic");
+    private final String rest_api_url = (Util.getProperty("corebos.restproducer.url").isEmpty()) ? System.getenv("API_BASE_URL") : Util.getProperty("corebos.restproducer.url");
+    public final String restAPIKey = (Util.getProperty("corebos.restproducer.restapikey").isEmpty()) ? System.getenv("API_KEY") : Util.getProperty("corebos.restproducer.restapikey");
+    protected static final String useFieldMapping = (Util.getProperty("corebos.consumer.useFieldMapping").isEmpty()) ? System.getenv("USE_MAPPING_FLAG") : Util.getProperty("corebos.consumer.useFieldMapping");
+    protected static final String fieldsDoQuery = (Util.getProperty("corebos.consumer.fieldsDoQuery").isEmpty()) ? System.getenv("FIELD_DO_QUERY") : Util.getProperty("corebos.consumer.fieldsDoQuery");
 
     private ArrayList<Map<String, Object>> lastRecordToCreate = new ArrayList<>();
     private Map<String, String> uitype10fields = new HashMap<>();
@@ -402,6 +401,7 @@ public class UpdateConsumer extends Consumer {
                                          rs.put("value",  "");
                                          return rs;
                                      }
+
                                      Map<String, Object> fonitoriObject = searchByID(fonitoriResponse, id);
                                      StringBuilder mapName, mapModule, condition, queryMap;
                                      mapName = new StringBuilder(orgfieldName).append("2").append(fieldname);
@@ -535,8 +535,14 @@ public class UpdateConsumer extends Consumer {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
                                              JSONObject ritiro = (JSONObject) parser.parse(jsonValue);
-                                             String id = ritiro.get("filialeId").toString();
-                                             Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
+                                             String id = null;
+                                             Object filialiResponse = null;
+
+                                             if (ritiro.containsKey("filialeId") && ritiro.get("filialeId") != null) {
+                                                 id = ritiro.get("filialeId").toString();
+                                                 filialiResponse = doGet(restAPIKey, endpoint, objectKey);
+                                             }
+
                                              if (filialiResponse != null) {
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                                  if (!filialiObject.isEmpty()) {
@@ -620,8 +626,11 @@ public class UpdateConsumer extends Consumer {
                                                      } else {
                                                              String vettoriEndpoint = "vettori";
                                                              String vettoriDataKey = "vettori";
+                                                             Object vettoriResponse = null;
+                                                             if (filialiObject.containsKey("vettoreId") && filialiObject.get("vettoreId") != null) {
+                                                                 vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                                             }
 
-                                                             Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                                              if (vettoriResponse != null) {
                                                                  Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                                          ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
@@ -678,47 +687,52 @@ public class UpdateConsumer extends Consumer {
                                                              String fornitoriEndpoint = "fornitori";
                                                              String fornitoriDataKey = "fornitori";
 
-                                                             Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
-                                                             if (fornitoriResponse != null) {
-                                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
-                                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
-                                                                 if (!fornitoriObject.isEmpty()) {
-                                                                     Map<String, Object> fornitoriRecordMap = new HashMap<>();
-                                                                     Map<String, Object> fornitoriRecordField = new HashMap<>();
-                                                                     StringBuilder fornitoriCondition, fornitoriQueryMap;
-                                                                     String fornitoriMapName = "fornitoreId2Vendors";
-                                                                     String fornitoriMapModule = "cbMap";
-                                                                     fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
-                                                                     fornitoriQueryMap = new StringBuilder("select * from ").append("'").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
-                                                                     JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
-                                                                     JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
-                                                                     JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
-                                                                     JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
-                                                                     JSONArray fornitoriFieldsArray = (JSONArray) fornitoriMapFields.get("field");
-                                                                     for (Object field: fornitoriFieldsArray) {
-                                                                         JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
-                                                                         JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
-                                                                         fornitoriRecordField.put(((JSONObject)field).get("fieldname").toString(), fornitoriObject.get(originalFiled.get("OrgfieldName").toString()));
-                                                                     }
+                                                         Object fornitoriResponse = null;
 
-                                                                     fornitoriRecordField.put("assigned_user_id", wsClient.getUserID());
-                                                                     fornitoriRecordField.put("type", "Vettore");
-                                                                     fornitoriRecordMap.put("elementType", "Vendors");
-                                                                     fornitoriRecordMap.put("element", Util.getJson(fornitoriRecordField));
-                                                                     fornitoriRecordMap.put("searchOn", "suppliersrcid");
-                                                                     StringBuilder builderRemoveIndexZero = new StringBuilder(fornitoriRecordField.keySet().toString());
-                                                                     builderRemoveIndexZero.deleteCharAt(0);
-                                                                     StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
-                                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
-                                                                     String updatedfields = builderRemoveIndexLast.toString();
-                                                                     fornitoriRecordMap.put("updatedfields", updatedfields);
-                                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
-                                                                     JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
-                                                                     if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
-                                                                         recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
-                                                                     }
+                                                         if (filialiObject.containsKey("fornitoreId") && filialiObject.get("fornitoreId") != null) {
+                                                             fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                                         }
+
+                                                         if (fornitoriResponse != null) {
+                                                             Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
+                                                                     ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
+                                                             if (!fornitoriObject.isEmpty()) {
+                                                                 Map<String, Object> fornitoriRecordMap = new HashMap<>();
+                                                                 Map<String, Object> fornitoriRecordField = new HashMap<>();
+                                                                 StringBuilder fornitoriCondition, fornitoriQueryMap;
+                                                                 String fornitoriMapName = "fornitoreId2Vendors";
+                                                                 String fornitoriMapModule = "cbMap";
+                                                                 fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
+                                                                 fornitoriQueryMap = new StringBuilder("select * from ").append("'").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
+                                                                 JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
+                                                                 JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
+                                                                 JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
+                                                                 JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
+                                                                 JSONArray fornitoriFieldsArray = (JSONArray) fornitoriMapFields.get("field");
+                                                                 for (Object field: fornitoriFieldsArray) {
+                                                                     JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                                                                     JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                                                                     fornitoriRecordField.put(((JSONObject)field).get("fieldname").toString(), fornitoriObject.get(originalFiled.get("OrgfieldName").toString()));
+                                                                 }
+
+                                                                 fornitoriRecordField.put("assigned_user_id", wsClient.getUserID());
+                                                                 fornitoriRecordField.put("type", "Vettore");
+                                                                 fornitoriRecordMap.put("elementType", "Vendors");
+                                                                 fornitoriRecordMap.put("element", Util.getJson(fornitoriRecordField));
+                                                                 fornitoriRecordMap.put("searchOn", "suppliersrcid");
+                                                                 StringBuilder builderRemoveIndexZero = new StringBuilder(fornitoriRecordField.keySet().toString());
+                                                                 builderRemoveIndexZero.deleteCharAt(0);
+                                                                 StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                                                                 builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                                                                 String updatedfields = builderRemoveIndexLast.toString();
+                                                                 fornitoriRecordMap.put("updatedfields", updatedfields);
+                                                                 Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                                 JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
+                                                                 if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
+                                                                     recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
                                                                  }
                                                              }
+                                                         }
                                                      }
 
                                                      recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
@@ -820,9 +834,13 @@ public class UpdateConsumer extends Consumer {
                                              String endpoint = "filiali";
                                              String objectKey = "filiali";
                                              JSONObject zonaConsegna = (JSONObject) parser.parse(jsonValue);
-                                             String id = zonaConsegna.get("filialeId").toString();
+                                             String id = null;
+                                             Object filialiResponse = null;
+                                             if (zonaConsegna.containsKey("filialeId") && zonaConsegna.get("filialeId") != null) {
+                                                 id = zonaConsegna.get("filialeId").toString();
+                                                 filialiResponse = doGet(restAPIKey, endpoint, objectKey);
+                                             }
 
-                                             Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
                                              if (filialiResponse != null) {
                                                  Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                                  if (!filialiObject.isEmpty()) {
@@ -885,7 +903,7 @@ public class UpdateConsumer extends Consumer {
 
                                                      Map<String, Object> searchResultVendorModule;
 
-                                                     if (filialiObject.get("vettoreId") != null) {
+                                                     if (filialiObject.containsKey("vettoreId") && filialiObject.get("vettoreId") != null) {
                                                          /*
                                                           * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
                                                           * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
@@ -900,8 +918,11 @@ public class UpdateConsumer extends Consumer {
                                                          } else {
                                                                  String vettoriEndpoint = "vettori";
                                                                  String vettoriDataKey = "vettori";
+                                                                 Object vettoriResponse = null;
+                                                                 if(filialiObject.containsKey("vettoreId") && filialiObject.get("vettoreId") != null) {
+                                                                     vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                                                 }
 
-                                                                 Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                                                  if (vettoriResponse != null) {
                                                                      Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
@@ -945,7 +966,7 @@ public class UpdateConsumer extends Consumer {
                                                          }
                                                      }
 
-                                                     if (filialiObject.get("fornitoreId") != null) {
+                                                     if (filialiObject.containsKey("fornitoreId") && filialiObject.get("fornitoreId") != null) {
                                                          /*
                                                           * Query Vendors module in order to check whether there already exists a record where suppliersrcid == vettoreId AND type == 'Vettore'.
                                                           * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
@@ -962,7 +983,11 @@ public class UpdateConsumer extends Consumer {
                                                                  String fornitoriEndpoint = "fornitori";
                                                                  String fornitoriDataKey = "fornitori";
 
-                                                                 Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                                                 Object fornitoriResponse = null;
+                                                                 if(filialiObject.containsKey("fornitoreId") && filialiObject.get("fornitoreId") != null) {
+                                                                     fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                                                 }
+
                                                                  if (fornitoriResponse != null) {
                                                                      Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                                              ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -1051,8 +1076,12 @@ public class UpdateConsumer extends Consumer {
                                                  String endpoint = "tecnici";
                                                  String objectKey = "tecnico";
                                                  JSONObject zonaConsegna = (JSONObject) parser.parse(jsonValue);
-                                                 String id = zonaConsegna.get("tecnicoId").toString();
-                                                 Object tecniciResponse = doGet(restAPIKey, endpoint+"/" + id, objectKey);
+                                                 String id = null;
+                                                 Object tecniciResponse = null;
+                                                 if (zonaConsegna.containsKey("tecnicoId") && zonaConsegna.get("tecnicoId") != null) {
+                                                     id = zonaConsegna.get("tecnicoId").toString();
+                                                     tecniciResponse = doGet(restAPIKey, endpoint+"/" + id, objectKey);
+                                                 }
 
                                                  if (tecniciResponse != null) {
                                                      JSONObject tecniciObject = (JSONObject) parser.parse(tecniciResponse.toString());
@@ -1217,7 +1246,7 @@ public class UpdateConsumer extends Consumer {
                 * */
                 if (orgfieldName.equals("filialePartenzaId")) {
 
-                    if (Integer.parseInt(record.get(orgfieldName).toString()) == 0 || record.get(orgfieldName) != null) {
+                    if (!record.containsKey(orgfieldName) || Integer.parseInt(record.get(orgfieldName).toString()) == 0 || record.get(orgfieldName) != null) {
                         rs.put("status", "notfound");
                         rs.put("value",  "");
                         return rs;
@@ -1236,9 +1265,13 @@ public class UpdateConsumer extends Consumer {
                     } else {
                             String endpoint = "filiali";
                             String objectKey = "filiali";
-                            String id = record.get(orgfieldName).toString();
+                            String id = null;
+                            Object filialiResponse = null;
+                            if (record.containsKey(orgfieldName) && record.get(orgfieldName) != null) {
+                                id = record.get(orgfieldName).toString();
+                                filialiResponse = doGet(restAPIKey, endpoint, objectKey);
+                            }
 
-                            Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
                             if (filialiResponse != null) {
                                 Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                 if (!filialiObject.isEmpty()) {
@@ -1322,7 +1355,11 @@ public class UpdateConsumer extends Consumer {
                                             String vettoriEndpoint = "vettori";
                                             String vettoriDataKey = "vettori";
 
-                                            Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                            Object vettoriResponse = null;
+                                            if (filialiObject.containsKey("vettoreId") && filialiObject.get("vettoreId") != null) {
+                                                vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                            }
+
                                             if (vettoriResponse != null) {
                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
@@ -1379,8 +1416,12 @@ public class UpdateConsumer extends Consumer {
                                     } else {
                                             String fornitoriEndpoint = "fornitori";
                                             String fornitoriDataKey = "fornitori";
+                                            Object fornitoriResponse = null;
 
-                                            Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                            if (filialiObject.containsKey("filialiObject") && filialiObject.get("filialiObject") != null) {
+                                                fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                            }
+
                                             if (fornitoriResponse != null) {
                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -1769,8 +1810,11 @@ public class UpdateConsumer extends Consumer {
                             } else {
                                     String vettoriEndpoint = "vettori";
                                     String vettoriDataKey = "vettori";
+                                    Object vettoriResponse = null;
+                                    if (filialiObject.containsKey("vettoreId") && filialiObject.get("vettoreId") != null) {
+                                        vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                    }
 
-                                    Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
                                     if (vettoriResponse != null) {
                                         Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
@@ -1828,7 +1872,11 @@ public class UpdateConsumer extends Consumer {
                                     String fornitoriEndpoint = "fornitori";
                                     String fornitoriDataKey = "fornitori";
 
-                                    Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                    Object fornitoriResponse = null;
+                                    if(filialiObject.containsKey("fornitoreId") && filialiObject.get("fornitoreId") != null) {
+                                        fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                    }
+
                                     if (fornitoriResponse != null) {
                                         Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -1940,8 +1988,14 @@ public class UpdateConsumer extends Consumer {
                         if (parser.parse(restAutista.toString()) != null) {
                             String endpoint = "filiali";
                             String objectKey = "filiali";
-                            String id = restAutista.get("filialeId").toString();
-                            Object filialiResponse = doGet(restAPIKey, endpoint, objectKey);
+
+                            String id = null;
+                            Object filialiResponse = null;
+                            if(restAutista.containsKey("filialeId") && restAutista.get("filialeId") != null) {
+                                id = restAutista.get("filialeId").toString();
+                                filialiResponse = doGet(restAPIKey, endpoint, objectKey);
+                            }
+
                             if (filialiResponse != null) {
                                 Map<String, Object> filialiObject = searchByID(filialiResponse, id);
                                 if (!filialiObject.isEmpty()) {
@@ -2001,7 +2055,11 @@ public class UpdateConsumer extends Consumer {
                                             String vettoriEndpoint = "vettori";
                                             String vettoriDataKey = "vettori";
 
-                                            Object vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                            Object vettoriResponse = null;
+                                            if (filialiObject.containsKey("vettoreId") && filialiObject.get("vettoreId") != null) {
+                                                vettoriResponse = doGet(restAPIKey, vettoriEndpoint, vettoriDataKey);
+                                            }
+
                                             if (vettoriResponse != null) {
                                                 Map<String, Object> vettoriObject = searchByID(vettoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString());
@@ -2058,7 +2116,11 @@ public class UpdateConsumer extends Consumer {
                                             String fornitoriEndpoint = "fornitori";
                                             String fornitoriDataKey = "fornitori";
 
-                                            Object fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                            Object fornitoriResponse = null;
+                                            if(filialiObject.containsKey("fornitoreId") && filialiObject.get("fornitoreId") != null) {
+                                                fornitoriResponse = doGet(restAPIKey, fornitoriEndpoint, fornitoriDataKey);
+                                            }
+
                                             if (fornitoriResponse != null) {
                                                 Map<String, Object> fornitoriObject = searchByID(fornitoriResponse,
                                                         ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString());
@@ -2163,9 +2225,13 @@ public class UpdateConsumer extends Consumer {
                 } else {
                         String endpoint = "categorieMerceologiche";
                         String objectKey = "categorieMerceologiche";
-                        String id = prodottiObject.get("categoryId").toString();
+                        String id = null;
+                        Object categorieMerceologicheResponse = null;
+                        if (prodottiObject.containsKey("categoryId") && prodottiObject.get("categoryId") != null) {
+                            id = prodottiObject.get("categoryId").toString();
+                            categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
+                        }
 
-                        Object categorieMerceologicheResponse = doGet(restAPIKey, endpoint, objectKey);
                         if (categorieMerceologicheResponse != null) {
                             Map<String, Object> categorieMerceologicheObject = searchByID(categorieMerceologicheResponse, id);
                             if (!categorieMerceologicheObject.isEmpty()) {
