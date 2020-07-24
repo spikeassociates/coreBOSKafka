@@ -370,15 +370,20 @@ public class UpdateConsumer extends Consumer {
                          searchID = ((JSONObject) parser.parse(jsonValue)).get("ID").toString();
                      }
 
-                     Map<String, Object> searchResult;
+                     Map<String, Object> searchResult = null;
                      if (moduleFieldInfo.get(fieldname).equals("Services")) {
-                         searchResult = searchRecord(moduleFieldInfo.get(fieldname),
-                                 searchID, fieldToSearch.get(orgfieldName).toString(), "", false);
+                         if (fieldToSearch.containsKey(orgfieldName) && fieldToSearch.get(orgfieldName) != null && !fieldToSearch.get(orgfieldName).isEmpty()) {
+                             searchResult = searchRecord(moduleFieldInfo.get(fieldname),
+                                     searchID, fieldToSearch.get(orgfieldName).toString(), "", false);
+                         }
+
                      } else {
-                        searchResult = searchRecord(moduleFieldInfo.get(fieldname),
-                                 searchID, fieldToSearch.get(orgfieldName).toString(), "", true);
+                         if (fieldToSearch.containsKey(orgfieldName) && fieldToSearch.get(orgfieldName) != null && !fieldToSearch.get(orgfieldName).isEmpty()) {
+                             searchResult = searchRecord(moduleFieldInfo.get(fieldname),
+                                     searchID, fieldToSearch.get(orgfieldName).toString(), "", true);
+                         }
                      }
-                     if (((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
+                     if ( searchResult != null && ((boolean) searchResult.get("status")) && !((boolean) searchResult.get("mustbeupdated"))) {
                          rs.put("status", "found");
                          rs.put("value",  searchResult.get("crmid"));
                      } else {
@@ -486,15 +491,26 @@ public class UpdateConsumer extends Consumer {
                                  /*
                                   * Query Geoboundary Module  where geoname == comune
                                   */
-                                 Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
-                                         ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
-                                         "geoname", "", false);
+                                 Map<String, Object> searchResultGeoboundary = null;
+                                 if (((JSONObject) parser.parse(jsonValue)).containsKey("comune") && ((JSONObject) parser.parse(jsonValue)).get("comune") != null &&
+                                         !((JSONObject) parser.parse(jsonValue)).get("comune").toString().isEmpty()) {
+                                     searchResultGeoboundary = searchRecord("Geoboundary",
+                                             ((JSONObject) parser.parse(jsonValue)).get("comune").toString(),
+                                             "geoname", "", false);
+                                 } else {
+                                     searchResultGeoboundary = new HashMap<>();
+                                     searchResultGeoboundary.put("status", false);
+                                     searchResultGeoboundary.put("crmid", "");
+                                     searchResultGeoboundary.put("mustbeupdated", false);
+                                 }
+
                                  /*
                                  * Otherwise, link the cbAddress with the GeoBoundary record where geoname == DA VERIFICARE
                                  * */
 
                                  Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
                                          "DA VERIFICARE", "geoname", "", false);
+
                                  if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      for (Object key : referenceFields.keySet()) {
@@ -515,9 +531,20 @@ public class UpdateConsumer extends Consumer {
                                  /*
                                   * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
                                   */
-                                 Map<String, Object> searchResultCompany = searchRecord("cbCompany",
-                                         ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
-                                         "branchsrcid", "", false);
+                                 Map<String, Object> searchResultCompany = null;
+                                 if (((JSONObject) parser.parse(jsonValue)).containsKey("filialeId") &&
+                                         ((JSONObject) parser.parse(jsonValue)).get("filialeId") != null &&
+                                         !((JSONObject) parser.parse(jsonValue)).get("filialeId").toString().isEmpty()) {
+                                     searchResultCompany = searchRecord("cbCompany",
+                                             ((JSONObject) parser.parse(jsonValue)).get("filialeId").toString(),
+                                             "branchsrcid", "", false);
+                                 } else {
+                                     searchResultCompany = new HashMap<>();
+                                     searchResultCompany.put("status", false);
+                                     searchResultCompany.put("crmid", "");
+                                     searchResultCompany.put("mustbeupdated", false);
+                                 }
+
                                  if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
                                      for (Object key : referenceFields.keySet()) {
@@ -568,7 +595,7 @@ public class UpdateConsumer extends Consumer {
                                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                                      * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                                                      * */
-                                                     if (((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null &&
+                                                     if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("comune") && ((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null &&
                                                              !((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString().isEmpty()) {
                                                          Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
                                                                  ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
@@ -618,9 +645,19 @@ public class UpdateConsumer extends Consumer {
                                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                                      * vettoreId
                                                      * */
-                                                     searchResultVendorModule = searchRecord("Vendors",
-                                                     ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                                             "suppliersrcid", "Vettore", false);
+                                                     if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("vettoreId") &&
+                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId") != null &&
+                                                             !((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString().isEmpty()) {
+                                                         searchResultVendorModule = searchRecord("Vendors",
+                                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                                                 "suppliersrcid", "Vettore", false);
+                                                     } else {
+                                                         searchResultVendorModule = new HashMap<>();
+                                                         searchResultVendorModule.put("status", false);
+                                                         searchResultVendorModule.put("crmid", "");
+                                                         searchResultVendorModule.put("mustbeupdated", false);
+                                                     }
+
                                                      if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
@@ -678,9 +715,19 @@ public class UpdateConsumer extends Consumer {
                                                       * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                                       * fornitoreId
                                                       * */
-                                                     searchResultVendorModule = searchRecord("Vendors",
-                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                                             "suppliersrcid", "Fornitore", false);
+                                                     if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("fornitoreId") &&
+                                                             ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId") != null &&
+                                                             !((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString().isEmpty()) {
+                                                         searchResultVendorModule = searchRecord("Vendors",
+                                                                 ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
+                                                                 "suppliersrcid", "Fornitore", false);
+                                                     } else {
+                                                         searchResultVendorModule = new HashMap<>();
+                                                         searchResultVendorModule.put("status", false);
+                                                         searchResultVendorModule.put("crmid", "");
+                                                         searchResultVendorModule.put("mustbeupdated", false);
+                                                     }
+
                                                      if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                          recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                      } else {
@@ -813,9 +860,20 @@ public class UpdateConsumer extends Consumer {
                                  /*
                                   * Query DeliveryAreas module in order to check whether there already exists a record where areasrcid == zonaConsegna.ID.
                                   */
-                                 Map<String, Object> searchResultDeliveryAreas = searchRecord("DeliveryAreas",
-                                         ((JSONObject) parser.parse(jsonValue)).get("ID").toString(),
-                                         "areasrcid", "", false);
+                                 Map<String, Object> searchResultDeliveryAreas;
+                                 if (((JSONObject) parser.parse(jsonValue)).containsKey("ID") &&
+                                         ((JSONObject) parser.parse(jsonValue)).get("ID") != null &&
+                                         !((JSONObject) parser.parse(jsonValue)).get("ID").toString().isEmpty()) {
+                                     searchResultDeliveryAreas = searchRecord("DeliveryAreas",
+                                             ((JSONObject) parser.parse(jsonValue)).get("ID").toString(),
+                                             "areasrcid", "", false);
+                                 } else {
+                                     searchResultDeliveryAreas = new HashMap<>();
+                                     searchResultDeliveryAreas.put("status", false);
+                                     searchResultDeliveryAreas.put("crmid", "");
+                                     searchResultDeliveryAreas.put("mustbeupdated", false);
+                                 }
+
 
                                  if (((boolean) searchResultDeliveryAreas.get("status")) && !((boolean) searchResultDeliveryAreas.get("mustbeupdated"))) {
                                      Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
@@ -1058,7 +1116,7 @@ public class UpdateConsumer extends Consumer {
                                         Query Technicians module in order to check whether there already exists a record where techniciansrcid == zonaConsegna.tecnicoId. If there exists none, then make an HTTP request to GET /tecnici/{id} where id should be the value of zonaConsegna.tecnicoId.
                                         Afterwards, create a new Technicians record in CoreBOS with the following mapping:
                                         */
-                                     if (((JSONObject) parser.parse(jsonValue)).get("tecnicoId") != null) {
+                                     if (((JSONObject) parser.parse(jsonValue)).containsKey("tecnicoId") && ((JSONObject) parser.parse(jsonValue)).get("tecnicoId") != null) {
                                          Map<String, Object> searchResultTechnicians = searchRecord("Technicians",
                                                  ((JSONObject) parser.parse(jsonValue)).get("tecnicoId").toString(),
                                                  "techniciansrcid", "", true);
@@ -1345,9 +1403,19 @@ public class UpdateConsumer extends Consumer {
                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                      * vettoreId
                                      * */
-                                    searchResultVendorModule = searchRecord("Vendors",
-                                            ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                            "suppliersrcid", "Vettore", false);
+
+                                    if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("vettoreId") &&
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId") != null &&
+                                            !((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString().isEmpty()) {
+                                        searchResultVendorModule = searchRecord("Vendors",
+                                                ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                                "suppliersrcid", "Vettore", false);
+                                    } else {
+                                        searchResultVendorModule = new HashMap<>();
+                                        searchResultVendorModule.put("status", false);
+                                        searchResultVendorModule.put("crmid", "");
+                                        searchResultVendorModule.put("mustbeupdated", false);
+                                    }
 
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
@@ -1408,9 +1476,20 @@ public class UpdateConsumer extends Consumer {
                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                      * fornitoreId
                                      * */
-                                    searchResultVendorModule = searchRecord("Vendors",
-                                            ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                            "suppliersrcid", "Fornitore", false);
+
+                                    if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("fornitoreId") &&
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId") != null &&
+                                            !((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString().isEmpty()) {
+                                        searchResultVendorModule = searchRecord("Vendors",
+                                                ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
+                                                "suppliersrcid", "Fornitore", false);
+                                    } else {
+                                        searchResultVendorModule = new HashMap<>();
+                                        searchResultVendorModule.put("status", false);
+                                        searchResultVendorModule.put("crmid", "");
+                                        searchResultVendorModule.put("mustbeupdated", false);
+                                    }
+
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
@@ -1510,7 +1589,7 @@ public class UpdateConsumer extends Consumer {
                     rs.put("value",  entry.getValue());
                     return rs;
                 } else {
-                    String jsonValue= Util.getJson( entry.getValue());
+                    String jsonValue= Util.getJson(entry.getValue());
                     JSONParser parser = new JSONParser();
                     if (parser.parse(jsonValue) instanceof JSONObject) {
                         rs = handleJSONObject((JSONObject) parser.parse(jsonValue), orgfieldName);
@@ -1732,10 +1811,19 @@ public class UpdateConsumer extends Consumer {
              * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
              */
             JSONObject prenotazioni = (JSONObject) parser.parse(element.toString());
-            if (prenotazioni.get("restFiliale") instanceof JSONObject) {
+            if (prenotazioni.containsKey("restFiliale") && prenotazioni.get("restFiliale") instanceof JSONObject) {
                 JSONObject restFiliale = (JSONObject) prenotazioni.get("restFiliale");
-                Map<String, Object> searchResultCompany = searchRecord("cbCompany",
-                        restFiliale.get("ID").toString(), "branchsrcid", "", false);
+
+                Map<String, Object> searchResultCompany;
+                if (restFiliale.containsKey("ID") && restFiliale.get("restFiliale") != null) {
+                    searchResultCompany = searchRecord("cbCompany",
+                            restFiliale.get("ID").toString(), "branchsrcid", "", false);
+                } else {
+                    searchResultCompany = new HashMap<>();
+                    searchResultCompany.put("status", false);
+                    searchResultCompany.put("crmid", "");
+                    searchResultCompany.put("mustbeupdated", false);
+                }
 
                 if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
@@ -1775,9 +1863,20 @@ public class UpdateConsumer extends Consumer {
                              * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                              * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                              * */
-                            Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
-                                    ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
-                                    "geoname", "", false);
+                            Map<String, Object> searchResultGeoboundary;
+                            if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("comune") &&
+                                    ((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null &&
+                                    !((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString().isEmpty()) {
+                                searchResultGeoboundary = searchRecord("Geoboundary",
+                                        ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
+                                        "geoname", "", false);
+                            } else {
+                                searchResultGeoboundary = new HashMap<>();
+                                searchResultGeoboundary.put("status", false);
+                                searchResultGeoboundary.put("crmid", "");
+                                searchResultGeoboundary.put("mustbeupdated", false);
+                            }
+
                             Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
                                     "DA VERIFICARE", "geoname", "", false);
                             if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
@@ -1801,9 +1900,18 @@ public class UpdateConsumer extends Consumer {
                              * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                              * vettoreId
                              * */
-                            searchResultVendorModule = searchRecord("Vendors",
-                                    ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                    "suppliersrcid", "Vettore", false);
+                            if(((JSONObject) parser.parse(filialiObject.toString())).containsKey("vettoreId") &&
+                                    ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId") != null &&
+                                    !((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString().isEmpty()) {
+                                searchResultVendorModule = searchRecord("Vendors",
+                                        ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                        "suppliersrcid", "Vettore", false);
+                            } else {
+                                searchResultVendorModule = new HashMap<>();
+                                searchResultVendorModule.put("status", false);
+                                searchResultVendorModule.put("crmid", "");
+                                searchResultVendorModule.put("mustbeupdated", false);
+                            }
 
                             if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
@@ -1863,9 +1971,18 @@ public class UpdateConsumer extends Consumer {
                              * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                              * fornitoreId
                              * */
-                            searchResultVendorModule = searchRecord("Vendors",
-                                    ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                    "suppliersrcid", "Fornitore", false);
+                            if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("fornitoreId") &&
+                                    ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId") != null &&
+                                    !((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString().isEmpty()) {
+                                searchResultVendorModule = searchRecord("Vendors",
+                                        ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
+                                        "suppliersrcid", "Fornitore", false);
+                            } else {
+                                searchResultVendorModule = new HashMap<>();
+                                searchResultVendorModule.put("status", false);
+                                searchResultVendorModule.put("crmid", "");
+                                searchResultVendorModule.put("mustbeupdated", false);
+                            }
                             if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                 recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                             } else {
@@ -1940,14 +2057,23 @@ public class UpdateConsumer extends Consumer {
             }
 
 
-            if (prenotazioni.get("restAutista") instanceof JSONObject) {
+            if (prenotazioni.containsKey("restAutista") && prenotazioni.get("restAutista") instanceof JSONObject) {
                 /*
                  * Query cbEmployee module in order to check whether there already exists a record where nif == restAutista.ID AND emptype == 'Autista'.
                  * If there exists none, then create a new one with the following mapping:
                  * */
                 JSONObject restAutista = (JSONObject) prenotazioni.get("restAutista");
-                Map<String, Object> searchResultEmployee = searchRecord("cbEmployee",
-                        restAutista.get("ID").toString(), "nif", "Autista", true);
+                Map<String, Object> searchResultEmployee;
+                if (restAutista.containsKey("ID") && restAutista.get("ID") != null && !restAutista.get("ID").toString().isEmpty()) {
+                    searchResultEmployee = searchRecord("cbEmployee",
+                            restAutista.get("ID").toString(), "nif", "Autista", true);
+                } else {
+                    searchResultEmployee = new HashMap<>();
+                    searchResultEmployee.put("status", false);
+                    searchResultEmployee.put("crmid", "");
+                    searchResultEmployee.put("mustbeupdated", false);
+                }
+
 
                 if (((boolean) searchResultEmployee.get("status")) && !((boolean) searchResultEmployee.get("mustbeupdated"))) {
                     Map<String, String> referenceFields = getUIType10Field(fieldname);
@@ -2021,9 +2147,20 @@ public class UpdateConsumer extends Consumer {
                                      * Query GeoBoundary module and find the record where geoname == comune parameter of the API output.
                                      * Store in geobid field of the new cbCompany the value of geobid of the found GeoBoundary record
                                      * */
-                                    Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
-                                            ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
-                                            "geoname", "", false);
+                                    Map<String, Object> searchResultGeoboundary;
+                                    if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("comune") &&
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("comune") != null &&
+                                            !((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString().isEmpty()) {
+                                        searchResultGeoboundary = searchRecord("Geoboundary",
+                                                ((JSONObject) parser.parse(filialiObject.toString())).get("comune").toString(),
+                                                "geoname", "", false);
+                                    } else {
+                                        searchResultGeoboundary = new HashMap<>();
+                                        searchResultGeoboundary.put("status", false);
+                                        searchResultGeoboundary.put("crmid", "");
+                                        searchResultGeoboundary.put("mustbeupdated", false);
+                                    }
+
                                     Map<String, Object> searchResultGeoboundaryDefault = searchRecord("Geoboundary",
                                             "DA VERIFICARE", "geoname", "", false);
                                     if (((boolean) searchResultGeoboundary.get("status")) || ((boolean) searchResultGeoboundaryDefault.get("status"))) {
@@ -2046,9 +2183,19 @@ public class UpdateConsumer extends Consumer {
                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                      * vettoreId
                                      * */
-                                    searchResultVendorModule = searchRecord("Vendors",
-                                            ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
-                                            "suppliersrcid", "Vettore", false);
+                                    if(((JSONObject) parser.parse(filialiObject.toString())).containsKey("vettoreId") &&
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId") != null &&
+                                            !((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString().isEmpty()) {
+                                        searchResultVendorModule = searchRecord("Vendors",
+                                                ((JSONObject) parser.parse(filialiObject.toString())).get("vettoreId").toString(),
+                                                "suppliersrcid", "Vettore", false);
+                                    } else {
+                                        searchResultVendorModule = new HashMap<>();
+                                        searchResultVendorModule.put("status", false);
+                                        searchResultVendorModule.put("crmid", "");
+                                        searchResultVendorModule.put("mustbeupdated", false);
+                                    }
+
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
@@ -2107,9 +2254,19 @@ public class UpdateConsumer extends Consumer {
                                      * If there exists none, then call the api/vettori endpoint and retrieve the object where ID==vettoreId. Then, create a new Vendor in CoreBOS
                                      * fornitoreId
                                      * */
-                                    searchResultVendorModule = searchRecord("Vendors",
-                                            ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
-                                            "suppliersrcid", "Fornitore", false);
+                                    if (((JSONObject) parser.parse(filialiObject.toString())).containsKey("fornitoreId") &&
+                                            ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId") != null &&
+                                            !((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString().isEmpty()) {
+                                        searchResultVendorModule = searchRecord("Vendors",
+                                                ((JSONObject) parser.parse(filialiObject.toString())).get("fornitoreId").toString(),
+                                                "suppliersrcid", "Fornitore", false);
+                                    } else {
+                                        searchResultVendorModule = new HashMap<>();
+                                        searchResultVendorModule.put("status", false);
+                                        searchResultVendorModule.put("crmid", "");
+                                        searchResultVendorModule.put("mustbeupdated", false);
+                                    }
+
                                     if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                         recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                     } else {
@@ -2210,7 +2367,7 @@ public class UpdateConsumer extends Consumer {
 
         if (orgfieldName.equals("prodotti")) {
             JSONObject prodottiObject = (JSONObject) parser.parse(element.toString());
-            if (prodottiObject.get("categoryId") != null) {
+            if (prodottiObject.containsKey("categoryId") && prodottiObject.get("categoryId") != null) {
                 Map<String, Object> searchResultCbproductcategory = searchRecord("cbproductcategory",
                         prodottiObject.get("categoryId").toString(), "categorysrcid", "", false);
 
