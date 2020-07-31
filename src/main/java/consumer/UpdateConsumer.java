@@ -48,14 +48,30 @@ public class UpdateConsumer extends Consumer {
 
 
         try {
+
             while (true) {
+                System.out.println("************************************BENCHMARK**************************************");
+                long startTime = System.currentTimeMillis();
                 ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
+                long timeElapsed = System.currentTimeMillis() - startTime;
+                System.out.println("TIME TAKEN TO POLL  IN SECOND(S) :: " + ( timeElapsed / 1000 ));
+                System.out.println("TOTAL NUMBER OF RECORD IN POLL :: " + records.count());
+
+                timeElapsed = System.currentTimeMillis() - startTime;
                 for (Object o : records) {
+                    long startTimeToProcessRecord = System.currentTimeMillis();
                     ConsumerRecord record = (ConsumerRecord) o;
                     readRecord(record);
+                    long timeElapsedToProcessRecord = System.currentTimeMillis() - startTimeToProcessRecord;
+                    System.out.println("TIME TAKEN TO PROCESS SINGLE RECORD IN SECOND(S) :: " + ( timeElapsedToProcessRecord / 1000 ));
+
                     rebalanceListner.setCurrentOffsets(record.topic(), record.partition(), record.offset());
                 }
+                System.out.println("TIME TAKEN TO PROCESS RECORDS IN POLL  IN SECOND(S) :: " + ( timeElapsed / 1000 ));
+
                 kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
+                System.out.println("******************************************************************************");
+                System.out.println("");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -64,13 +80,13 @@ public class UpdateConsumer extends Consumer {
 
 
     private void readRecord(ConsumerRecord record) throws Exception {
-        System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
+        // System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
         KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
         Object value = Util.getObjectFromJson(objectValue.get("data").toString(), Object.class);
         if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
-            System.out.println("Upserting the Record");
+            // System.out.println("Upserting the Record");
             lastRecordToCreate.clear();
             if (!keyData.module.equals("ProcessLog")) {
                 upsertRecord(keyData.module, (Map) value);
@@ -313,8 +329,8 @@ public class UpdateConsumer extends Consumer {
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
-         System.out.println("Object Key:: " + orgfieldName);
-         System.out.println("Module Field:: " + fieldname);
+         // System.out.println("Object Key:: " + orgfieldName);
+         // System.out.println("Module Field:: " + fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
             /*
@@ -1693,7 +1709,7 @@ public class UpdateConsumer extends Consumer {
             // Search on redis for Memory Cache
             // We use Hash Set Data type
             // If value found we return
-            System.out.println("ENTER MEMORYCACHE KEY SEARCH");
+            //System.out.println("ENTER MEMORYCACHE KEY SEARCH");
             StringBuilder memoryCacheKey = new StringBuilder();
             memoryCacheKey.setLength(0);
             String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).append(otherCondition).toString().toLowerCase());
@@ -1703,7 +1719,7 @@ public class UpdateConsumer extends Consumer {
                 result.put("mustbeupdated", mustBeUpdated);
                 return result;
             }
-            System.out.println("LEAVE MEMORYCACHE KEY NOT FOUND");
+            //System.out.println("LEAVE MEMORYCACHE KEY NOT FOUND");
             StringBuilder condition;
             if (module.equals("Vendors")) {
                 if  (otherCondition.isEmpty()) {
@@ -2410,7 +2426,7 @@ public class UpdateConsumer extends Consumer {
                                     recordFieldCategoryId.put(((JSONObject)field).get("fieldname").toString(), categorieMerceologicheObject.get(originalFiled.get("OrgfieldName").toString()));
                                 }
 
-                                System.out.println(recordFieldCategoryId);
+                                // System.out.println(recordFieldCategoryId);
                                 recordFieldCategoryId.put("assigned_user_id", wsClient.getUserID());
                                 recordMapCategoryId.put("elementType", "cbproductcategory");
                                 recordMapCategoryId.put("element", Util.getJson(recordFieldCategoryId));
