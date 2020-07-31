@@ -51,13 +51,11 @@ public class UpdateConsumer extends Consumer {
 
             while (true) {
                 System.out.println("************************************BENCHMARK**************************************");
-                long startTime = System.currentTimeMillis();
+                long startTimeToPoll = System.currentTimeMillis();
                 ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
-                long timeElapsed = System.currentTimeMillis() - startTime;
-                System.out.println("TIME TAKEN TO POLL  IN SECOND(S) :: " + ( timeElapsed / 1000 ));
                 System.out.println("TOTAL NUMBER OF RECORD IN POLL :: " + records.count());
 
-                timeElapsed = System.currentTimeMillis() - startTime;
+                long startTimeToProcessAllRecord = System.currentTimeMillis();
                 for (Object o : records) {
                     long startTimeToProcessRecord = System.currentTimeMillis();
                     ConsumerRecord record = (ConsumerRecord) o;
@@ -67,9 +65,12 @@ public class UpdateConsumer extends Consumer {
 
                     rebalanceListner.setCurrentOffsets(record.topic(), record.partition(), record.offset());
                 }
-                System.out.println("TIME TAKEN TO PROCESS RECORDS IN POLL  IN SECOND(S) :: " + ( timeElapsed / 1000 ));
+                long timeElapsedToProcessAllRecord = System.currentTimeMillis() - startTimeToProcessAllRecord;
+                System.out.println("TIME TAKEN TO PROCESS RECORDS IN POLL  IN SECOND(S) :: " + ( timeElapsedToProcessAllRecord / 1000 ));
 
                 kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
+                long timeElapsedToPoll = System.currentTimeMillis() - startTimeToPoll;
+                System.out.println("TIME TAKEN TO POLL  IN SECOND(S) :: " + ( timeElapsedToPoll / 1000 ));
                 System.out.println("******************************************************************************");
                 System.out.println("");
             }
