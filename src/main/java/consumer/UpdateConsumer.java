@@ -51,7 +51,6 @@ public class UpdateConsumer extends Consumer {
 
             while (true) {
                 System.out.println("************************************BENCHMARK**************************************");
-                long startTimeToPoll = System.currentTimeMillis();
                 ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
                 System.out.println("TOTAL NUMBER OF RECORD IN POLL :: " + records.count());
 
@@ -69,8 +68,6 @@ public class UpdateConsumer extends Consumer {
                 System.out.println("TIME TAKEN TO PROCESS RECORDS IN POLL  IN SECOND(S) :: " + ( timeElapsedToProcessAllRecord / 1000 ));
 
                 kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
-                long timeElapsedToPoll = System.currentTimeMillis() - startTimeToPoll;
-                System.out.println("TIME TAKEN TO POLL  IN SECOND(S) :: " + ( timeElapsedToPoll / 1000 ));
                 System.out.println("******************************************************************************");
                 System.out.println("");
             }
