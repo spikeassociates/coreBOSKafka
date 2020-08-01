@@ -346,7 +346,32 @@ public class UpdateConsumer extends Consumer {
 
             JSONParser parser = new JSONParser();
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
-                    orgfieldName.equals("raeeFornitoreId")) {
+                    orgfieldName.equals("raeeFornitoreId") || orgfieldName.equals("indirizzo")) {
+
+                if (orgfieldName.equals("indirizzo")) {
+                    JSONObject indirizzo = null;
+                    if (record.containsKey("indirizzo") && record.get("indirizzo") != null) {
+                        indirizzo = (JSONObject) parser.parse(Util.getJson(record.get("indirizzo")));
+
+                        if (indirizzo == null || indirizzo.containsKey("comune") || indirizzo.get("commune") == null) {
+                            rs.put("status", "notfound");
+                            rs.put("value",  "");
+                            return rs;
+                        } else {
+                            Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
+                                    indirizzo.get("comune").toString(),
+                                    "geoname", "", false);
+
+                            if (((boolean) searchResultGeoboundary.get("status"))) {
+                                rs.put("status", "found");
+                                rs.put("value",  searchResultGeoboundary.get("crmid"));
+                                return rs;
+                            }
+                        }
+                    }
+
+                }
+
                 // Get the Search fields
                  Map<String, String> fieldToSearch = getSearchField(parentModule);
                  if (!fieldToSearch.isEmpty() && moduleFieldInfo.containsKey(fieldname)) {
@@ -1240,6 +1265,7 @@ public class UpdateConsumer extends Consumer {
                                  }
 
                              }
+
 
                              recordField.put("assigned_user_id", wsClient.getUserID());
                              recordField.put("created_user_id", wsClient.getUserID());
