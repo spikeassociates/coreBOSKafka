@@ -50,9 +50,9 @@ public class UpdateConsumer extends Consumer {
         try {
 
             while (true) {
-                System.out.println("************************************BENCHMARK**************************************");
+                //System.out.println("************************************BENCHMARK**************************************");
                 ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
-                System.out.println("TOTAL RECORD IN POLL:: " + records.count());
+                //System.out.println("TOTAL RECORD IN POLL:: " + records.count());
 
                 long startTimeToProcessAllRecord = System.currentTimeMillis();
                 for (Object o : records) {
@@ -60,16 +60,16 @@ public class UpdateConsumer extends Consumer {
                     ConsumerRecord record = (ConsumerRecord) o;
                     readRecord(record);
                     long timeElapsedToProcessRecord = System.currentTimeMillis() - startTimeToProcessRecord;
-                    System.out.println("TIME TO PROCESS SINGLE RECORD:: " + ( timeElapsedToProcessRecord / 1000 ) + " seconds");
+                    //System.out.println("TIME TO PROCESS SINGLE RECORD:: " + ( timeElapsedToProcessRecord / 1000 ) + " seconds");
 
                     rebalanceListner.setCurrentOffsets(record.topic(), record.partition(), record.offset());
                 }
                 long timeElapsedToProcessAllRecord = System.currentTimeMillis() - startTimeToProcessAllRecord;
-                System.out.println("TIME TO PROCESS RECORDS IN POLL:: " + ( timeElapsedToProcessAllRecord / 1000 ) + "seconds");
+                //System.out.println("TIME TO PROCESS RECORDS IN POLL:: " + ( timeElapsedToProcessAllRecord / 1000 ) + "seconds");
 
                 kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
-                System.out.println("******************************************************************************");
-                System.out.println("");
+                //System.out.println("******************************************************************************");
+                //System.out.println("");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
