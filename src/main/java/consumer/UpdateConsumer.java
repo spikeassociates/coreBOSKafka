@@ -52,7 +52,7 @@ public class UpdateConsumer extends Consumer {
             while (true) {
                 System.out.println("************************************BENCHMARK**************************************");
                 ConsumerRecords records = kafkaConsumer.poll(Duration.ofMillis(3000));
-                System.out.println("TOTAL NUMBER OF RECORD IN POLL :: " + records.count());
+                System.out.println("TOTAL RECORD IN POLL:: " + records.count());
 
                 long startTimeToProcessAllRecord = System.currentTimeMillis();
                 for (Object o : records) {
@@ -60,12 +60,12 @@ public class UpdateConsumer extends Consumer {
                     ConsumerRecord record = (ConsumerRecord) o;
                     readRecord(record);
                     long timeElapsedToProcessRecord = System.currentTimeMillis() - startTimeToProcessRecord;
-                    System.out.println("TIME TAKEN TO PROCESS SINGLE RECORD IN SECOND(S) :: " + ( timeElapsedToProcessRecord / 1000 ));
+                    System.out.println("TIME TO PROCESS SINGLE RECORD:: " + ( timeElapsedToProcessRecord / 1000 ) + " seconds");
 
                     rebalanceListner.setCurrentOffsets(record.topic(), record.partition(), record.offset());
                 }
                 long timeElapsedToProcessAllRecord = System.currentTimeMillis() - startTimeToProcessAllRecord;
-                System.out.println("TIME TAKEN TO PROCESS RECORDS IN POLL  IN SECOND(S) :: " + ( timeElapsedToProcessAllRecord / 1000 ));
+                System.out.println("TIME TO PROCESS RECORDS IN POLL:: " + ( timeElapsedToProcessAllRecord / 1000 ) + "seconds");
 
                 kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
                 System.out.println("******************************************************************************");
@@ -81,16 +81,13 @@ public class UpdateConsumer extends Consumer {
         // System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
-        KeyData keyData = Util.getObjectFromJson(objectValue.get("operation").toString(), KeyData.class);
-        Object value = Util.getObjectFromJson(objectValue.get("data").toString(), Object.class);
-        if (Objects.requireNonNull(keyData).operation.equals(Util.methodUPDATE)) {
-            // System.out.println("Upserting the Record");
+        String operation = objectValue.get("operation").toString();
+        Object shipment = Util.getObjectFromJson(objectValue.get("shipment").toString(), Object.class);
+        Object shipmentStatus = Util.getObjectFromJson(objectValue.get("status").toString(), Object.class);
+        if (operation.equals(Util.methodUPDATE)) {
+            System.out.println("Upserting the Record");
             lastRecordToCreate.clear();
-            if (!keyData.module.equals("ProcessLog")) {
-                upsertRecord(keyData.module, (Map) value);
-            } else {
-                updateShipmentsStatus(keyData.module, (Map) value);
-            }
+            upsertRecord("Shipments", (Map) shipment, (Map) shipmentStatus);
         }
     }
 
@@ -250,7 +247,7 @@ public class UpdateConsumer extends Consumer {
         }
     }
 
-    private void upsertRecord(String module, Map element) throws Exception {
+    private void upsertRecord(String module, Map element, Map shipmentStatus) throws Exception {
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
 
@@ -313,6 +310,8 @@ public class UpdateConsumer extends Consumer {
         JSONObject createdRecord = (JSONObject)parser.parse(Util.getJson(d));
         moduleCRMID.put(module, createdRecord.get("id").toString());
         createRecordsInMap(moduleCRMID);
+
+        updateShipmentsStatus("ProcessLog", shipmentStatus);
     }
 
     public static boolean isNullOrEmpty(String str) {
@@ -327,8 +326,8 @@ public class UpdateConsumer extends Consumer {
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
-         // System.out.println("Object Key:: " + orgfieldName);
-         // System.out.println("Module Field:: " + fieldname);
+         System.out.println("Object Key:: " + orgfieldName);
+         System.out.println("Module Field:: " + fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
             /*

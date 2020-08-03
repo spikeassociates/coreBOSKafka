@@ -49,8 +49,8 @@ public class RESTAPIProducer {
     }
 
     protected void publishMessage(String topic, String key, String message, int partition) {
-//        String runtime = new Date().toString();
-//        String msg = "Message Publishing Time - " + runtime + message;
+        String runtime = new Date().toString();
+        String msg = "Message Publishing Time - " + runtime + message;
 //        System.out.println(msg);
         try {
             RecordMetadata metadata = (RecordMetadata) producer.send(new ProducerRecord(topic, partition, key, message)).get();
@@ -60,7 +60,7 @@ public class RESTAPIProducer {
 //            System.out.println("key = " + key);
 //            System.out.println("message = " + message);
 //            System.out.println("metadata.partition() = " + metadata.partition());
-//            System.out.println(msg);
+            System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -182,25 +182,32 @@ public class RESTAPIProducer {
         System.out.println("Waiting for Result");
         if (response == null)
             return;
-        List shipmentsData = getShipmentsData(response);
+        JSONArray shipmentsData = getShipmentsData(response);
         JSONObject shipmentsStatus = getShipmentStatus(response);
 
         String partitionKey = "partition-" + currentPage;
         for (Object shipment : shipmentsData) {
-            String module = "Shipments";
-            KeyData keyData = new KeyData();
-            keyData.module = module;
-            keyData.operation = Util.methodUPDATE;
-            keyData.module = module;
-            keyData.operation = Util.methodUPDATE;
+            /* WeCombine Shipment and their Status together because Status(Process Log in CoreBos Application) are for the Shipment so
+            * this helps even if the Consumer Crush we can continue to without problem
+            * but if we separate them as we do now in case of consumer crush when we Re0run consumer may result to problem for example
+            * the partition assigned to the Consumer is of shipment statuses so those statuses it may happen that their shipments are not created
+            * * */
             JSONObject messageToSend = new JSONObject();
-            messageToSend.put("operation", keyData);
-            messageToSend.put("data", shipment);
+            messageToSend.put("operation", Util.methodUPDATE);
+            messageToSend.put("shipment", shipment);
+
+            JSONParser parser = new JSONParser();
+            JSONObject currentShipment = (JSONObject) parser.parse(shipment.toString());
+            String currentShipmentID = String.valueOf(currentShipment.get("ID"));
+            JSONObject status = new JSONObject();
+            status.put(currentShipment.get("ID").toString() , shipmentsStatus.get(currentShipmentID));
+            messageToSend.put("status", status);
+
             int partition = currentPage - 1;
             publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
         }
 
-        for (Object key : shipmentsStatus.keySet()) {
+        /**for (Object key : shipmentsStatus.keySet()) {
             String shipmentid = (String) key;
             Object status = shipmentsStatus.get(shipmentid);
             String module = "ProcessLog";
@@ -214,7 +221,7 @@ public class RESTAPIProducer {
             messageToSend.put("data", singleStatus);
             int partition = currentPage - 1;
             publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
-        }
+        }**/
         Config.getInstance().save();
     }
 }
