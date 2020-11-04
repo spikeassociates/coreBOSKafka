@@ -14,7 +14,7 @@ import java.security.MessageDigest;
 import java.util.*;
 
 public class WSClient {
-    String _servicebase = "webservice.php";
+    String _servicebase = "";
     HTTP_Client _client;
     String _serviceurl;
     String _serviceuser;
@@ -46,7 +46,7 @@ public class WSClient {
 
     protected String getWebServiceURL(String url) {
         if (!url.endsWith("/")) {
-            url = url + "/";
+            url = url + "";
         }
 
         return url + this._servicebase;
@@ -106,19 +106,19 @@ public class WSClient {
     }
 
     protected void checkLogin() {
-//        boolean loggedIn = true;
-//        long _expiretime = Long.parseLong(this._expiretime);
-//        long _timenow = new Date().getTime() / 1000;
-//        if (_timenow >= _expiretime) {
-//            loggedIn = doLogin(_serviceuser, _servicekey);
-//        }
-//        if (!loggedIn) {
-//            try {
-//                throw new Exception("Login error");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+        boolean loggedIn = true;
+        long _expiretime = Long.parseLong(this._expiretime);
+        long _timenow = new Date().getTime() / 1000;
+        if (_timenow >= _expiretime) {
+            loggedIn = doLogin(_serviceuser, _servicekey);
+        }
+        if (!loggedIn) {
+            try {
+                throw new Exception("Login error");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     protected String md5Hex(String input) throws Exception {
@@ -169,7 +169,7 @@ public class WSClient {
         }
     }
 
-    public JSONArray doQuery(String query) {
+    public JSONArray doQuery(String query, int currentNumberOfRetry) {
         long startTime = System.currentTimeMillis();
         this.checkLogin();
         if (!query.trim().endsWith(";")) {
@@ -182,6 +182,9 @@ public class WSClient {
         getdata.put("query", query);
         Object response = this._client.doGet(getdata, true);
         if (this.hasError(response)) {
+            if (currentNumberOfRetry > 0) {
+                doQuery(query, currentNumberOfRetry - 1);
+            }
             return null;
         } else {
             JSONArray result = (JSONArray) ((JSONObject) response).get("result");
@@ -229,7 +232,7 @@ public class WSClient {
         }
     }
 
-    public JSONObject doDescribe(String module) {
+    public JSONObject doDescribe(String module, int currentNumberOfRetry) {
         this.checkLogin();
         Map getdata = new HashMap();
         getdata.put("operation", "describe");
@@ -237,6 +240,9 @@ public class WSClient {
         getdata.put("elementType", module);
         Object response = this._client.doGet(getdata, true);
         if (this.hasError(response)) {
+            if (currentNumberOfRetry > 0) {
+                doDescribe(module, currentNumberOfRetry - 1);
+            }
             return null;
         } else {
             JSONObject result = (JSONObject) ((JSONObject) response).get("result");
@@ -280,10 +286,10 @@ public class WSClient {
     }
 
     public Object doInvoke(String method, Object params) {
-        return this.doInvoke(method, params, "GET");
+        return this.doInvoke(method, params, "GET", 3);
     }
 
-    public Object doInvoke(String method, Object params, String type) {
+    public Object doInvoke(String method, Object params, String type, int currentNumberOfRetry) {
         this.checkLogin();
         Map senddata = new HashMap();
         senddata.put("operation", method);
@@ -310,9 +316,12 @@ public class WSClient {
         } else {
             response = this._client.doGet(senddata, true);
         }
-        //System.out.println(response);
+
         if (this.hasError(response)) {
             System.out.println("Error = " + response);
+            if (currentNumberOfRetry > 0) {
+                doInvoke(method, params, type, currentNumberOfRetry);
+            }
             return null;
         } else {
             Object result = ((JSONObject) response).get("result");
