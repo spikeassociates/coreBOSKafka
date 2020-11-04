@@ -1,31 +1,16 @@
-import producer.RESTAPIProducer;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import cron.QuartzJob;
+import helper.Util;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 
 public class RESTAPIProducerExe {
+    private static String cronExpression = (Util.getProperty("corebos.restproducer.cronexpression").isEmpty()) ? System.getenv("PRODUCER_CRON_EXPRESSION") : Util.getProperty("corebos.restproducer.cronexpression");
 
-        /**public static void main(String[] args) {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    new RESTAPIProducer().init();
-                } catch (Exception e) {
-                    timer.cancel();
-                    System.out.println(e);
-                    e.printStackTrace();
-                }
-            }
-        }, 0, 1000 * 60 * RESTAPIProducer.timeIntervalMin);
-
-        }**/
-    public static void main(String[] args) {
-        try {
-            new RESTAPIProducer().init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void main(String[] args) throws SchedulerException {
+        JobDetail jobDetail = JobBuilder.newJob(QuartzJob.class).withIdentity("FetchShipmentData", "installo").build();
+        Trigger trigger = TriggerBuilder.newTrigger().withIdentity("CronTrigger", "installo").withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)).build();
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+        scheduler.start();
+        scheduler.scheduleJob(jobDetail, trigger);
     }
 }
