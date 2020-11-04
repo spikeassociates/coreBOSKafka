@@ -1,7 +1,6 @@
 package consumer;
 
 import helper.Util;
-import model.KeyData;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
@@ -11,12 +10,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import redis.clients.jedis.Jedis;
 import service.RESTClient;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
@@ -33,13 +28,11 @@ public class UpdateConsumer extends Consumer {
     private Map<String, String> moduleDateFields = new HashMap<>();
     protected RESTClient restClient;
     RebalanceListner rebalanceListner;
-    private Jedis memoryCacheDB;
 
     public UpdateConsumer() throws Exception {
         List topics = new ArrayList();
         topics.add(topic);
         restClient =new RESTClient(rest_api_url);
-        memoryCacheDB = new Jedis("localhost");
         rebalanceListner = new RebalanceListner(kafkaConsumer);
         kafkaConsumer.subscribe(topics, rebalanceListner);
     }
@@ -56,15 +49,15 @@ public class UpdateConsumer extends Consumer {
 
                 long startTimeToProcessAllRecord = System.currentTimeMillis();
                 for (Object o : records) {
-                    long startTimeToProcessRecord = System.currentTimeMillis();
+                    //long startTimeToProcessRecord = System.currentTimeMillis();
                     ConsumerRecord record = (ConsumerRecord) o;
                     readRecord(record);
-                    long timeElapsedToProcessRecord = System.currentTimeMillis() - startTimeToProcessRecord;
+                    //long timeElapsedToProcessRecord = System.currentTimeMillis() - startTimeToProcessRecord;
                     //System.out.println("TIME TO PROCESS SINGLE RECORD:: " + ( timeElapsedToProcessRecord / 1000 ) + " seconds");
 
                     rebalanceListner.setCurrentOffsets(record.topic(), record.partition(), record.offset());
                 }
-                long timeElapsedToProcessAllRecord = System.currentTimeMillis() - startTimeToProcessAllRecord;
+                //long timeElapsedToProcessAllRecord = System.currentTimeMillis() - startTimeToProcessAllRecord;
                 //System.out.println("TIME TO PROCESS RECORDS IN POLL:: " + ( timeElapsedToProcessAllRecord / 1000 ) + "seconds");
 
                 kafkaConsumer.commitSync(rebalanceListner.getCurrentOffsets());
@@ -78,7 +71,7 @@ public class UpdateConsumer extends Consumer {
 
 
     private void readRecord(ConsumerRecord record) throws Exception {
-        // System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
+        System.out.println(String.format("Topic - %s, Key - %s, Partition - %d, Value: %s", record.topic(), record.key(),record.partition(), record.value()));
         JSONParser jsonParserX = new JSONParser();
         JSONObject objectValue = (JSONObject) jsonParserX.parse(record.value().toString());
         String operation = objectValue.get("operation").toString();
@@ -92,6 +85,7 @@ public class UpdateConsumer extends Consumer {
     }
 
     private void updateShipmentsStatus(String module, Map message) throws Exception {
+        //System.out.println("PROCESSING SHIPMENT STATUSES");
         Map<String, Object> status = message;
         Map<String, Object> mapToSend = new HashMap<>();
         Map<String, Object> fieldUpdate = new HashMap<>();
@@ -217,7 +211,7 @@ public class UpdateConsumer extends Consumer {
                             condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
                             queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
 
-                            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
+                            JSONArray mapdata = wsClient.doQuery(queryMap.toString(), 3);
                             JSONParser parser = new JSONParser();
                             JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
                             JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
@@ -232,14 +226,16 @@ public class UpdateConsumer extends Consumer {
                             fieldUpdate.put("assigned_user_id", wsClient.getUserID());
                             mapToSend.put("elementType", module);
                             mapToSend.put("element", Util.getJson(fieldUpdate));
-                            mapToSend.put("searchOn", "linktoshipments");
-                            StringBuilder builderRemoveIndexZero = new StringBuilder(fieldUpdate.keySet().toString());
-                            builderRemoveIndexZero.deleteCharAt(0);
-                            StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
-                            builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
-                            String updatedfields = builderRemoveIndexLast.toString();
-                            mapToSend.put("updatedfields", updatedfields);
-                            Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
+                            //mapToSend.put("searchOn", "linktoshipments");
+                            //StringBuilder builderRemoveIndexZero = new StringBuilder(fieldUpdate.keySet().toString());
+                            //builderRemoveIndexZero.deleteCharAt(0);
+                            //StringBuilder builderRemoveIndexLast = new StringBuilder(builderRemoveIndexZero.toString());
+                            //builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
+                            //String updatedfields = builderRemoveIndexLast.toString();
+                            //mapToSend.put("updatedfields", updatedfields);
+                            //System.out.println(mapToSend);
+
+                            Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST", 3);
                         }
                     }
                 }
@@ -255,7 +251,7 @@ public class UpdateConsumer extends Consumer {
             // Module Special field e.g Date, Datetime
             getModuleDateFields(module);
             // Get All uitype 10 Module fields
-            JSONObject module_info = wsClient.doDescribe(module);
+            JSONObject module_info = wsClient.doDescribe(module, 3);
             JSONArray reference_fields = (JSONArray) module_info.get("fields");
             Map<String, String> moduleFieldInfo = new HashMap<>();
             for (Object o : reference_fields) {
@@ -273,7 +269,7 @@ public class UpdateConsumer extends Consumer {
             mapModule = new StringBuilder("cbMap");
             condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
             queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
-            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
+            JSONArray mapdata = wsClient.doQuery(queryMap.toString(), 3);
             JSONParser parser = new JSONParser();
             JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
             JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
@@ -301,8 +297,8 @@ public class UpdateConsumer extends Consumer {
             mapToSend.put("updatedfields", updatedfields);
         }
 
-        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
-        /**
+        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST", 3);
+        /*
          * We Nee to Create Other Module Record which depend on this Created Record
          * **/
         Map<String, String> moduleCRMID = new HashMap<>();
@@ -314,20 +310,14 @@ public class UpdateConsumer extends Consumer {
         updateShipmentsStatus("ProcessLog", shipmentStatus);
     }
 
-    public static boolean isNullOrEmpty(String str) {
-        if(str != null && !str.isEmpty())
-            return false;
-        return true;
-    }
-
     @SuppressWarnings("unchecked")
     private Object getFieldValue(String orgfieldName, Map element, Map<String, String> moduleFieldInfo,
                                  String parentModule, String fieldname) throws Exception {
         JSONObject rs = new JSONObject();
         JSONObject record = new JSONObject();
         record.putAll(element);
-         System.out.println("Object Key:: " + orgfieldName);
-         System.out.println("Module Field:: " + fieldname);
+        System.out.println("Object Key:: " + orgfieldName);
+        System.out.println("Module Field:: " + fieldname);
         if(record.containsKey(orgfieldName) || orgfieldName.equals("distribuzioneFornitoreId") ||
                 orgfieldName.equals("raeeFornitoreId")) {
             /*
@@ -345,26 +335,35 @@ public class UpdateConsumer extends Consumer {
 
             JSONParser parser = new JSONParser();
             if ((parser.parse(jsonValue) instanceof JSONObject) ||  orgfieldName.equals("distribuzioneFornitoreId") ||
-                    orgfieldName.equals("raeeFornitoreId") || orgfieldName.equals("indirizzo")) {
+                    orgfieldName.equals("raeeFornitoreId")) {
 
                 if (orgfieldName.equals("indirizzo")) {
                     JSONObject indirizzo = null;
                     if (record.containsKey("indirizzo") && record.get("indirizzo") != null) {
                         indirizzo = (JSONObject) parser.parse(Util.getJson(record.get("indirizzo")));
-
-                        if (indirizzo == null || indirizzo.containsKey("comune") || indirizzo.get("commune") == null) {
+                        if (indirizzo == null || !indirizzo.containsKey("comune") || indirizzo.get("comune") == null) {
                             rs.put("status", "notfound");
                             rs.put("value",  "");
                             return rs;
                         } else {
-                            Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
-                                    indirizzo.get("comune").toString(),
-                                    "geoname", "", false);
-
-                            if (((boolean) searchResultGeoboundary.get("status"))) {
-                                rs.put("status", "found");
-                                rs.put("value",  searchResultGeoboundary.get("crmid"));
+                            if (indirizzo.get("comune") == null) {
+                                rs.put("status", "notfound");
+                                rs.put("value",  "");
                                 return rs;
+                            } else {
+                                Map<String, Object> searchResultGeoboundary = searchRecord("Geoboundary",
+                                        indirizzo.get("comune").toString(),
+                                        "geoname", "", false);
+
+                                if (((boolean) searchResultGeoboundary.get("status"))) {
+                                    rs.put("status", "found");
+                                    rs.put("value",  searchResultGeoboundary.get("crmid"));
+                                    return rs;
+                                } else {
+                                    rs.put("status", "notfound");
+                                    rs.put("value",  "");
+                                    return rs;
+                                }
                             }
                         }
                     }
@@ -454,7 +453,7 @@ public class UpdateConsumer extends Consumer {
                                      // Map to Create the Record
                                      Map<String, Object> recordMap = new HashMap<>();
                                      Map<String, Object> recordField = new HashMap<>();
-                                     JSONArray mapdata = wsClient.doQuery(queryMap.toString());
+                                     JSONArray mapdata = wsClient.doQuery(queryMap.toString(), 3);
                                      JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
                                      JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
                                      JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
@@ -476,7 +475,7 @@ public class UpdateConsumer extends Consumer {
                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                      String updatedfields = builderRemoveIndexLast.toString();
                                      recordMap.put("updatedfields", updatedfields);
-                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
+                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST", 3);
                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                          rs.put("status", "found");
@@ -500,7 +499,7 @@ public class UpdateConsumer extends Consumer {
                              String mapModule = "cbMap";
                              condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
                              queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
-                             JSONArray mapdata = wsClient.doQuery(queryMap.toString());
+                             JSONArray mapdata = wsClient.doQuery(queryMap.toString(), 3);
                              JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
                              JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
                              JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
@@ -517,7 +516,19 @@ public class UpdateConsumer extends Consumer {
                                          String dateValue = ((JSONObject)value).get("value").toString().replace("T", " ");
                                          recordField.put(((JSONObject)field).get("fieldname").toString(), dateValue);
                                      } else {
-                                         recordField.put(((JSONObject)field).get("fieldname").toString(), ((JSONObject)value).get("value"));
+                                         if (((JSONObject) field).get("fieldname").toString().equals("entrusting_date") || ((JSONObject) field).get("fieldname").toString().equals("bookingdatetime") ||
+                                                 ((JSONObject) field).get("fieldname").toString().equals("chosenappointstart") || ((JSONObject) field).get("fieldname").toString().equals("chosenappointfinish") ||
+                                                 ((JSONObject) field).get("fieldname").toString().equals("scheduledstart") || ((JSONObject) field).get("fieldname").toString().equals("scheduledfinish")) {
+
+                                             if (((JSONObject)value).get("value") != null) {
+                                                 String dateValue = ((JSONObject)value).get("value").toString().replace("T", " ");
+                                                 recordField.put(((JSONObject)field).get("fieldname").toString(), dateValue);
+                                             } else {
+                                                 recordField.put(((JSONObject)field).get("fieldname").toString(), ((JSONObject)value).get("value"));
+                                             }
+                                         } else {
+                                             recordField.put(((JSONObject)field).get("fieldname").toString(), ((JSONObject)value).get("value"));
+                                         }
                                      }
                                  }
                              }
@@ -618,7 +629,7 @@ public class UpdateConsumer extends Consumer {
                                                      String mapModuleFiliali = "cbMap";
                                                      conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
                                                      queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
-                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
+                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString(), 3);
                                                      JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                                      JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                                      JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -717,7 +728,7 @@ public class UpdateConsumer extends Consumer {
                                                                      String vettoriMapModule = "cbMap";
                                                                      vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
                                                                      vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
-                                                                     JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
+                                                                     JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString(), 3);
                                                                      JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                                      JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                                      JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -739,7 +750,7 @@ public class UpdateConsumer extends Consumer {
                                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                                      vettoriRecordMap.put("updatedfields", updatedfields);
-                                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST", 3);
                                                                      JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                                      if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
                                                                          recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
@@ -789,7 +800,7 @@ public class UpdateConsumer extends Consumer {
                                                                  String fornitoriMapModule = "cbMap";
                                                                  fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
                                                                  fornitoriQueryMap = new StringBuilder("select * from ").append("'").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
-                                                                 JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
+                                                                 JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString(), 3);
                                                                  JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                                  JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                                  JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -811,7 +822,7 @@ public class UpdateConsumer extends Consumer {
                                                                  builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                                  String updatedfields = builderRemoveIndexLast.toString();
                                                                  fornitoriRecordMap.put("updatedfields", updatedfields);
-                                                                 Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                                 Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST", 3);
                                                                  JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                                  if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
                                                                      recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
@@ -830,7 +841,7 @@ public class UpdateConsumer extends Consumer {
                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                      recordMapFiliali.put("updatedfields", updatedfields);
-                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST", 3);
                                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                                          recordField.put("branchid", obj.get("id").toString());
@@ -947,7 +958,7 @@ public class UpdateConsumer extends Consumer {
                                                      String mapModuleFiliali = "cbMap";
                                                      conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
                                                      queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
-                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
+                                                     JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString(), 3);
                                                      JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                                      JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                                      JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -1030,7 +1041,7 @@ public class UpdateConsumer extends Consumer {
                                                                          String vettoriMapModule = "cbMap";
                                                                          vettoriCondition =new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
                                                                          vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
-                                                                         JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
+                                                                         JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString(), 3);
                                                                          JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                                          JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                                          JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -1052,7 +1063,7 @@ public class UpdateConsumer extends Consumer {
                                                                          builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                                          String updatedfields = builderRemoveIndexLast.toString();
                                                                          vettoriRecordMap.put("updatedfields", updatedfields);
-                                                                         Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                                                         Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST", 3);
                                                                          JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                                          if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
                                                                              recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
@@ -1074,8 +1085,6 @@ public class UpdateConsumer extends Consumer {
                                                          if (((boolean) searchResultVendorModule.get("status")) && !((boolean) searchResultVendorModule.get("mustbeupdated"))) {
                                                              recordFieldFiliali.put("linktocarrier", searchResultVendorModule.get("crmid"));
                                                          } else {
-                                                             // To Search in Rest Service
-                                                             //if (startRestService()) {
                                                                  String fornitoriEndpoint = "fornitori";
                                                                  String fornitoriDataKey = "fornitori";
 
@@ -1090,15 +1099,12 @@ public class UpdateConsumer extends Consumer {
                                                                      if (!fornitoriObject.isEmpty()) {
                                                                          Map<String, Object> fornitoriRecordMap = new HashMap<>();
                                                                          Map<String, Object> fornitoriRecordField = new HashMap<>();
-                                                                         //String fornitoriMapName = orgfieldName + "2" + fieldname;
                                                                          StringBuilder fornitoriCondition, fornitoriQueryMap;
                                                                          String fornitoriMapName = "fornitoreId2Vendors";
                                                                          String fornitoriMapModule = "cbMap";
                                                                          fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
                                                                          fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
-                                                                         // String fornitoriCondition = "mapname" + "='" + fornitoriMapName + "'";
-                                                                         // String fornitoriQueryMap = "select * from " + fornitoriMapModule + " where " + fornitoriCondition;
-                                                                         JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
+                                                                         JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString(), 3);
                                                                          JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                                          JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                                          JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -1120,14 +1126,13 @@ public class UpdateConsumer extends Consumer {
                                                                          builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                                          String updatedfields = builderRemoveIndexLast.toString();
                                                                          fornitoriRecordMap.put("updatedfields", updatedfields);
-                                                                         Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                                         Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST", 3);
                                                                          JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                                          if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
                                                                              recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
                                                                          }
                                                                      }
                                                                  }
-                                                             //}
                                                          }
                                                      }
 
@@ -1141,7 +1146,7 @@ public class UpdateConsumer extends Consumer {
                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                      recordMapFiliali.put("updatedfields", updatedfields);
-                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST", 3);
                                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                                          recordField.put("linktobranch", obj.get("id").toString());
@@ -1157,7 +1162,7 @@ public class UpdateConsumer extends Consumer {
                                      if (((JSONObject) parser.parse(jsonValue)).containsKey("tecnicoId") && ((JSONObject) parser.parse(jsonValue)).get("tecnicoId") != null) {
                                          Map<String, Object> searchResultTechnicians = searchRecord("Technicians",
                                                  ((JSONObject) parser.parse(jsonValue)).get("tecnicoId").toString(),
-                                                 "techniciansrcid", "", true);
+                                                 "techniciansrcid", "", false);
 
                                          if (((boolean) searchResultTechnicians.get("status")) && !((boolean) searchResultTechnicians.get("mustbeupdated"))) {
                                              Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
@@ -1189,7 +1194,7 @@ public class UpdateConsumer extends Consumer {
                                                      String mapModuleTecnici = "cbMap";
                                                      conditionTecnici = new StringBuilder("mapname").append("='").append(mapNameTecnici).append("'");
                                                      queryMapTecnici = new StringBuilder("select * from ").append(mapModuleTecnici).append(" where ").append(conditionTecnici);
-                                                     JSONArray mapdataTecnici = wsClient.doQuery(queryMapTecnici.toString());
+                                                     JSONArray mapdataTecnici = wsClient.doQuery(queryMapTecnici.toString(), 3);
                                                      JSONObject resultTecnici = (JSONObject)parser.parse(mapdataTecnici.get(0).toString());
                                                      JSONObject contentjsonTecnici = (JSONObject)parser.parse(resultTecnici.get("contentjson").toString());
                                                      JSONObject fieldsTecnici = (JSONObject)parser.parse(contentjsonTecnici.get("fields").toString());
@@ -1252,7 +1257,7 @@ public class UpdateConsumer extends Consumer {
                                                      builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                      String updatedfields = builderRemoveIndexLast.toString();
                                                      recordMapTecnici.put("updatedfields", updatedfields);
-                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapTecnici, "POST");
+                                                     Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapTecnici, "POST", 3);
                                                      JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                      if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                                          recordField.put("linktotechnician", obj.get("id").toString());
@@ -1279,7 +1284,7 @@ public class UpdateConsumer extends Consumer {
                              builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                              String updatedfields = builderRemoveIndexLast.toString();
                              recordMap.put("updatedfields", updatedfields);
-                             Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST");
+                             Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMap, "POST", 3);
                              JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                              if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                  rs.put("status", "found");
@@ -1343,7 +1348,7 @@ public class UpdateConsumer extends Consumer {
                 * */
                 if (orgfieldName.equals("filialePartenzaId")) {
 
-                    if (!record.containsKey(orgfieldName) || Integer.parseInt(record.get(orgfieldName).toString()) == 0 || record.get(orgfieldName) != null) {
+                    if (!record.containsKey(orgfieldName) || Integer.parseInt(record.get(orgfieldName).toString()) == 0 || record.get(orgfieldName) == null) {
                         rs.put("status", "notfound");
                         rs.put("value",  "");
                         return rs;
@@ -1351,14 +1356,9 @@ public class UpdateConsumer extends Consumer {
                     Map<String, Object> searchResultCompany = searchRecord("cbCompany",
                             record.get(orgfieldName).toString(), "branchsrcid", "", false);
                     if (((boolean) searchResultCompany.get("status")) && !((boolean) searchResultCompany.get("mustbeupdated"))) {
-                        Map<String, String> referenceFields = getUIType10Field(moduleFieldInfo.get(fieldname));
-                        for (Object key : referenceFields.keySet()) {
-                            String keyStr = (String)key;
-                            if (referenceFields.get(keyStr).equals("cbCompany")) {
-                                rs.put("status", "found");
-                                rs.put("value", searchResultCompany.get("crmid"));
-                            }
-                        }
+                        rs.put("status", "found");
+                        rs.put("value", searchResultCompany.get("crmid"));
+                        return rs;
                     } else {
                             String endpoint = "filiali";
                             String objectKey = "filiali";
@@ -1379,7 +1379,7 @@ public class UpdateConsumer extends Consumer {
                                     String mapModuleFiliali = "cbMap";
                                     conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
                                     queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
-                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
+                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString(), 3);
                                     JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                     JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                     JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -1478,7 +1478,7 @@ public class UpdateConsumer extends Consumer {
                                                     String vettoriMapModule = "cbMap";
                                                     vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
                                                     vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
-                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
+                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString(), 3);
                                                     JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                     JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                     JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -1500,14 +1500,13 @@ public class UpdateConsumer extends Consumer {
                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                     String updatedfields = builderRemoveIndexLast.toString();
                                                     vettoriRecordMap.put("updatedfields", updatedfields);
-                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST", 3);
                                                     JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                     if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
                                                         recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
                                                     }
                                                 }
                                             }
-                                        //}
                                     }
 
                                     /*
@@ -1551,7 +1550,7 @@ public class UpdateConsumer extends Consumer {
                                                     String fornitoriMapModule = "cbMap";
                                                     fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
                                                     fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
-                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
+                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString(), 3);
                                                     JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                     JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                     JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -1573,14 +1572,13 @@ public class UpdateConsumer extends Consumer {
                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                     String updatedfields = builderRemoveIndexLast.toString();
                                                     fornitoriRecordMap.put("updatedfields", updatedfields);
-                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST", 3);
                                                     JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                     if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
                                                         recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
                                                     }
                                                 }
                                             }
-                                        //}
                                     }
 
                                     recordFieldFiliali.put("assigned_user_id", wsClient.getUserID());
@@ -1593,7 +1591,7 @@ public class UpdateConsumer extends Consumer {
                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                     String updatedfields = builderRemoveIndexLast.toString();
                                     recordMapFiliali.put("updatedfields", updatedfields);
-                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST", 3);
                                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                         rs.put("status", "found");
@@ -1608,13 +1606,23 @@ public class UpdateConsumer extends Consumer {
                         String dateValue = record.get(orgfieldName).toString().replace("T", " ");
                         rs.put("value",  dateValue);
                     } else {
-                        if (record.containsKey(orgfieldName)) {
-                            rs.put("value",  record.get(orgfieldName));
-                        } else {
-                            rs.put("status", "notfound");
-                            rs.put("value",  "");
-                        }
+                        if (fieldname.toString().equals("entrusting_date") || fieldname.toString().equals("bookingdatetime")|| fieldname.toString().equals("chosenappointstart")
+                                || fieldname.toString().equals("chosenappointfinish")|| fieldname.toString().equals("scheduledstart")|| fieldname.toString().equals("scheduledfinish")) {
 
+                            if (record.get(orgfieldName) != null) {
+                                String dateValue =  record.get(orgfieldName).toString().replace("T", " ");
+                                rs.put("value", dateValue);
+                            } else {
+                                rs.put("value",  record.get(orgfieldName));
+                            }
+                        } else {
+                            if (record.containsKey(orgfieldName)) {
+                                rs.put("value",  record.get(orgfieldName));
+                            } else {
+                                rs.put("status", "notfound");
+                                rs.put("value",  "");
+                            }
+                        }
                     }
                 }
             }
@@ -1680,38 +1688,33 @@ public class UpdateConsumer extends Consumer {
 
     private Map<String, String> getSearchField(String parentModule) throws ParseException {
         Map<String, String> fieldmap = new HashMap<>();
-        fieldmap = getMapValueFromMemoryCache(parentModule);
-        if (!fieldmap.isEmpty()) {
+        JSONParser parser = new JSONParser();
+        StringBuilder mapName, condition, queryMap;
+        mapName = new StringBuilder("RESTSEARCH2").append(parentModule);
+        String objectModule = "cbMap";
+        condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
+        queryMap = new StringBuilder("select *from ").append(objectModule).append(" where ").append(condition);
+        JSONArray mapdata = wsClient.doQuery(queryMap.toString(), 3);
+        if (mapdata.size() == 0) {
             return fieldmap;
         } else {
-            JSONParser parser = new JSONParser();
-            StringBuilder mapName, condition, queryMap;
-            mapName = new StringBuilder("RESTSEARCH2").append(parentModule);
-            String objectModule = "cbMap";
-            condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
-            queryMap = new StringBuilder("select *from ").append(objectModule).append(" where ").append(condition);
-            JSONArray mapdata = wsClient.doQuery(queryMap.toString());
-            if (mapdata.size() == 0) {
-                return fieldmap;
+            JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
+            JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
+            JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
+            JSONArray fields_array = new JSONArray();
+            if (!(fields.get("field") instanceof JSONArray)) {
+                fields_array.add(fields.get("field"));
             } else {
-                JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
-                JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
-                JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
-                JSONArray fields_array = new JSONArray();
-                if (!(fields.get("field") instanceof JSONArray)) {
-                    fields_array.add(fields.get("field"));
-                } else {
-                    fields_array = (JSONArray) fields.get("field");
-                }
-
-                for (Object field: fields_array) {
-                    JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
-                    JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
-                    fieldmap.put(((JSONObject)field).get("fieldname").toString(), originalFiled.get("OrgfieldName").toString());
-                }
+                fields_array = (JSONArray) fields.get("field");
             }
-            return fieldmap;
+
+            for (Object field: fields_array) {
+                JSONObject originalFields = (JSONObject) ((JSONObject)field).get("Orgfields");
+                JSONObject originalFiled = (JSONObject) originalFields.get("Orgfield");
+                fieldmap.put(((JSONObject)field).get("fieldname").toString(), originalFiled.get("OrgfieldName").toString());
+            }
         }
+        return fieldmap;
     }
 
     private Map<String, Object> searchRecord(String module, String value, String fieldname, String otherCondition,
@@ -1723,26 +1726,12 @@ public class UpdateConsumer extends Consumer {
             result.put("crmid", "");
             result.put("mustbeupdated", mustBeUpdated);
         } else {
-            // Implement Memory Cache Here
             if (value.contains("'")) {
                 int specialCharPosition = value.indexOf("'") + 1;
                 StringBuffer stringBuffer= new StringBuffer(value);
                 value = stringBuffer.insert(specialCharPosition, "'").toString();
             }
-            // Search on redis for Memory Cache
-            // We use Hash Set Data type
-            // If value found we return
-            //System.out.println("ENTER MEMORYCACHE KEY SEARCH");
-            StringBuilder memoryCacheKey = new StringBuilder();
-            memoryCacheKey.setLength(0);
-            String cachedCRMID = getValueFromMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).append(otherCondition).toString().toLowerCase());
-            if (!cachedCRMID.isEmpty()) {
-                result.put("status", true);
-                result.put("crmid", cachedCRMID);
-                result.put("mustbeupdated", mustBeUpdated);
-                return result;
-            }
-            //System.out.println("LEAVE MEMORYCACHE KEY NOT FOUND");
+
             StringBuilder condition;
             if (module.equals("Vendors")) {
                 if  (otherCondition.isEmpty()) {
@@ -1759,7 +1748,7 @@ public class UpdateConsumer extends Consumer {
                 condition = new StringBuilder(fieldname).append("='").append(value).append("'");
             }
             StringBuilder queryString = new StringBuilder("select * from ").append(module).append(" where ").append(condition);
-            JSONArray queryFormWebserviceResult = wsClient.doQuery(queryString.toString());
+            JSONArray queryFormWebserviceResult = wsClient.doQuery(queryString.toString(), 3);
             if (queryFormWebserviceResult == null ||  queryFormWebserviceResult.size() == 0) {
                 result.put("status", false);
                 result.put("crmid", "");
@@ -1775,8 +1764,6 @@ public class UpdateConsumer extends Consumer {
                 }
                 result.put("crmid", crmid);
                 result.put("mustbeupdated", mustBeUpdated);
-                memoryCacheKey.setLength(0);
-                addValueToMemoryCache(memoryCacheKey.append(module).append(value).append(fieldname).append(otherCondition).toString().toLowerCase(), result.get("crmid").toString());
             }
         }
         return result;
@@ -1784,7 +1771,7 @@ public class UpdateConsumer extends Consumer {
 
     private Map<String, String> getUIType10Field(String module) {
         // Get All uitype 10 Module fields
-        JSONObject module_info = wsClient.doDescribe(module);
+        JSONObject module_info = wsClient.doDescribe(module, 3);
         JSONArray reference_fields = (JSONArray) module_info.get("fields");
         Map<String, String> uitype10fields = new HashMap<>();
         for (Object o : reference_fields) {
@@ -1802,7 +1789,7 @@ public class UpdateConsumer extends Consumer {
     }
 
     private void getModuleDateFields(String module) {
-        JSONObject module_info = wsClient.doDescribe(module);
+        JSONObject module_info = wsClient.doDescribe(module, 3);
         JSONArray reference_fields = (JSONArray) module_info.get("fields");
         for (Object o : reference_fields) {
             JSONObject fieldInfo = (JSONObject) o;
@@ -1826,7 +1813,7 @@ public class UpdateConsumer extends Consumer {
         String mapModule = "cbMap";
         condition = new StringBuilder("mapname").append("='").append(mapName).append("'");
         queryMap = new StringBuilder("select * from ").append(mapModule).append(" where ").append(condition);
-        JSONArray mapdata = wsClient.doQuery(queryMap.toString());
+        JSONArray mapdata = wsClient.doQuery(queryMap.toString(), 3);
         JSONObject result = (JSONObject)parser.parse(mapdata.get(0).toString());
         JSONObject contentjson = (JSONObject)parser.parse(result.get("contentjson").toString());
         JSONObject fields = (JSONObject)parser.parse(contentjson.get("fields").toString());
@@ -1840,7 +1827,20 @@ public class UpdateConsumer extends Consumer {
                     String dateValue = element.get(originalFiled.get("OrgfieldName")).toString().replace("T", " ");
                     recordField.put(((JSONObject)field).get("fieldname").toString(), dateValue);
                 } else {
-                    recordField.put(((JSONObject)field).get("fieldname").toString(), element.get(originalFiled.get("OrgfieldName").toString()));
+                    if (((JSONObject) field).get("fieldname").toString().equals("entrusting_date") || ((JSONObject) field).get("fieldname").toString().equals("bookingdatetime") ||
+                            ((JSONObject) field).get("fieldname").toString().equals("chosenappointstart") || ((JSONObject) field).get("fieldname").toString().equals("chosenappointfinish") ||
+                            ((JSONObject) field).get("fieldname").toString().equals("scheduledstart") || ((JSONObject) field).get("fieldname").toString().equals("scheduledfinish")) {
+
+                        if (element.get(originalFiled.get("OrgfieldName")) != null) {
+                            String dateValue = element.get(originalFiled.get("OrgfieldName")).toString().replace("T", " ");
+                            recordField.put(((JSONObject)field).get("fieldname").toString(), dateValue);
+                        } else {
+                            recordField.put(((JSONObject)field).get("fieldname").toString(), element.get(originalFiled.get("OrgfieldName")));
+                        }
+                    } else {
+                        recordField.put(((JSONObject)field).get("fieldname").toString(), element.get(originalFiled.get("OrgfieldName").toString()));
+
+                    }
                 }
             }
         }
@@ -1850,11 +1850,11 @@ public class UpdateConsumer extends Consumer {
              * Query cbCompany module in order to check whether there already exists a record where branchsrcid == filialeId.
              */
             JSONObject prenotazioni = (JSONObject) parser.parse(element.toString());
-            if (prenotazioni.containsKey("restFiliale") && prenotazioni.get("restFiliale") instanceof JSONObject) {
+            if (prenotazioni.containsKey("restFiliale") && prenotazioni.get("restFiliale") instanceof JSONObject && prenotazioni.get("restFiliale") != null) {
                 JSONObject restFiliale = (JSONObject) prenotazioni.get("restFiliale");
 
                 Map<String, Object> searchResultCompany;
-                if (restFiliale.containsKey("ID") && restFiliale.get("restFiliale") != null) {
+                if (restFiliale.get("restFiliale") != null && restFiliale.containsKey("ID")) {
                     searchResultCompany = searchRecord("cbCompany",
                             restFiliale.get("ID").toString(), "branchsrcid", "", false);
                 } else {
@@ -1887,7 +1887,7 @@ public class UpdateConsumer extends Consumer {
                             String mapModuleFiliali = "cbMap";
                             conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
                             queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
-                            JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
+                            JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString(), 3);
                             JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                             JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                             JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -1973,7 +1973,7 @@ public class UpdateConsumer extends Consumer {
                                             String vettoriMapModule = "cbMap";
                                             vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
                                             vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
-                                            JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
+                                            JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString(), 3);
                                             JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                             JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                             JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -1995,14 +1995,13 @@ public class UpdateConsumer extends Consumer {
                                             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                             String updatedfields = builderRemoveIndexLast.toString();
                                             vettoriRecordMap.put("updatedfields", updatedfields);
-                                            Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                            Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST", 3);
                                             JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                             if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
                                                 recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
                                             }
                                         }
                                     }
-                                //}
                             }
 
                             /*
@@ -2044,7 +2043,7 @@ public class UpdateConsumer extends Consumer {
                                             String fornitoriMapModule = "cbMap";
                                             fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
                                             fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
-                                            JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
+                                            JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString(), 3);
                                             JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                             JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                             JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -2066,7 +2065,7 @@ public class UpdateConsumer extends Consumer {
                                             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                             String updatedfields = builderRemoveIndexLast.toString();
                                             fornitoriRecordMap.put("updatedfields", updatedfields);
-                                            Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                            Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST", 3);
                                             JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                             if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
                                                 recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
@@ -2085,7 +2084,7 @@ public class UpdateConsumer extends Consumer {
                             builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                             String updatedfields = builderRemoveIndexLast.toString();
                             recordMapFiliali.put("updatedfields", updatedfields);
-                            Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                            Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST", 3);
                             JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                             if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                 recordField.put("linktobranch", obj.get("id").toString());
@@ -2096,7 +2095,7 @@ public class UpdateConsumer extends Consumer {
             }
 
 
-            if (prenotazioni.containsKey("restAutista") && prenotazioni.get("restAutista") instanceof JSONObject) {
+            if (prenotazioni.containsKey("restAutista") && prenotazioni.get("restAutista") instanceof JSONObject && prenotazioni.get("restAutista") != null) {
                 /*
                  * Query cbEmployee module in order to check whether there already exists a record where nif == restAutista.ID AND emptype == 'Autista'.
                  * If there exists none, then create a new one with the following mapping:
@@ -2134,7 +2133,7 @@ public class UpdateConsumer extends Consumer {
                     String mapModuleRestAutista = "cbMap";
                     conditionRestAutista = new StringBuilder("mapname").append("='").append(mapNameRestAutista).append("'");
                     queryMapRestAutista = new StringBuilder("select * from ").append(mapModuleRestAutista).append(" where ").append(conditionRestAutista);
-                    JSONArray mapdataRestAutista = wsClient.doQuery(queryMapRestAutista.toString());
+                    JSONArray mapdataRestAutista = wsClient.doQuery(queryMapRestAutista.toString(), 3);
                     JSONObject resultRestAutista = (JSONObject)parser.parse(mapdataRestAutista.get(0).toString());
                     JSONObject contentjsonRestAutista = (JSONObject)parser.parse(resultRestAutista.get("contentjson").toString());
                     JSONObject fieldsRestAutista = (JSONObject)parser.parse(contentjsonRestAutista.get("fields").toString());
@@ -2171,7 +2170,7 @@ public class UpdateConsumer extends Consumer {
                                     String mapModuleFiliali = "cbMap";
                                     conditionFiliali = new StringBuilder("mapname").append("='").append(mapNameFiliali).append("'");
                                     queryMapFiliali = new StringBuilder("select * from ").append(mapModuleFiliali).append(" where ").append(conditionFiliali);
-                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString());
+                                    JSONArray mapdataFiliali = wsClient.doQuery(queryMapFiliali.toString(), 3);
                                     JSONObject resultFiliali = (JSONObject)parser.parse(mapdataFiliali.get(0).toString());
                                     JSONObject contentjsonFiliali = (JSONObject)parser.parse(resultFiliali.get("contentjson").toString());
                                     JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonFiliali.get("fields").toString());
@@ -2257,7 +2256,7 @@ public class UpdateConsumer extends Consumer {
                                                     String vettoriMapModule = "cbMap";
                                                     vettoriCondition = new StringBuilder("mapname").append("='").append(vettoriMapName).append("'");
                                                     vettoriQueryMap = new StringBuilder("select * from ").append(vettoriMapModule).append(" where ").append(vettoriCondition);
-                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString());
+                                                    JSONArray vettoriMapData = wsClient.doQuery(vettoriQueryMap.toString(), 3);
                                                     JSONObject vettoriQueryResult = (JSONObject)parser.parse(vettoriMapData.get(0).toString());
                                                     JSONObject vettoriMapContentJSON = (JSONObject)parser.parse(vettoriQueryResult.get("contentjson").toString());
                                                     JSONObject vettoriMapFields = (JSONObject)parser.parse(vettoriMapContentJSON.get("fields").toString());
@@ -2279,7 +2278,7 @@ public class UpdateConsumer extends Consumer {
                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                     String updatedfields = builderRemoveIndexLast.toString();
                                                     vettoriRecordMap.put("updatedfields", updatedfields);
-                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST");
+                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, vettoriRecordMap, "POST", 3);
                                                     JSONObject vettoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                     if (vettoriobjrec.containsKey("id") && !vettoriobjrec.get("id").toString().equals("")) {
                                                         recordFieldFiliali.put("linktocarrier", vettoriobjrec.get("id").toString());
@@ -2328,7 +2327,7 @@ public class UpdateConsumer extends Consumer {
                                                     String fornitoriMapModule = "cbMap";
                                                     fornitoriCondition = new StringBuilder("mapname").append("='").append(fornitoriMapName).append("'");
                                                     fornitoriQueryMap = new StringBuilder("select * from ").append(fornitoriMapModule).append(" where ").append(fornitoriCondition);
-                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString());
+                                                    JSONArray fornitoriMapData = wsClient.doQuery(fornitoriQueryMap.toString(), 3);
                                                     JSONObject fornitoriQueryResult = (JSONObject)parser.parse(fornitoriMapData.get(0).toString());
                                                     JSONObject fornitoriMapContentJSON = (JSONObject)parser.parse(fornitoriQueryResult.get("contentjson").toString());
                                                     JSONObject fornitoriMapFields = (JSONObject)parser.parse(fornitoriMapContentJSON.get("fields").toString());
@@ -2350,7 +2349,7 @@ public class UpdateConsumer extends Consumer {
                                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                                     String updatedfields = builderRemoveIndexLast.toString();
                                                     fornitoriRecordMap.put("updatedfields", updatedfields);
-                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST");
+                                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, fornitoriRecordMap, "POST", 3);
                                                     JSONObject fornitoriobjrec = (JSONObject)parser.parse(Util.getJson(newRecord));
                                                     if (fornitoriobjrec.containsKey("id") && !fornitoriobjrec.get("id").toString().equals("")) {
                                                         recordFieldFiliali.put("vendorid", fornitoriobjrec.get("id").toString());
@@ -2369,7 +2368,7 @@ public class UpdateConsumer extends Consumer {
                                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                     String updatedfields = builderRemoveIndexLast.toString();
                                     recordMapFiliali.put("updatedfields", updatedfields);
-                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST");
+                                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapFiliali, "POST", 3);
                                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                         recordMapRestAutista.put("linktobranch", obj.get("id").toString());
@@ -2388,7 +2387,7 @@ public class UpdateConsumer extends Consumer {
                     builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                     String updatedfields = builderRemoveIndexLast.toString();
                     recordMapRestAutista.put("updatedfields", updatedfields);
-                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapRestAutista, "POST");
+                    Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapRestAutista, "POST", 3);
                     JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                     if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                         recordField.put("linktodriver", obj.get("id").toString());
@@ -2438,7 +2437,7 @@ public class UpdateConsumer extends Consumer {
                                 String mapModuleCategoryId = "cbMap";
                                 conditionCategoryId = new StringBuilder("mapname").append("='").append(mapNameCategoryId).append("'");
                                 queryMapCategoryId = new StringBuilder("select * from ").append(mapModuleCategoryId).append(" where ").append(conditionCategoryId);
-                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId.toString());
+                                JSONArray mapdataCategoryId = wsClient.doQuery(queryMapCategoryId.toString(), 3);
                                 JSONObject resultCategoryId = (JSONObject)parser.parse(mapdataCategoryId.get(0).toString());
                                 JSONObject contentjsonCategoryId = (JSONObject)parser.parse(resultCategoryId.get("contentjson").toString());
                                 JSONObject fieldsFiliali = (JSONObject)parser.parse(contentjsonCategoryId.get("fields").toString());
@@ -2460,7 +2459,7 @@ public class UpdateConsumer extends Consumer {
                                 builderRemoveIndexLast.deleteCharAt(builderRemoveIndexZero.toString().length() - 1);
                                 String updatedfields = builderRemoveIndexLast.toString();
                                 recordMapCategoryId.put("updatedfields", updatedfields);
-                                Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST");
+                                Object newRecord = wsClient.doInvoke(Util.methodUPSERT, recordMapCategoryId, "POST", 3);
                                 JSONObject obj = (JSONObject)parser.parse(Util.getJson(newRecord));
                                 if (obj.containsKey("id") && !obj.get("id").toString().equals("")) {
                                     recordField.put("linktocategory", obj.get("id").toString());
@@ -2515,7 +2514,7 @@ public class UpdateConsumer extends Consumer {
                 }
             }
             record.put("element", Util.getJson(recordFields));
-            Object d = wsClient.doInvoke(Util.methodUPSERT, record, "POST");
+            Object d = wsClient.doInvoke(Util.methodUPSERT, record, "POST", 3);
         }
     }
 
@@ -2537,14 +2536,6 @@ public class UpdateConsumer extends Consumer {
         return objValue;
     }
 
-    private static String encodeValue(Object value) {
-        try {
-            return URLEncoder.encode(String.valueOf(value), StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex.getCause());
-        }
-    }
-
     private Object doGet(String apiKey, String _endpoint, String key) {
         Map<String, String> mapToSend = new HashMap<>();
         Header[] headersArray = new Header[2];
@@ -2555,29 +2546,4 @@ public class UpdateConsumer extends Consumer {
             return null;
         return response;
     }
-
-    private String getValueFromMemoryCache(String key) {
-        Object cacheValue = memoryCacheDB.hget(key, "crmid");
-        if (cacheValue == null) {
-            return "";
-        } else {
-            return cacheValue.toString();
-        }
-    }
-
-    /**
-     * Value to Save String module, String value, String fieldname, String otherCondition
-     */
-    private void addValueToMemoryCache(String key, String value) {
-        memoryCacheDB.hset(key, "crmid", value);
-    }
-
-    private void addValueToMemoryCache(String key, Map<String, String> value) {
-        memoryCacheDB.hset(key, value);
-    }
-
-    private Map<String, String> getMapValueFromMemoryCache(String key) {
-        return memoryCacheDB.hgetAll(key);
-    }
-
 }
