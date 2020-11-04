@@ -49,8 +49,8 @@ public class RESTAPIProducer {
     }
 
     protected void publishMessage(String topic, String key, String message, int partition) {
-        String runtime = new Date().toString();
-        String msg = "Message Publishing Time - " + runtime + message;
+        //String runtime = new Date().toString();
+        //String msg = "Message Publishing Time - " + runtime + message;
 //        System.out.println(msg);
         try {
             RecordMetadata metadata = (RecordMetadata) producer.send(new ProducerRecord(topic, partition, key, message)).get();
@@ -60,7 +60,7 @@ public class RESTAPIProducer {
 //            System.out.println("key = " + key);
 //            System.out.println("message = " + message);
 //            System.out.println("metadata.partition() = " + metadata.partition());
-            System.out.println(msg);
+            //System.out.println(msg);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -70,7 +70,7 @@ public class RESTAPIProducer {
 
     public void init() throws ParseException {
 
-        /**
+        /*
          * We send the first request with filter in which will act as the first round
          * pageSize=100
          * pageNr=1
@@ -119,7 +119,7 @@ public class RESTAPIProducer {
             Config.getInstance().setFirstRequest("" + "YES");
             for (int page = 2; page <= savedPageNumbers; page++) {
                 Object response = doGet(restAPIKey, pageSize, page, startDateTime, endDateTime, getDateForFiltering());
-                if (Integer.parseInt(Config.getInstance().getCurrentPartition()) % 13 == 0) {
+                if (Integer.parseInt(Config.getInstance().getCurrentPartition()) % 10 == 0) {
                     processResponseData(response, 1);
                     Config.getInstance().setCurrentPartition("1"); // reset partition
                 } else {
@@ -172,7 +172,7 @@ public class RESTAPIProducer {
         if (filterByCurrentDate.toString().equals("yes")) {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDateTime currentDate = LocalDateTime.now();
-            return dateTimeFormatter.format(currentDate);
+            return dateTimeFormatter.format(currentDate.minusDays(1));
         } else {
             return dateToFilterRecords;
         }
@@ -207,7 +207,7 @@ public class RESTAPIProducer {
             publishMessage(topic, partitionKey, Util.getJson(messageToSend), partition);
         }
 
-        /**for (Object key : shipmentsStatus.keySet()) {
+        /*for (Object key : shipmentsStatus.keySet()) {
             String shipmentid = (String) key;
             Object status = shipmentsStatus.get(shipmentid);
             String module = "ProcessLog";
