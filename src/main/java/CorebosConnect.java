@@ -29,7 +29,7 @@ public class CorebosConnect {
 
 
     public static Map getModules() {
-        Map o = wsClient.doDescribe(Modules);
+        Map o = wsClient.doDescribe(Modules, 3);
         Object[] collections = o.values().toArray();
         Map emptyMap = new HashMap();
 
@@ -42,7 +42,7 @@ public class CorebosConnect {
 
     public static void selectQuery() {
 
-        Object d = wsClient.doQuery("select * from Contacts where lastname like 'Sarja';");
+        Object d = wsClient.doQuery("select * from Contacts where lastname like 'Sarja';", 3);
         System.out.println(Util.getJson(d));
 
 
@@ -63,7 +63,7 @@ public class CorebosConnect {
         mapToSend.put("element", Util.getJson(element));
 
 
-        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST");
+        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST", 3);
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
 
     }
@@ -84,7 +84,7 @@ public class CorebosConnect {
         mapToSend.put("searchOn", "mobile");
 
 
-        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST");
+        Object d = wsClient.doInvoke(Util.methodUPSERT, mapToSend, "POST", 3);
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
 
     }
@@ -106,7 +106,7 @@ public class CorebosConnect {
         mapToSend.put("element", Util.getJson(element));
 
 
-        Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST");
+        Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST", 3);
         System.out.println("Util.getJson(d) = " + Util.getJson(d));
 
     }
@@ -123,7 +123,7 @@ public class CorebosConnect {
         mapToSend.put("element", Util.getJson(element));
 
 
-        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST");
+        Object d = wsClient.doInvoke(Util.methodCREATE, mapToSend, "POST", 3);
         System.out.println(Util.getJson(d));
 
     }
@@ -144,7 +144,7 @@ public class CorebosConnect {
         mapToSend.put("element", Util.getJson(element));
 
 
-        Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST");
+        Object d = wsClient.doInvoke(Util.methodUPDATE, mapToSend, "POST", 3);
         if (d == null)
             System.out.println("wsClient.lastError() = " + wsClient.lastError());
         System.out.println("Util.getJson(d) = " + Util.getJson(d));

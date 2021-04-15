@@ -4,10 +4,12 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 public class RESTAPIProducerExe {
-    private static String cronExpression = (Util.getProperty("corebos.restproducer.cronexpression").isEmpty()) ? System.getenv("PRODUCER_CRON_EXPRESSION") : Util.getProperty("corebos.restproducer.cronexpression");
+//    private static String cronExpression = (Util.getProperty("corebos.restproducer.cronexpression").isEmpty()) ? System.getenv("PRODUCER_CRON_EXPRESSION") : Util.getProperty("corebos.restproducer.cronexpression");
+    private static String cronExpression = (Util.getProperty("producer.cronexpression").isEmpty()) ?
+        System.getenv("PRODUCER_CRON_EXPRESSION") : Util.getProperty("producer.cronexpression");
 
     public static void main(String[] args) throws SchedulerException {
-        JobDetail jobDetail = JobBuilder.newJob(QuartzJob.class).withIdentity("FetchShipmentData", "installo").build();
+        JobDetail jobDetail = JobBuilder.newJob(QuartzJob.class).withIdentity("FetchInstalloData", "installo").build();
         Trigger trigger = TriggerBuilder.newTrigger().withIdentity("CronTrigger", "installo").withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)).build();
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();

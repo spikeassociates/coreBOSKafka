@@ -38,7 +38,7 @@ public class QueryProducer extends Producer {
     }
 
     private Object doQuery() {
-        Object response = wsClient.doQuery(query);
+        Object response = wsClient.doQuery(query, 3);
         if (response == null)
             return null;
         long currentTime = new Date().getTime() / 1000;

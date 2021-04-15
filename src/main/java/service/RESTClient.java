@@ -38,18 +38,27 @@ public class RESTClient {
        // }
     }
 
+    public JSONObject doGetJSONObject(String endPoint, Map<String, String> queryParameters, Header[] headerParameters, String key) {
+        String urlToCall = this._servicebaseurl + endPoint;
+        this._client = new HTTP_Client(urlToCall);
+        Object response = this._client.doGet(queryParameters, true, headerParameters);
+        //System.out.println(response);
+        JSONObject result = (JSONObject) (response);
+        return (JSONObject) result.get(key);
+    }
+
     public JSONObject doGet(String endPoint, Map<String, String> queryParameters, Header[] headerParameters) {
         String urlToCall = this._servicebaseurl + endPoint;
         this._client = new HTTP_Client(urlToCall);
-        System.out.println(urlToCall);
-        // queryParameters.clear();
+        //System.out.println(urlToCall);
+         //queryParameters.clear();
         // queryParameters.put("codiceClienteOrdinante", "EPRICE");
-        // queryParameters.put("pageSize", "10");
-        // queryParameters.put("ldv", "262");
+         //queryParameters.put("pageSize", "1");
+         //queryParameters.put("ldv", "3266970");
+         //queryParameters.put("ldv", "3231365");
         Object response = this._client.doGet(queryParameters, true, headerParameters);
         return (JSONObject) (response);
     }
-
 
     public boolean hasError(Object result) {
         boolean isError = false;

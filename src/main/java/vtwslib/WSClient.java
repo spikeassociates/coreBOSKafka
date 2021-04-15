@@ -181,6 +181,7 @@ public class WSClient {
         getdata.put("sessionName", this._sessionid);
         getdata.put("query", query);
         Object response = this._client.doGet(getdata, true);
+        //System.out.println(response);
         if (this.hasError(response)) {
             if (currentNumberOfRetry > 0) {
                 doQuery(query, currentNumberOfRetry - 1);
@@ -318,9 +319,10 @@ public class WSClient {
         }
 
         if (this.hasError(response)) {
+            System.out.println("Operation on This Object Fail::" + senddata);
             System.out.println("Error = " + response);
             if (currentNumberOfRetry > 0) {
-                doInvoke(method, params, type, currentNumberOfRetry);
+                doInvoke(method, params, type, currentNumberOfRetry - 1);
             }
             return null;
         } else {

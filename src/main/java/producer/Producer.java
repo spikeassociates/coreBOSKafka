@@ -41,7 +41,7 @@ public class Producer {
             throw new Exception("Login error");
         }
 
-        Object[] modules = wsClient.doDescribe(MODULES).values().toArray();
+        Object[] modules = wsClient.doDescribe(MODULES, 3).values().toArray();
         for (Object module : modules) {
             Map theMap = (Map) module;
             moduleMap.put(theMap.get("idPrefix"), theMap);

@@ -110,7 +110,7 @@ public class SiaeConsumer extends KafkaConfig {
         mapToSend.put("elementType", keyData.module);
         mapToSend.put("element", Util.getJson(element));
 
-        Object moduleData = wsClient.doInvoke(method, mapToSend, "POST");
+        Object moduleData = wsClient.doInvoke(method, mapToSend, "POST", 3);
         System.out.println("Util.getJson(d) = " + Util.getJson(moduleData));
         if (moduleData != null) {
             producer.publishMessage(notify_topic, Util.getJson(keyData), Util.getJson(moduleData));

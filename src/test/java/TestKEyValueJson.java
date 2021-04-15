@@ -28,7 +28,7 @@ public class TestKEyValueJson {
         /*
         *ValueData valueData = Util.getObjectFromJson(new File("C:/Users/User/Desktop/corebos/src/test/file_test/jsonFile.json"), ValueData.class);
         *  */
-        ValueData valueData = Util.getObjectFromJson(new File("/home/mocoder/IdeaProjects/coreBOSKafka/src/test/file_test/jsonFile.json"), ValueData.class);
+        ValueData valueData = Util.getObjectFromJson(new File("/home/mocoder/Projects/Spikes Stream/Java Projects/coreBOSKafka/src/test/file_test/jsonFile.json"), ValueData.class);
         assertEquals(valueData.user.firstName.equals("Ardit"), true);
     }
 

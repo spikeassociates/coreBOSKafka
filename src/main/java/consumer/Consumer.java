@@ -10,11 +10,23 @@ import java.util.Properties;
 @SuppressWarnings("ALL")
 public class Consumer {
 
-    protected static final String COREBOS_URL = (Util.getProperty("corebos.consumer.url").isEmpty()) ? System.getenv("COREBOS_BASE_URL") : Util.getProperty("corebos.consumer.url");
-    protected static final String USERNAME = (Util.getProperty("corebos.consumer.username").isEmpty()) ? System.getenv("COREBOS_USER") : Util.getProperty("corebos.consumer.username");
-    protected static final String ACCESS_KEY = (Util.getProperty("corebos.consumer.access_key").isEmpty()) ? System.getenv("COREBOS_ACCESSKEY") : Util.getProperty("corebos.consumer.access_key");
-    protected static final String GROUP_ID = (Util.getProperty("corebos.consumer.group_id").isEmpty()) ? System.getenv("CONSUMER_GROUP_ID") : Util.getProperty("corebos.consumer.group_id");
-    protected static final String KAFKA_URL = (Util.getProperty("corebos.kafka.url").isEmpty()) ? System.getenv("KAFKA_HOST") : Util.getProperty("corebos.kafka.url");
+    protected static final String COREBOS_URL = (Util.getProperty("consumer.corebos.webservice.url").isEmpty()) ?
+            System.getenv("COREBOS_BASE_URL") : Util.getProperty("consumer.corebos.webservice.url");
+    protected static final String USERNAME = (Util.getProperty("consumer.corebos.username").isEmpty()) ?
+            System.getenv("COREBOS_USER") : Util.getProperty("consumer.corebos.username");
+    protected static final String ACCESS_KEY = (Util.getProperty("consumer.corebos.accesskey").isEmpty()) ?
+            System.getenv("COREBOS_ACCESSKEY") : Util.getProperty("consumer.corebos.accesskey");
+    protected static final String GROUP_ID = (Util.getProperty("consumer.groupid").isEmpty()) ?
+            System.getenv("CONSUMER_GROUP_ID") : Util.getProperty("consumer.groupid");
+    protected static final String KAFKA_URL = (Util.getProperty("kafka.url").isEmpty()) ?
+            System.getenv("KAFKA_HOST") : Util.getProperty("kafka.url");
+
+    private String securityProtocol = (Util.getProperty("kafka.security.protocol").isEmpty()) ?
+            System.getenv("KAFKA_SECURITY_PROTOCOL") : Util.getProperty("kafka.security.protocol");
+    private String saslMechanism = (Util.getProperty("kafka.sasl.mechanism").isEmpty()) ?
+            System.getenv("KAFKA_SASL_MECHANISM") : Util.getProperty("kafka.sasl.mechanism");
+    private String sasljaasconfig =  (Util.getProperty("kafka.sasl.jaas.config").isEmpty()) ?
+            System.getenv("KAFKA_SASL_JAAS_CONFIG") : Util.getProperty("kafka.sasl.jaas.config");
 
     protected Properties properties = new Properties();
     protected KafkaConsumer kafkaConsumer;
@@ -27,10 +39,12 @@ public class Consumer {
             throw new Exception("Login error");
         }
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_URL);
+        properties.put("security.protocol", securityProtocol);
+        properties.put("sasl.mechanism", saslMechanism);
+        properties.put("sasl.jaas.config", sasljaasconfig);
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("group.id", GROUP_ID);
-        //properties.put("max.partition.fetch.bytes", 2097152);
         properties.put("max.poll.records", 5);
         properties.put("enable.auto.commit", false);
         properties.put("max.poll.interval.ms", Integer.MAX_VALUE);
